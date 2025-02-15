@@ -834,6 +834,7 @@ function delete_sessions()
 {
 global $cookie_domain;
 unset($_SESSION['userid']);
+unset($_SESSION['usertyp']);
 unset($_SESSION['pmsglobal']);
 unset($_SESSION['loginip']);
 unset($_SESSION['last_login']);
@@ -1251,6 +1252,7 @@ $_SESSION['last_login']=from_db("user",$id,"login");
 
 $_SESSION['pmsglobal']=1;
 $_SESSION['userid']=$a->id;
+$_SESSION['usertyp']=$a->typ;
 global $website_key;
 global $login;
 $_SESSION['loginip']=$_SERVER["REMOTE_ADDR"];

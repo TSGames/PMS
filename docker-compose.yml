@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:80" 
     volumes:
-      - ./src:/var/www/html 
+      #- ./src:/var/www/html 
       - ./template:/var/template
       - data_images:/var/www/html/images 
       - data_db:/var/db
