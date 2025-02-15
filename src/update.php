@@ -97,44 +97,44 @@ if($_GET["action"]=="do" && !$pms_update_restricted)
 {
 $r=copy_update("",$update_ftp);
 if($r[0])
-echo "Das Update wurde ausgeführt";
+echo "Das Update wurde ausgefÃ¼hrt";
 else
 {
-echo "Bei der Ausführung des Updates traten Fehler auf. ";
+echo "Bei der AusfÃ¼hrung des Updates traten Fehler auf. ";
 
 if($r[1]) echo "Mehr Informationen in der Datei <a href=\"update.log\" target=\"_blank\">update.log</a>";
-else echo "Die Datei update.log konnte nicht geschrieben werden! Überprüfen Sie zusätzlich die Schreibrechte.";
+else echo "Die Datei update.log konnte nicht geschrieben werden! ÃœberprÃ¼fen Sie zusÃ¤tzlich die Schreibrechte.";
 
-echo "<br><br>Hinweis: Häufig liegt das nur an sporadisch auftretenden Zugriffen.<br>Versuchen Sie zunächst, das Update zu wiederholen.<br><br><a href=\"update.php?action=do\">Erneut Versuchen</a>";
+echo "<br><br>Hinweis: HÃ¤ufig liegt das nur an sporadisch auftretenden Zugriffen.<br>Versuchen Sie zunÃ¤chst, das Update zu wiederholen.<br><br><a href=\"update.php?action=do\">Erneut Versuchen</a>";
 }
-echo "<br><br><a href=\"admin.php\">Zurück zum Admin-Center</a>";
+echo "<br><br><a href=\"admin.php\">ZurÃ¼ck zum Admin-Center</a>";
 }
 if($modul=="update")
 {
 if($pms_update_restricted)
-echo heading("Update-Modul")."Die Funktionalität wurde in der Konfiguration deaktiviert.";
+echo heading("Update-Modul")."Die FunktionalitÃ¤t wurde in der Konfiguration deaktiviert.";
 else
 {
 $new=get_latest_version();
-$new_str=$new ? $new : 'Nicht verfügbar';
+$new_str=$new ? $new : 'Nicht verfÃ¼gbar';
 echo heading("Updates Suchen")."<table width=\"400px\">
 <tr><td>Aktuelle Version:</td><td>$pms_version</td></tr>
 <tr><td>Neueste Version</td><td>$new_str</td></tr>
 <tr><td style=\"text-align:center;\" colspan=\"2\">[<a href=\"update.php?action=do\">";
 if($new>$pms_version)
-echo 'Update ausführen</a>]
+echo 'Update ausfÃ¼hren</a>]
 <br>Hinweis: Nach dem Klicken kann der Vorgang einige Zeit in Anspruch nehmen!';
 else if($new==$pms_version)
 echo 'Version erneut aktualisieren</a>]
-<br>Hinweis: Sie können Ihre aktuelle Version erneut updaten, wenn z.B. das Update beim letzten Versuch nicht funktionierte.';
+<br>Hinweis: Sie kÃ¶nnen Ihre aktuelle Version erneut updaten, wenn z.B. das Update beim letzten Versuch nicht funktionierte.';
 else
 echo 'Update Versuchen</a>]
-<br>Hinweis: Der PMS-Updater konnte keine Version vorfinden. Möglicherweise ist der Update-Server momentan nicht erreichbar oder der Zugriff wurde geblockt.<br>Sie können dennoch einen Update Versuch starten, in dem Sie auf den Button klicken.';
+<br>Hinweis: Der PMS-Updater konnte keine Version vorfinden. MÃ¶glicherweise ist der Update-Server momentan nicht erreichbar oder der Zugriff wurde geblockt.<br>Sie kÃ¶nnen dennoch einen Update Versuch starten, in dem Sie auf den Button klicken.';
 echo '</td></tr></table>';
 }
 }
 }
 else if($modul=="update")
-echo heading("Update-Modul")."Ihre Berechtigungen sind für diesen Vorgang nicht ausreichend";
+echo heading("Update-Modul")."Ihre Berechtigungen sind fÃ¼r diesen Vorgang nicht ausreichend";
 }
 ?>
