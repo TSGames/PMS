@@ -25,16 +25,18 @@ class pms_db_class
             $result = $this->connection->querySingle("SELECT name FROM sqlite_master WHERE type='table' AND name='cat'");
             if (!$result) {
                 $result = $this->connection->exec(file_get_contents(__DIR__ . "/.db_layout.sql"));
-                if($withData) {
-                    $password = substr(bin2hex(random_bytes(20)), 0,  20);
-                    error_log("Initial admin password: " . $password);
-                    file_put_contents("/var/db/.init_password", $password);
-                    $result = $this->connection->exec(str_replace('$PASSWORD', $this->escape(md5($password)), file_get_contents(__DIR__ . "/.db_data.sql")));
-                }
-                $this->valid = $result;
-                return $result;
+                $this->valid = !!$result;
             }
-            return true;
+            if($withData) {
+                $result = $this->connection->querySingle("SELECT * FROM config WHERE id='1'");
+                if(!$result) {
+                $password = substr(bin2hex(random_bytes(20)), 0,  20);
+                error_log("Initial admin password: " . $password);
+                file_put_contents("/var/db/.init_password", $password);
+                $this->connection->exec(str_replace('$PASSWORD', $this->escape(md5($password)), file_get_contents(__DIR__ . "/.db_data.sql")));
+                }
+            }
+            return $this->valid;
         }
     }
     public function valid() {
