@@ -42,6 +42,7 @@ function convertMysqlToSqlite($mysqlDump) {
 }
 
 if(file_exists("/var/db/import.mysql.sql")) {
+    $pms_db_connection->init(false);
     $pms_db_connection->exec(convertMysqlToSqlite(file_get_contents("/var/db/import.mysql.sql")));
     error_log("Importing from /var/db/import.sql");
     if($pms_db_connection->error() !== 'not an error') {

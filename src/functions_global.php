@@ -14,7 +14,7 @@ class pms_db_class
         try {
             $this->connection = new SQLite3("/var/db/" . ($db == null ? "default" : $db) . ".sqlite");
             if ($this->connection) {
-                $this->valid = $this->init(false);
+                $this->valid = true;
             }
         } catch (PDOException $e) {
         }
