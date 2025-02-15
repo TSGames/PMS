@@ -48,9 +48,11 @@ jobs:
       # Schritt 4: Build das Docker-Image
       - name: Build Docker image
         run: |
-          docker build -t tsgames/pms:${{ github.sha }} .
+          docker build -t tsgames/pms:${{ github.sha }} -t tsgames/pms:latest -t tsgames/pms:${{ github.ref_name }} .
 
       # Schritt 5: Push das Docker-Image
       - name: Push Docker image
         run: |
           docker push tsgames/pms:${{ github.sha }}
+          docker push tsgames/pms:latest
+          docker push tsgames/pms:${{ github.ref_name }}
