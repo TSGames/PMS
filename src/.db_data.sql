@@ -1,5 +1,5 @@
-INSERT INTO `config` (`id`, `name`) VALUES
-(1, 'PMS');
+INSERT INTO `config` (`id`, `name`, `language`) VALUES
+(1, 'PMS', 'german_formal');
 
 
 INSERT INTO `user` (`id`, `typ`, `active`, `name`, `password`) VALUES
