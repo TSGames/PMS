@@ -1,0 +1,3 @@
+Inhalte dürfen kommentiert werden
+
+Ist diese Einstellung aktiviert, ist das Kommentarsystem aktiviert. Das bedeutet, dass Inhalte, die die Option "Inhalt darf kommentiert werden" gesetzt haben, kommentiert werden können.

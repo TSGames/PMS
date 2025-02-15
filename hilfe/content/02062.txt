@@ -1,0 +1,29 @@
+Übersichtsseite
+
+<b>ID</b>
+Gibt die Identifikationsnummer des Inhaltsobjektes an. Auf ein Inhaltsobjekt kann mit dem Platzhalter #item:id dynamisch verwiesen werden. Mehr hierzu in den Platzhaltern.
+Über den Link http://seite.de/?item=id kann direkt darauf zugegriffen werden. Weiteregehende Informationen zu diesen Thema ist in der Programmierung/SDK zu finden
+
+<b>Name</b>
+Der Name (Titel) des Inhaltes
+
+<b>Typ</b>
+Typ des Inhaltes, z.B. Download
+
+<b>In Kategorie</b>
+Die entsprechende Kategorie, zu der dieses Inhaltsobjekt gehört
+
+<b>In Unterkategorie</b>
+Die Unterkategorie, in der dieseer Inhalt zu finden ist
+
+<b>Sortierung</b>
+Position im System Dies ist sowohl für die interne Übersicht als auch für die Auflistung gedacht. Werden in einer Unterkategorie die verschiedenen Inhalte angezeigt, werden diese nach ihren Zahlenwert sortiert. Je niedriger diese Zahl, desto weiter Oben. Es sind negative Zahlen möglich.
+
+<b>Von Nutzer</b>
+Der Benutzer, der diesen Inhalt erstellt hat
+
+<b>Erstellt am</b>
+Das Datum der Erstellung
+
+<b>Verfügbar</b>
+Ist dieses Inhaltsobjekt verfügbar

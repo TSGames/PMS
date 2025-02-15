@@ -1,0 +1,10 @@
+signatur
+
+Der Style für die User-Signatur unter einem Kommentar.
+
+Beispiel:
+
+.signatur
+{
+color: #888888;
+}

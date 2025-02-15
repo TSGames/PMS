@@ -1,0 +1,4 @@
+Passwort darf zurückgesetzt werden
+
+Erlaubt bzw. verbietet, dass das Benuter-Passwort zurückgesetzt werden darf.
+Ist diese Option aktiv, wird im Login-Panel (#user) "Passwort vergessen?" angezeigt.

@@ -1,0 +1,10 @@
+poll_answer
+
+Gibt das Layout für alle Antworten auf die gestellte Umfrage an.
+
+Beispiel:
+
+.poll_answer
+{
+color: #555555;
+}

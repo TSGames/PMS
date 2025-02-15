@@ -1,0 +1,11 @@
+login_fail
+
+Die Textgestaltung bei einem fehlgeschlagenen Login.
+
+Beispiel:
+
+.login_fail
+{
+color: #995555;
+font-weight: bold;
+}

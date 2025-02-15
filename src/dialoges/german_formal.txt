@@ -1,0 +1,551 @@
+// Dialog-Datei für PMS ab Version 1.37
+// Muss in den Ordner "dialoges" eingefügt werden
+// Jeder Bezeichner für einen Eintrag beginnt mit "##"
+// Spezielle Platzhalter beginnen mit % und sind numerisch, z.B. %1
+// Platzhalter sind nur in einigen Bezeichnern möglich
+// Bitte diese Datei nicht verändern
+// Um einzelne Dialoge zu verändern, bitte die "custom.txt" verwenden
+// Ab diesem Punkt beginnt die Interpretation des Files!
+
+##COMMENT_TOP
+Neuen Kommentar schreiben
+##COMMENT_TITLE
+Kommentar-Titel:
+##COMMENT_BOTTOM
+Kommentar:
+##COMMENT_SEND
+Kommentar absenden
+##COMMENT_EDIT
+Kommentar bearbeiten
+##COMMENT_SAVE
+Kommentar Speichern
+##COMMENT_NAME
+Name:
+##COMMENT_MAIL
+E-Mail-Adresse:
+##COMMENT_MAIL_INFO
+(Optional)
+##COMMENT_SHOWALL
+Alle Kommentare anzeigen
+##GUESTBOOK_SHOWALL
+Alle Gästebucheinträge anzeigen
+
+##GUESTBOOK_TOP
+Neuen Gästebucheintrag schreiben
+##GUESTBOOK_TITLE
+Titel:
+##GUESTBOOK_BOTTOM
+Eintrag:
+##GUESTBOOK_EDIT
+Gästebucheintrag bearbeiten
+##GUESTBOOK_SEND
+Eintragen
+##GUESTBOOK_SAVE
+Eintrag speichern
+##COMMENT_SUCCESS
+Kommentar erfolgreich gespeichert.
+##GUESTBOOK_SUCCESS
+Gästebucheintrag erfolgreich gespeichert.
+
+##COMMENT_LIST_FROM
+Von:
+##COMMENT_LIST_DATE
+Datum:
+##COMMENT_LIST_MAIL
+E-Mail:
+##COMMENT_LIST_IP
+IP-Adresse:
+##COMMENT_LIST_NO_TITLE
+Kein Titel
+
+##USER_VIEW_TITLE
+Benutzer: %1
+##USER_VIEW_POINTS
+Punkte:
+##USER_VIEW_REGISTERED
+Registriert seit:
+##USER_VIEW_LAST_LOGIN
+Zuletzt Eingeloggt:
+##USER_VIEW_BIRTH
+Geburtstag:
+##USER_VIEW_WEBSITE
+Website:
+##USER_VIEW_TYP
+Benutzer-Typ:
+##USER_VIEW_MAIL
+E-Mail:
+##USER_VIEW_SIGNATUR
+Signatur:
+##USER_VIEW_VISIT_WEBSITE
+Website besuchen
+
+##DOWNLOAD_BUTTON
+Herunterladen
+
+##COMMENT_ERROR
+Beim Speichern des Kommentars ist leider ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.
+##COMMENT_ERROR_SPAM
+Bitte Prüf-Code korrekt eingeben.
+##COMMENT_ERROR_NAME
+Sie haben kein Namen angegeben!
+##COMMENT_ERROR_MAIL_INVALID
+Die angegebene E-Mail Adresse ist nicht korrekt.
+##COMMENT_ERROR_EMPTY
+Der angegebene Kommentar ist leer.
+##COMMENT_ERROR_MULTIPLE_POST
+Mehrfache Kommentare sind nicht zulässig.
+##GUESTBOOK_ERROR
+Beim Speichern des Gästebucheintrags trat leider ein Fehler auf. Bitte versuchen Sie es später erneut.
+##GUESTBOOK_ERROR_EMPTY
+Der Gästebucheintrag ist leer.
+##GUESTBOOK_ERROR_NOT_ACTIVATED
+Das Verfassen neuer Gästebucheinträge ist vorübergehend leider nicht möglich.
+##GUESTBOOK_ERROR_MULTIPLE_POST
+Mehrfache Gästebucheinträge sind nicht zulässig.
+
+##GUESTBOOK_SEND
+Eintragen
+
+##USER_TYP_DEFAULT
+Standard-Nutzer
+##USER_TYP_MODERATOR
+Moderator
+##USER_TYP_ADMIN
+Administrator
+##USER_TYP_SUPERADMIN
+Super-Administrator
+
+##USER_PANEL_TITLE
+Benutzereinstellungen
+##USER_PANEL_HEADING
+Ihr Benutzerkonto - %1
+##USER_PANEL_SAVE
+Speichern
+##USER_PANEL_PW
+Neues Passwort:
+##USER_PANEL_PW_REPEAT
+Passwort Wiederholen:
+##USER_PANEL_MAIL
+Aktuelle E-Mail-Adresse:
+##USER_PANEL_WEBSITE
+Website:
+##USER_PANEL_SIG
+Signatur:
+##USER_PANEL_STATUS
+Ihr aktueller Status:
+##USER_PANEL_POINTS
+Ihre Punkte:
+##USER_PANEL_POINTS_DESCRIPTION
+Sie erhalten Punkte für das Schreiben von Kommentaren,
+die Teilnahme an Umfragen und für das Bewerten von Artikeln
+##USER_PANEL_BIRTH
+Geburtsdatum (z.b. 15.03.1985):	
+##USER_PANEL_AVATAR
+Benutzerbild wählen (jpg, gif, png):
+##USER_PANEL_AVATAR_DELETE
+Aktuelles Bild löschen
+##USER_PANEL_SHOW_MAIL
+E-Mail-Adresse anzeigen
+##USER_PANEL_SHOW_TOP
+In den Top-Usern anzeigen
+
+##REGISTER_MAIL_SUBJECT
+Registration bei %1 abschließen
+##REGISTER_MAIL_BODY
+Hallo %1
+
+Sie haben sich auf unserer Website %2 registriert. Um die Registration abzuschließen, klicken Sie bitte auf den Link unten:
+
+%3
+
+##USER_SAVE_SUCCESS
+Benutzer erfolgreich gespeichert
+##USER_SAVE_ERROR
+Fehler beim Speichern des Benutzers
+
+##SPAM
+Prüf-Code: %1 (%2)
+##SPAM_HELP
+Hilfe
+##SPAM_LEFT
+Hilfe - Prüf-Code
+##SPAM_RIGHT
+Dieser Prüf-Code verhindert das unautorisierte
+Absenden von Einträgen.
+Bitte geben Sie die 6 Ziffern im Bild links
+in das Feld auf der rechten Seite ein.
+
+##TOP_USER_TITLE
+Top %1 User
+##TOP_USER_HEADING
+%1 - Top %2 User
+##TOP_USER_MORE
+Mehr
+##TOP_USER_RANK
+%1. Platz:
+##TOP_USER_POINTS
+(%1 Punkte)
+
+##SEARCH_HEADING
+Suche nach "%1"
+##SEARCH_NORESULTS
+Keine Artikel auf diese Suchanfrage gefunden. Bitte versuchen Sie es erneut!
+##SEARCH_SHORTQUERY
+Der eingegebene Suchbegriff ist zu kurz. Bitte verwenden Sie mindestens 3 Zeichen.
+
+##SUBCAT_ADD
+Unterkategorie Hinzufügen
+##ITEM_ADD
+Inhalt hinzufügen
+##ITEM_EDIT
+Bearbeiten
+
+##PASSWORD_RECOVER_TITLE
+Passwort Vergessen
+##PASSWORD_RECOVER_HEADING
+Passwort Vergessen
+##PASSWORD_RECOVER_BUTTON
+Passwort Anfordern
+##PASSWORD_RECOVER_SUCCESS
+Das Passwort wurde erfolgreich zurückgesetzt.
+Sie erhalten nun eine Mail mit Ihrem neuen Passwort!
+##PASSWORD_RECOVER_MAIL_SUBJECT
+Neues Passwort - %1
+##PASSWORD_RECOVER_MAIL_BODY
+Hallo %1,
+
+Sie erhalten mit dieser Mail ein neues Passwort für den Login auf unserer Seite.
+
+Hier ist Ihr neues Passwort: %2
+##PASSWORD_RECOVER_NAME
+Name:
+##PASSWORD_RECOVER_ERROR
+Das Zurücksetzen des Passwortes konnte nicht abgeschlossen werden.
+Bitte versuchen Sie es erneut.
+Grund: Der angegebene Prüfcode ist nicht gültig!
+##PASSWORD_RECOVER_ERROR_INVALID_USER
+Der Benutzer ist nicht vorhanden!
+##PASSWORD_RECOVER_MAIL_SEND
+Es wurde eine Bestätigungsmail an Sie gesendet.
+##PASSWORD_RECOVER_REQUEST_MAIL_SUBJECT
+Passwort Wiederherstellen - %1
+##PASSWORD_RECOVER_REQUEST_MAIL_BODY
+Hallo %1,
+
+Sie haben ein neues Passwort für Ihren Account auf unserer Seite angefordert. Bitte bestätigen Sie diese Anfrage mit Klick auf den folgenden Link:
+%2
+
+Sollten Sie diese Mail erhalten haben, ohne ein neues Passwort angefordert zu haben, so ignorieren Sie diese Benachrichtigung.
+##REGISTER_TITLE
+Registrieren
+##REGISTER_HEADING
+Registrieren auf %1
+##REGISTER_NAME
+Name:
+##REGISTER_PW
+Passwort:
+##REGISTER_PW_REPEAT
+Passwort Wiederholen:
+##REGISTER_MAIL
+E-Mail-Adresse:
+##REGISTER_BUTTON
+Registrieren
+##REGISTER_SUCCESS
+Registration erfolgreich. Sie erhalten nun eine Mail, in welcher ein Link zum Aktivieren Ihres Benutzers enthalten ist!
+##REGISTER_ERROR
+Beim Registrieren ist leider ein interner Fehler aufgetreten, bitte versuchen Sies es später erneut.
+##REGISTER_ERROR_SPAM
+Der Prüf-Code war ungültig.
+
+##USER_ERROR_PW_COMPARE
+Die Passwörter stimmen nicht überein!
+##USER_ERROR_SHORT_USERNAME
+Der Benutzername ist zu kurz!
+##USER_ERROR_CHAR_USERNAME
+Der Benutzername enthält ungültige Sonderzeichen!
+##USER_ERROR_USER_EXISTS
+Der Benutzername ist bereits vorhanden!
+##USER_ERROR_INVALID_BIRTH
+Das angegebene Geburtstdatum ist ungültig!
+##USER_ERROR_SHORT_PW
+Das Passwort ist zu kurz!
+##USER_ERROR_INVALID_MAIL
+Die angegebene E-Mail-Adresse ist ungültig!
+
+##REGISTER_FINISH_TITLE
+Registration abschließen
+##REGISTER_FINISH_HEADING
+Registration abschließen
+##REGISTER_FINISH_SUCCESS
+Die Registration ist nun erfolgreich abgeschlossen und Ihr Benutzer-Profil aktiviert, Sie können sich nun im Login-Feld einloggen.
+##REGISTER_FINISH_ERROR
+Die Registration konnte leider nicht abgeschlossen werden.
+Grund: Der angegebene Prüfcode ist nicht gültig.
+
+##SITEMAP_TITLE
+Sitemap
+##SITEMAP_HEADING
+Sitemap - %1
+
+##RATE_BUTTON
+Bewerten
+##RATE_INFO
+Aktuelle Bewertung:
+##RATE_CURRENT_ONE
+bei insgesamt 1 Bewertung
+##RATE_CURRENT_MULTI
+bei insgesamt %1 Bewertungen
+##RATE_BAD
+(Schlecht)
+##RATE_GOOD
+(Gut)
+
+##BAN_UNLIMITED
+Unbegrenzt
+##BAN_NO_REASON
+[Nicht angegeben]
+
+##ITEM_DOWNLOAD_BUTTON
+Herunterladen
+
+##ITEM_WRITTEN_BY
+Geschrieben von %1 %2
+##ITEM_ADDED_BY
+Hinzugefügt von %1 %2
+##ITEM_LAST_REFRESHED
+Zuletzt aktualisiert %1
+
+##ITEM_PREVIOUS
+Vorheriges
+##ITEM_NEXT
+Nächstes
+
+##POLL_ADD
+Hinzufügen
+##POLL_EDIT
+Bearbeiten
+##POLL_NOT_ACTIVE
+Es sind momentan keine Umfragen aktiv.
+##POLL_VOTE
+Abstimmen
+##POLL_RESULTS
+Ergebnis
+##POLL_PARTICIPANTS
+Teilnehmer
+
+##COMMENTS_SHOW_NONE
+Keine Kommentare
+##COMMENTS_SHOW_ONE
+1 Kommentar
+##COMMENTS_SHOW_MULTI
+%1 Kommentare
+
+##COUNTER_OVERALL
+Besucher Gesamt:
+##COUNTER_ONLINE
+Besucher Online:
+##COUNTER_TODAY
+Besucher Heute:
+##COUNTER_YESTERDAY
+Besucher Gestern:
+##COUNTER_24
+Letzten 24 Std.:
+##COUNTER_IP
+IP-Adresse:
+##COUNTER_COMMENTS
+Anzahl Kommentare:
+##COUNTER_VALUES
+Anzahl Bewertungen:
+##COUNTER_ITEMS
+Anzahl Artikel:
+##COUNTER_USERS
+Anzahl Benutzer:
+
+##GUESTBOOK_MAIL_SUBJECT
+Neuer Gästebucheintrag
+##GUESTBOOK_MAIL_BODY
+Hallo %1,
+
+auf %2 wurde ein neuer Gästebucheintrag verfasst.
+
+Wenn Sie sich den Gästebucheintrag ansehen möchten, so Klicken Sie bitte auf folgenden Link:
+%3
+
+Hinweis: Diese Benachrichtigungs-E-Mails können im Website-Konfigurator deaktiviert werden.
+##COMMENT_MAIL_SUBJECT
+Neuer Kommentar
+##COMMENT_MAIL_BODY
+Hallo %1,
+
+auf %2 wurde ein neuer Kommentar verfasst.
+
+Wenn Sie sich den Kommentar ansehen möchten, so Klicken Sie bitte auf folgenden Link:
+%3
+
+Hinweis: Diese Benachrichtigungs-E-Mails können im Website-Konfigurator deaktiviert werden.
+##REGISTER_ADMIN_MAIL_SUBJECT
+Neuer Benutzer
+##REGISTER_ADMIN_MAIL_BODY
+Hallo %1,
+
+auf %2 hat sich ein neuer Benutzer registriert.
+
+Der Name des Benutzers lautet '%3'
+
+In der Benutzerverwaltung in der Administration können Sie den Benutzer einsehen.
+
+Hinweis: Diese Benachrichtigungs-E-Mails können im Website-Konfigurator deaktiviert werden.
+
+##LOGIN_ERROR_INVALID_USER
+Benutzer nicht vorhanden
+##LOGIN_ERROR_INVALID_PW
+Das Passwort ist ungültig
+##LOGIN_ERROR_USER_LOCKED
+Der Benutzer ist gesperrt
+
+##USER_REGISTER
+Registrieren
+##USER_PASSWORD_LOST
+Passwort Vergessen?
+##USER_STAY_LOGGED_IN
+Eingeloggt bleiben
+##USER_LOGIN
+Einloggen
+##USER_NAME
+Name:
+##USER_PW
+Passwort:
+##USER_ONLINE
+Hallo, %1
+##USER_FIRST_TIME_ONLINE
+Sie sind heute zum ersten Mal bei uns online, Willkommen!
+##USER_LAST_TIME_ONLINE
+Sie waren zuletzt online %1
+##USER_SETTINGS
+Einstellungen
+##USER_LOGOUT
+Logout
+##USER_LOGOUT_SUCCESS
+Logout erfolgreich!
+
+##SEARCH_BUTTON
+Suchen
+
+##LATEST_COMMENTS_NONE
+Es sind keine aktuellen Kommentare vorhanden.
+
+##MOST_DISCUSSED_NONE
+Keine umfangreichen Artikel-Diskussionen
+
+##BIRTHDAY
+Wir gratulieren Heute %1 zum Geburtstag.
+
+##MAIL_SEND
+Mail Senden
+
+##DAY_TODAY
+Heute
+##DAY_ONE_AGO
+Gestern
+##DAY_TWO_AGO
+Vorgestern
+
+##TIME_AT
+um
+##TIME_FORMAT
+H:i
+##TIME_ADD
+Uhr
+##DATE_AT
+am
+##DATE_ADD
+den
+##DATE_FORMAT
+d.m.Y
+
+##WEEKDAY_MONDAY
+Montag
+##WEEKDAY_TUESDAY
+Dienstag
+##WEEKDAY_WEDNESDAY
+Mittwoch
+##WEEKDAY_THURSDAY
+Donnerstag
+##WEEKDAY_FRIDAY
+Freitag
+##WEEKDAY_SATURDAY
+Samstag
+##WEEKDAY_SUNDAY
+Sonntag
+
+##MAIL_BODY_FOOTER
+--
+Diese Mail wurde automatisch erstellt von PMS - Professional Management System, (c) Torsten Simon %1
+Bitte antworten Sie nicht auf diese Mail, da sie automatisch erstellt wurde!
+##FOOTER_COPYRIGHT
+Inhalt Copyright &copy; %1 - %2
+
+##NEWSLETTER_REGISTER_MAIL_SUBJECT
+Newsletter-Anmeldung abschließen
+
+##NEWSLETTER_REGISTER_MAIL_BODY
+Hallo,
+Sie haben sich auf %1 für den Newsletter mit Ihrer E-Mail-Adresse %2 angemeldet.
+
+Bitte bestätigen Sie Anmeldung durch Klicken auf folgenden Link:
+%3
+
+##NEWSLETTER_HEADING
+Newsletter
+
+##NEWSLETTER_SUBSCRIBE
+Anmelden
+##NEWSLETTER_UNSUBSCRIBE
+Abmelden
+##NEWSLETTER_BUTTON
+Bestätigen
+
+##NEWSLETTER_MAIL_EXISTS
+Die angegebene E-Mail-Adresse %1 ist bereits registriert!
+
+##NEWSLETTER_DONE
+Die Anmeldung am Newsletter wurde erfolgreich abgeschlossen!
+
+##NEWSLETTER_INVALID_KEY
+Der übermittelte Prüf-Schlüssel war ungültig.
+
+##NEWSLETTER_INVALID_MAIL
+Die von Ihnen angegebene E-Mail-Adresse ist ungültig.
+
+##NEWSLETTER_SEND_CONFIRM
+Vielen Dank für Ihre Anmeldung, Sie erhalten nun eine E-Mail mit einem Bestätigungslink.
+
+##NEWSLETTER_INVALID_SPAM
+Der angegebene Prüf-Code war nicht korrekt.
+
+##NEWSLETTER_UNSUBSCRIBE_CONFIRM
+Sie erhalten nun eine E-Mail mit einem Bestätigungslink zum abmelden.
+
+##NEWSLETTER_UNSUBSCRIBE_DONE
+Die Abmeldung vom Newsletter wurde erfolgreich ausgeführt.
+
+##NEWSLETTER_UNSUBSCRIBE_MAIL_SUBJECT
+Newsletter Abmeldung
+
+##NEWSLETTER_UNSUBSCRIBE_MAIL_BODY
+Hallo,
+
+Sie möchten den Newsletter von %1 für Ihre E-Mail-Adresse %2 abmelden?
+
+Wenn ja, klicken Sie auf den Link unten. Falls nicht, ignorieren Sie diese E-Mail.
+
+%3
+##NEWSLETTER_UNSUBSCRIBE_NO_MATCH
+Die angegebene E-Mail-Adresse %1 wurde nicht gefunden.
+##ITEM_EDIT_EXTENDED
+Erweiterter Modus
+##ITEM_EDIT_SAVE
+Änderungen Speichern
+
+##EDIT_VAR
+Klicken Sie hier, um den Inhalt der Variable zu bearbeiten

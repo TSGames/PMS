@@ -1,0 +1,27 @@
+menu
+
+Diese Styleclasse bezieht sich auf das Menü sowie auf die Menü-Links.
+
+Beispiel:
+
+.menu
+{
+ background-color:#007700;
+ color:#ffffff;
+ font-size:13px;
+ font-weight:bold;
+ text-align:left;
+ padding:0px;
+ padding-left:6px;
+ border-spacing:0px;
+}
+a.menu:link,a.menu:visited
+{
+color:#ffffff;
+padding-left:8px;
+}
+a.menu:hover
+{
+color:#EAEAEA;
+padding-left:12px;
+}

@@ -1,0 +1,13 @@
+Übersichtsseite
+
+<b>ID</b>
+Gibt die Identifikationsnummer der Kategorie an. Auf eine Kategorie kann über den Link http://seite.de/?cat=id zugegriffen werden. Weiteregehende Informationen zu diesen Thema ist in der Programmierung/SDK zu finden
+
+<b>Name</b>
+Der Name der Kategorie
+
+<b>Sortierung</b>
+Position im System. Nur für die interne Übersicht gedacht. Je niedriger diese Zahl, desto weiter Oben. Es sind negative Zahlen möglich.
+
+<b>Verfügbar</b>
+Ist die Kategorie verfügbar (diese Berechtigung gilt für alle darunterliegenden Unterkategorien und Inhalte)

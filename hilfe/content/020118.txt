@@ -1,0 +1,3 @@
+Zahl der Kommentare bei Inhalts-Liste anzeigen
+
+Ist diese Option aktiv, wird die Zahl der Kommentare bei einem Artikel direkt in der Listenansicht angezeigt (hinter der Artikelbewertung).

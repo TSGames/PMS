@@ -1,0 +1,4 @@
+Auf integriertes Plugin verweisen
+
+Mit dieser Option kann die Verlinkung direkt auf ein integriertes System-Plugin verweisen (z.B. Gästebuch).
+Wählen Sie das gewünschte Plugin aus der Liste

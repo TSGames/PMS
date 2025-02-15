@@ -1,0 +1,48 @@
+<!--
+A
+  {
+  color:#AFAFAF;
+  text-decoration:underline;
+  }
+
+A:hover
+  {
+  color:#FF0000;
+  }
+
+.UEBERSCHRIFT
+ {
+ color:#FFFFFF;
+ font-family:areal;
+ font-size:large;
+ text-decoration:underline;
+ }
+
+.NORMALTEXT
+  {
+  font-family:areal;
+  color:#FFFFFF;
+  text-decoration:none;
+  }
+
+.COPYRIGHT
+ {
+ font-size:smaller;
+ font-style:italic;
+ color:#FFFFFF;
+ text-decoration:none;
+ }
+
+.BALKEN
+  {
+  background:#000000;
+
+  scrollbar-3d-light-color:#000000;
+  scrollbar-arrow-color:#FFFFFF;
+  scrollbar-base-color:#FFFFFF;
+  scrollbar-dark-shadow-color:#000000;
+  scrollbar-face-color:#000000;
+  scrollbar-highlight-color:#000000;
+  scrollbar-shadow-color:#FFFFFF;
+  }
+-->

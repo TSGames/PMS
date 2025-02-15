@@ -1,0 +1,20 @@
+Allgemeines
+
+Die Funktionalität des Website-Status in PMS ist ideal, um einen Überblick über die Zugriffe auf die Webpräsenz zu gehalten. Nutzer-Aktionen können für bis zu 24 Stunden zurückverfolgt werden.
+
+Tabellen-Informationen:
+
+IP
+Die IP-Adresse, von der der Seitenzugriff ausgeführt wurde
+
+Browser
+Den Browser-Namen, der beim Zugriff angegeben wurde
+
+Benutzer
+Sofern der Zugriff von einem registrierten Benutzer ausgeführt wurde, wird dieser hier eingeblendet
+
+Letzte Aktivität
+Die Zeitspanne, wo die letzte Aktivität erkannt wurde
+
+Typ der Letzten Aktion
+Auf welche Seite/welches Modul der Besucher zuletzt zugegriffen hat.

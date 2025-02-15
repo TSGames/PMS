@@ -1,0 +1,185 @@
+/* Modern Material Design CSS */
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', Arial, sans-serif;
+    font-size: 14px;
+    color: #37474F;
+    background: #ECEFF1;
+}
+
+h1 {
+    font-size: 28px;
+    font-weight: 500;
+    color: #263238;
+}
+
+h2 {
+    font-size: 22px;
+    font-weight: 500;
+    color: #455A64;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #FFFFFF;
+}
+
+td, th {
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 14px;
+}
+
+th {
+    font-weight: 500;
+    background: #CFD8DC;
+}
+
+a {
+    color: #0288D1;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #01579B;
+}
+
+textarea {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    padding: 8px;
+    border: 1px solid #90A4AE;
+    border-radius: 4px;
+}
+
+.drop_zone {
+    width: 100%;
+    min-width: 600px;
+    padding: 20px;
+    border: 3px dashed #607D8B;
+    color: #37474F;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    background: #ECEFF1;
+    border-radius: 8px;
+    transition: border 0.3s;
+}
+
+.drop_zone:hover {
+    border-color: #455A64;
+}
+
+.warning {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #FFC107;
+    color: #5D4037;
+    border: 1px solid #FFA000;
+    border-radius: 4px;
+}
+
+.info_error {
+    background: #D32F2F;
+    color: #FFFFFF;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid #B71C1C;
+}
+
+.info_ok {
+    background: #388E3C;
+    color: #FFFFFF;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid #2E7D32;
+}
+.info_ok a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.menu {
+    background: #FFFFFF;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #B0BEC5;
+}
+
+.disabled {
+    color: #90A4AE;
+}
+
+.menu_example {
+    background: #0288D1;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.group {
+    background: #CFD8DC;
+    border: 1px solid #B0BEC5;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.menu_div, .help_div {
+    background-color: #FFFFFF;
+}
+
+.menu_div {
+    position: relative;
+    padding: 10px;
+}
+
+.help_div {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
+
+.border_help {
+    border: 1px solid #78909C;
+    padding: 5px;
+    color: #546E7A;
+    position: relative;
+}
+
+.bggrey {
+    background-color: #ECEFF1;
+}
+
+.config_table {
+    margin: auto;
+}
+
+.menu_icon {
+    width: 25px;
+    text-align: left;
+}
+
+.admin_menu {
+    vertical-align: top;
+    padding-top: 10px;
+}
+
+.admin_content {
+    padding-left: 10px;
+    text-align: center;
+}

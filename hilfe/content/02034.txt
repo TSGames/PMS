@@ -1,0 +1,3 @@
+Passwortwahl
+
+Administratoren und vorallendingen Super-Administratoren sollten immer darauf achten, ein möglichst komplexes und langes Passwort zu besitzen. Zwar werden die Passwörter durch das System verschlüsselt, aber dies schafft keinerlei abhilfe, wenn es sich dabei um ein Passwort wie "12345" handelt, welches leicht durch einen unbefugten Nutzer ausprobiert wird. Die Verschlüsselung schafft nur abhilfe, wenn ein Benutzer an die Passwort-Liste des Systems gelangt (welche z.B. im Export vorhanden ist). Wären die Passwörter nicht verschlüsselt, könnte dieser Benutzer nun alle Passwörter der registrierten Benutzer auslesen. Da diese aber mit einem komplexen Algorithmus verschlüsselt sind, gibt es praktisch keine Möglichkeit, sie zu rekonstruieren.

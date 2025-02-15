@@ -1,0 +1,11 @@
+password_recover
+
+Gibt den Style für die Ausgabe bei der Passwort-Wiederherstellung an.
+
+Beispiel:
+
+.password_recover
+{
+color: #995555;
+font-weight: bold;
+}

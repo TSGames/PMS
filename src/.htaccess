@@ -1,0 +1,16 @@
+RewriteEngine On
+RewriteBase /
+
+RewriteRule ^content/download/(.*)\.html$ index.php?download=$1 [QSA]
+RewriteRule ^content/download/(.*)$ $1
+RewriteRule ^content/(.*)\.html$ index.php?follow=$1 [QSA]
+RewriteRule ^content/(.*)$ $1
+RewriteRule ^action/(.*)\.html$ index.php?action=$1 [QSA]
+RewriteRule ^action/(.*)$ $1
+RewriteRule ^rss/(.*)\.rss$ rss.php?follow=$1 [QSA]
+RewriteRule ^rss/(.*)$ $1
+
+#RewriteCond %{HTTPS} !=on
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+ErrorDocument 404 /content/404.html

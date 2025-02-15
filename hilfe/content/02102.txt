@@ -1,0 +1,10 @@
+Übersichtsseite
+
+<b>Ereignisstyp</b>
+Die Art des Ereignisses (Benutzer|Inhalte|Kommentare)
+
+<b>Datum & Uhrzeit</b>
+Zeitpunkt des Ereignisses
+
+<b>Beschreibung</b>
+Genauere Informationen zum Ereignis

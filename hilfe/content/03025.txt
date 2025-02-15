@@ -1,0 +1,22 @@
+do_export()
+
+Macht ein Backup des aktuellen Datenbestandes (Selbe Funktion wie beim Klicken im Backup-Manager auf "Neues Backup erstellen")
+
+Beispiel:
+
+[php]
+echo "Erzeuge Backup...";
+$result=do_export();
+if($result[0]==$result[1])
+{
+echo "Backup erfolgreich!";
+}
+elseif($result[0]>0)
+{
+echo "Backup nur teilweise erfolgreich!";
+}
+else
+{
+echo "Backup fehlgeschlagen!";
+}
+[/php]

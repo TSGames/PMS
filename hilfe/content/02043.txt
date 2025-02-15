@@ -1,0 +1,14 @@
+Kategorien Löschen
+
+Wenn man eine Kategorie löscht, sollte man äußerst vorsichtig vorgehen. Das System fordert zuvor jedes mal zu einer Bestätigung auf. Der Grund: Alle Unterkategorien und Inhalte, die sich in dieser Kategorie befinden, werden ebenfalls gelöscht! Dasselbe gilt, wenn man die Kategorie nicht verfügbar macht. Daraufhin sind alle Inhalte ebenfalls nicht verfügbar.
+
+Eine Wiederherstellung der gelöschten Objekte ist nicht möglich. Das Löschen einer Kategorie kann nur ein Super-Administrator durchführen.
+
+Beispiel:
+
+Kategorie: Downloads
+Unterkategorien: Freeware, Spiele
+Inhalte von Freeware: Gimp, Google Earth, VLC
+Inhalte von Spiele: Tomb Raider, Need for Speed
+
+Löschen der Kategorie Downloads bewirkt nun das Löschen der Unterkategorien Freeware und Spiele sowie alle darin enthaltenen Inhalte!

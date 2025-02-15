@@ -1,0 +1,4 @@
+Bewertungs-System für Inhalte aktivieren
+
+Ist diese Option aktiviert, dürfen Inhalte bewertet werden. 
+Weitere Voraussetzung ist dafür, dass der jeweilige Inhalt die Option "Inhalt darf bewertet werden" ebenfalls aktiviert hat.

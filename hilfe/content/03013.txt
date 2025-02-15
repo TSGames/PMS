@@ -1,0 +1,49 @@
+Verlinken auf Inhalte
+
+Dieser Teil beschäftigt sich mit dem manuellen Verfassen von Link-Codes auf Kategorien, Unterkategorien, Inhalte, Benutzer bzw. Spezialmodule.
+
+Das Prinzip dabei ist relativ einfach. Ein Link hat immer folgende Struktur.
+
+index.php?angabe1=wert1&angabe2=wert2 ...
+
+Die genannten Angaben beziehen sich in dem Fall auf die Kategorie, Unterkategorie oder Inhalte, und die Werte sind die jeweilige ID.
+
+Beispiel:
+
+index.php?item=15
+Verlinkt auf das Inhaltsobjekt mit der ID 15
+
+index.php?subcat=12
+Verlinkt auf die Liste der Inhalte in der Unterkategorie mit der ID 12
+
+index.php?cat=2
+Verlinkt auf die Liste der Unterkategorien in der Kategorie mit der ID 2
+
+index.php?action=user&id=1
+Zeigt die Seite des Benutzers mit der ID 1 an (normalerweise der Systemadmin)
+
+index.php?action=guestbook
+Verlinkt auf das Gästebuch
+
+index.php?action=download&id=50
+Verlinkt auf die Download-Vorschaltseite des Inhaltobjekts mit der ID 50. Funktioniert nur, wenn "Download-Vorschaltseite verwenden" im BackEnd aktiviert ist
+
+index.php?action=register
+Verlinkt auf die Seite, auf der sich die Benutzer Registrieren können.
+
+index.php?action=password_recover
+Verlinkt auf die Seite, wo die Benutzer ihr Passwort anfordern können.
+
+index.php?action=topuser
+Zeigt die Top-Userliste an
+
+index.php?action=logout
+Loggt den Benutzer aus
+
+index.php?action=sitemap
+Öffnet die Sitemap
+
+index.php?action=user_panel
+Öffnet das Benutzerkonto des aktuell eingeloggten Benutzers. Ist der Benutzer nicht eingeloggt, wird die Spezialseite "Gesperrter/Ungültiger Content" angezeigt.
+
+Hinweis: Wurde das gegebene Element nicht gefunden/ist nicht verfügbar bzw. ist das Systemmodul nicht aktiviert, wird die Spezialseite "Gesperrter/Ungültiger Content" angezeigt.

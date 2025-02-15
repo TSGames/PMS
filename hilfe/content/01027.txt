@@ -1,0 +1,11 @@
+content_text
+
+Gibt den Style für den eigentlichen Inhaltstext an
+
+Beispiel:
+
+.content_text
+{
+ color: #222222;
+	font-size: 12px;
+}

@@ -1,0 +1,13 @@
+Berechtigungen
+
+<b>Standard-User</b>
+Standard-Nutzer haben keine administrativen Berechtigungen oder besondere Privilegien.
+
+<b>Moderator</b>
+Ein Moderator hat die Möglichkeit, Kommentare und Gästebucheinträge zu löschen. Ein Login in das BackEnd ist für ihn allerdings nicht möglich.
+
+<b>Administrator</b>
+Administratoren sind in der Lage, sich im BackEnd einzuloggen und Inhalte zu erstellen. Der Website-Konfigurator sowie der Backup-Manager sind jedoch für Administratoren gesperrt. Weiterhin dürfen sie zwar Kategorien/Unterkategorien erstellen und bearbeiten, jedoch nicht löschen. Sie dürfen nur Benutzer mit gleichen oder niedrigeren Rechten bearbeiten/löschen.
+
+<b>Super-Administrator</b>
+Ein Super-Administrator hat die Kontrolle über das gesamte Web-System. Es wird empfohlen, aus Sicherheitsgründen so wenig Super-Administratoren wie möglich zu verwenden (am besten nur einen).

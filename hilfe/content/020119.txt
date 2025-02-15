@@ -1,0 +1,3 @@
+Geschrieben von ... anzeigen
+
+Wenn diese Option aktiv ist, und ein Artikel den Haken "Geschrieben von ... anzeigen" gesetzt hat, wird bei dem betreffenden Artikel unter dem Titel der Benutzer angezeigt, der den Artikel erzeugt hat. Ebenfalls wird Datum und Uhrzeit der Erstellung eingeblendet.

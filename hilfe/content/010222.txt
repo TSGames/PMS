@@ -1,0 +1,10 @@
+comment_content
+
+Der eigentliche Inhalt der Kommentare wird mit diesem Layout versehen.
+
+Beispiel:
+
+.comment_content
+{
+color: #555555;
+}

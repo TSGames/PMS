@@ -1,0 +1,10 @@
+delete_sessions()
+
+Löscht alle aktuellen Sessions, d.h. der User ist danach nicht mehr eingeloggt und muss sich erneut einloggen.
+
+Beispiel:
+
+[php]
+echo "Bitte neu einloggen!";
+delete_sessions();
+[/php]

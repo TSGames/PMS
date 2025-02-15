@@ -1,0 +1,551 @@
+// Dialog-Datei f�r PMS ab Version 1.37
+// Muss in den Ordner "dialoges" eingef�gt werden
+// Jeder Bezeichner f�r einen Eintrag beginnt mit "##"
+// Spezielle Platzhalter beginnen mit % und sind numerisch, z.B. %1
+// Platzhalter sind nur in einigen Bezeichnern m�glich
+// Bitte diese Datei nicht ver�ndern
+// Um einzelne Dialoge zu ver�ndern, bitte die "custom.txt" verwenden
+// Ab diesem Punkt beginnt die Interpretation des Files!
+
+##COMMENT_TOP
+Write new comment
+##COMMENT_TITLE
+Comment title:
+##COMMENT_BOTTOM
+Comment:
+##COMMENT_SEND
+Send comment
+##COMMENT_EDIT
+Edit comment
+##COMMENT_SAVE
+Save comment
+##COMMENT_NAME
+Name:
+##COMMENT_MAIL
+E-Mail:
+##COMMENT_MAIL_INFO
+(voluntary statement)
+
+##COMMENT_SHOWALL
+Show all comments
+##GUESTBOOK_SHOWALL
+Show all guestbook entries
+
+##GUESTBOOK_TOP
+Write new guestbook entry
+##GUESTBOOK_TITLE
+Title:
+##GUESTBOOK_BOTTOM
+Entry:
+##GUESTBOOK_EDIT
+Edit guestbook entry
+##GUESTBOOK_SEND
+Save
+##GUESTBOOK_SAVE
+Save
+##COMMENT_SUCCESS
+Comment saved successfully
+##GUESTBOOK_SUCCESS
+Guestbook entry saved successfully
+
+##COMMENT_LIST_FROM
+From:
+##COMMENT_LIST_DATE
+Date:
+##COMMENT_LIST_MAIL
+E-Mail:
+##COMMENT_LIST_IP
+IP-Address:
+##COMMENT_LIST_NO_TITLE
+No Title
+
+##USER_VIEW_TITLE
+User: %1
+##USER_VIEW_POINTS
+Points:
+##USER_VIEW_REGISTERED
+Registered since:
+##USER_VIEW_LAST_LOGIN
+Last login:
+##USER_VIEW_BIRTH
+Birthday:
+##USER_VIEW_WEBSITE
+Homepage:
+##USER_VIEW_TYP
+User type:
+##USER_VIEW_MAIL
+E-Mail:
+##USER_VIEW_SIGNATUR
+signature:
+##USER_VIEW_VISIT_WEBSITE
+Visit Homepage
+
+##DOWNLOAD_BUTTON
+Download!
+
+##COMMENT_ERROR
+An error occured while saving the comment. Please try again later.
+##COMMENT_ERROR_SPAM
+The check code wasn't entered correctly.
+##COMMENT_ERROR_NAME
+Please enter a name
+##COMMENT_ERROR_MAIL_INVALID
+Please enter a valid mail address
+##COMMENT_ERROR_EMPTY
+Your comment has no content
+##COMMENT_ERROR_MULTIPLE_POST
+Multiple comments are not allowed!
+##GUESTBOOK_ERROR
+An error occured while saving the guestbook entry. Please try again later.
+##GUESTBOOK_ERROR_EMPTY
+Your guestbook entry has no content
+##GUESTBOOK_ERROR_NOT_ACTIVATED
+Entering new guestbook entries is temporary not possible.
+##GUESTBOOK_ERROR_MULTIPLE_POST
+Multiple guestbook entries are not allowed!
+
+##GUESTBOOK_SEND
+Save
+
+##USER_TYP_DEFAULT
+Default-User
+##USER_TYP_MODERATOR
+Moderator
+##USER_TYP_ADMIN
+Admin
+##USER_TYP_SUPERADMIN
+Super-Admin
+
+##USER_PANEL_TITLE
+User Settings
+##USER_PANEL_HEADING
+Your account - %1
+##USER_PANEL_SAVE
+Save
+##USER_PANEL_PW
+New password:
+##USER_PANEL_PW_REPEAT
+Repeat password:
+##USER_PANEL_MAIL
+Current E-Mail-address:
+##USER_PANEL_WEBSITE
+Homepage:
+##USER_PANEL_SIG
+Signature:
+##USER_PANEL_STATUS
+Your current rank:
+##USER_PANEL_POINTS
+Your Points:
+##USER_PANEL_POINTS_DESCRIPTION
+You receive points for writing comments, participating on polls
+or rating articles.
+##USER_PANEL_BIRTH
+Your Birthday (e.g. 15.03.1985):	
+##USER_PANEL_AVATAR
+Choose your avatar (jpg, png, gif):
+##USER_PANEL_AVATAR_DELETE
+Delete current picture
+##USER_PANEL_SHOW_MAIL
+Show my E-Mail-address
+##USER_PANEL_SHOW_TOP
+Show my profile in the topuser list
+
+##REGISTER_MAIL_SUBJECT
+Finish registration on %1
+##REGISTER_MAIL_BODY
+Hello %1
+
+you have registered on %2. To finish your registration, please click on the link below:
+
+%3
+
+##USER_SAVE_SUCCESS
+User saved successfully
+##USER_SAVE_ERROR
+Error while saving the user
+
+##SPAM
+Check code: %1 (%2)
+##SPAM_HELP
+Help
+##SPAM_LEFT
+What is this
+##SPAM_RIGHT
+Please enter the number you see on the left
+into the field on the right.
+It prevents spam attacks.
+
+##TOP_USER_TITLE
+Top %1 User
+##TOP_USER_HEADING
+%1 - Top %2 User
+##TOP_USER_MORE
+More
+##TOP_USER_RANK
+%1. Position:
+##TOP_USER_POINTS
+(%1 Points)
+
+##SEARCH_HEADING
+Search for "%1"
+##SEARCH_NORESULTS
+No articles found on the search query. Please try using fewer words.
+##SEARCH_SHORTQUERY
+The entered query is too short. Please enter at least 3 characters.
+
+##SUBCAT_ADD
+Add Subcat
+##ITEM_ADD
+Add Item
+##ITEM_EDIT
+Edit
+
+##PASSWORD_RECOVER_TITLE
+Lost password
+##PASSWORD_RECOVER_HEADING
+Lost password
+##PASSWORD_RECOVER_BUTTON
+Get password
+##PASSWORD_RECOVER_SUCCESS
+The password has been reset.
+You will now receive a mail with a new password!
+##PASSWORD_RECOVER_MAIL_SUBJECT
+New Password - %1
+##PASSWORD_RECOVER_MAIL_BODY
+Hello %1,
+
+you will receive a new password with this mail.
+
+This is your new password: %2
+##PASSWORD_RECOVER_NAME
+Name:
+##PASSWORD_RECOVER_ERROR
+The resetting of your password could not be finished.
+Please try again.
+Reason: The given checksum was invalid.
+##PASSWORD_RECOVER_ERROR_INVALID_USER
+The given user doesn't exists!
+##PASSWORD_RECOVER_MAIL_SEND
+A confirmation mail was sent to your email address!
+##PASSWORD_RECOVER_REQUEST_MAIL_SUBJECT
+Recover Password - %1
+##PASSWORD_RECOVER_REQUEST_MAIL_BODY
+Hello %1,
+
+you asked for a new password for your account on our website. Please confirm this by clicking on the link below:
+%2
+
+If you have received this mail by mistake, simply ignore it.
+##REGISTER_TITLE
+Register
+##REGISTER_HEADING
+Registrier at %1
+##REGISTER_NAME
+Name:
+##REGISTER_PW
+Password:
+##REGISTER_PW_REPEAT
+Repeat password:
+##REGISTER_MAIL
+E-Mail-address:
+##REGISTER_BUTTON
+Register
+##REGISTER_SUCCESS
+Registration successful. You will now receive a mail containing an activation link.
+##REGISTER_ERROR
+There was an error while registering your account. Please try again later.
+##REGISTER_ERROR_SPAM
+The check code was incorrect.
+
+##USER_ERROR_PW_COMPARE
+The passwords don't match
+##USER_ERROR_SHORT_USERNAME
+The given user name is too short
+##USER_ERROR_CHAR_USERNAME
+The given user name contains invalid characters
+##USER_ERROR_USER_EXISTS
+The user name already exists
+##USER_ERROR_INVALID_BIRTH
+The given birthday is invalid
+##USER_ERROR_SHORT_PW
+The password is too short
+##USER_ERROR_INVALID_MAIL
+The email address is not correct
+
+##REGISTER_FINISH_TITLE
+Finish registration
+##REGISTER_FINISH_HEADING
+Finish registration
+##REGISTER_FINISH_SUCCESS
+The registration has been finished successfully. You can now use the user panel to login with your new account.
+##REGISTER_FINISH_ERROR
+The registration could not be finished.
+Reason: The given checksum was incorrect.
+
+##SITEMAP_TITLE
+Sitemap
+##SITEMAP_HEADING
+Sitemap - %1
+
+##RATE_BUTTON
+Rate
+##RATE_INFO
+Current rating:
+##RATE_CURRENT_ONE
+at 1 rating
+##RATE_CURRENT_MULTI
+at %1 ratings
+##RATE_BAD
+(Bad)
+##RATE_GOOD
+(Good)
+
+##BAN_UNLIMITED
+Unlimited
+##BAN_NO_REASON
+[Not given]
+
+##ITEM_DOWNLOAD_BUTTON
+Download!
+
+##ITEM_WRITTEN_BY
+Written by %1 %2
+##ITEM_ADDED_BY
+Added by %1 %2
+##ITEM_LAST_REFRESHED
+Last edited %1
+
+##ITEM_PREVIOUS
+Previous
+##ITEM_NEXT
+Next
+
+##POLL_ADD
+Add
+##POLL_EDIT
+Edit
+##POLL_NOT_ACTIVE
+There are currently no polls active!
+##POLL_VOTE
+Vote
+##POLL_RESULTS
+Results
+##POLL_PARTICIPANTS
+Participants
+
+##COMMENTS_SHOW_NONE
+No comments
+##COMMENTS_SHOW_ONE
+1 comment
+##COMMENTS_SHOW_MULTI
+%1 comments
+
+##COUNTER_OVERALL
+Visitors all:
+##COUNTER_ONLINE
+Visitors online:
+##COUNTER_TODAY
+Visitors today:
+##COUNTER_YESTERDAY
+Visitors yesterday:
+##COUNTER_24
+Last 24 hours:
+##COUNTER_IP
+IP-Address:
+##COUNTER_COMMENTS
+Number comments:
+##COUNTER_VALUES
+Number ratings:
+##COUNTER_ITEMS
+Number articles:
+##COUNTER_USERS
+Number users:
+
+##GUESTBOOK_MAIL_SUBJECT
+New guestbook entry
+##GUESTBOOK_MAIL_BODY
+Hello %1,
+
+at site "%2" a new guestbook entry was written.
+
+To have a look at it, just click on the following link:
+%3
+
+Notice: This notification-mails can be disabled in the 'Website-Konfigurator'
+##COMMENT_MAIL_SUBJECT
+New comment
+##COMMENT_MAIL_BODY
+Hello %1,
+
+at %2 a new comment was written.
+
+To have a look at it, just click on the following link
+%3
+
+Notice: This notification-mails can be disabled in the 'Website-Konfigurator'
+##REGISTER_ADMIN_MAIL_SUBJECT
+New user
+##REGISTER_ADMIN_MAIL_BODY
+Hello %1,
+
+a new user has registered on %2
+
+The name of the user is '%3'
+
+You can see all users in the 'Benutzerverwaltung'
+
+Notice: This notification-mails can be disabled in the 'Website-Konfigurator'
+
+##LOGIN_ERROR_INVALID_USER
+User doesn't exists
+##LOGIN_ERROR_INVALID_PW
+The password is invalid!
+##LOGIN_ERROR_USER_LOCKED
+The user is locked!
+
+##USER_REGISTER
+Register
+##USER_PASSWORD_LOST
+Lost Password?
+##USER_STAY_LOGGED_IN
+Stay logged in
+##USER_LOGIN
+Login
+##USER_NAME
+Name:
+##USER_PW
+Password:
+##USER_ONLINE
+Hello, %1
+##USER_FIRST_TIME_ONLINE
+You are online for the first time, welcome!
+##USER_LAST_TIME_ONLINE
+You were last online %1
+##USER_SETTINGS
+Settings
+##USER_LOGOUT
+Logout
+##USER_LOGOUT_SUCCESS
+Logout successfully!
+
+##SEARCH_BUTTON
+Search
+
+##LATEST_COMMENTS_NONE
+There are no new comments!
+
+##MOST_DISCUSSED_NONE
+No extensive article discussions
+
+##BIRTHDAY
+Happy Birthday, dear %1!
+
+##MAIL_SEND
+Send mail
+
+##DAY_TODAY
+Today
+##DAY_ONE_AGO
+Yesterday
+##DAY_TWO_AGO
+2 Days ago
+
+##TIME_AT
+at
+##TIME_FORMAT
+H:i
+##TIME_ADD
+ 
+##DATE_AT
+on
+##DATE_ADD
+the
+##DATE_FORMAT
+d.m.Y
+
+##WEEKDAY_MONDAY
+Monday
+##WEEKDAY_TUESDAY
+Tuesday
+##WEEKDAY_WEDNESDAY
+Wednesday
+##WEEKDAY_THURSDAY
+Thursday
+##WEEKDAY_FRIDAY
+Friday
+##WEEKDAY_SATURDAY
+Saturday
+##WEEKDAY_SUNDAY
+Sunday
+
+##MAIL_BODY_FOOTER
+--
+This mail was automatically generated by PMS (Professional Management System), (c) Torsten Simon %1
+Please don't respond on this mail.
+##FOOTER_COPYRIGHT
+Content Copyright &copy; %1 - %2
+
+##NEWSLETTER_REGISTER_MAIL_SUBJECT
+Newsletter Subscription
+
+##NEWSLETTER_REGISTER_MAIL_BODY
+Hello,
+You've subscribed for the newsletter at %1 with your mail address %2.
+
+Please confirm this by clicking on the link below:
+%3
+
+##NEWSLETTER_HEADING
+Newsletter
+
+##NEWSLETTER_SUBSCRIBE
+Subscribe
+##NEWSLETTER_UNSUBSCRIBE
+Unsubscribe
+##NEWSLETTER_BUTTON
+Confirm
+
+##NEWSLETTER_MAIL_EXISTS
+The mail address %1 is already registered.
+
+##NEWSLETTER_DONE
+You are now subscribed to the newsletter.
+
+##NEWSLETTER_INVALID_KEY
+The given checksum did not match.
+
+##NEWSLETTER_INVALID_MAIL
+The given mail address was not valid.
+
+##NEWSLETTER_SEND_CONFIRM
+Thank you for your subscription, you will now receive a confirmation mail containing a link to finalize this process.
+
+##NEWSLETTER_INVALID_SPAM
+The given check code was incorrect.
+
+##NEWSLETTER_UNSUBSCRIBE_CONFIRM
+You will now receive a confirmation mail. Please click the given link in this mail.
+
+##NEWSLETTER_UNSUBSCRIBE_DONE
+You were successfully unsubscribed from the newsletter.
+
+##NEWSLETTER_UNSUBSCRIBE_MAIL_SUBJECT
+Newsletter Unsubscribe
+
+##NEWSLETTER_UNSUBSCRIBE_MAIL_BODY
+Hello,
+
+You're really don't want to receive the newsletter from %1 at your mail address %2?
+
+In this case, click the link below. If you don't want to unsubscribe, simply ignore this mail.
+
+%3
+##NEWSLETTER_UNSUBSCRIBE_NO_MATCH
+The mail address %1 is not listed.
+##ITEM_EDIT_EXTENDED
+Extended Edit
+##ITEM_EDIT_SAVE
+Save Changes
+
+##EDIT_VAR
+Click here to edit the content of this variable

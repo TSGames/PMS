@@ -1,0 +1,6 @@
+Allgemeines
+
+Eine Kategorie ist die höchste Gruppierung im System. Eine Kategorie beinhaltet immer weitere Unterkategorien - und noch keine Inhalte!
+Eine Passende Kategorie wäre zum Beispiel "Downloads", in welcher dann beispielsweise die Unterkategorien "Spiele", "Tools" usw. enthalten wären.
+
+Das System benötigt mindestens 1 Kategorie. Ohne Kategorie kann das System keine Unterkategorien und letztendlich auch keine Inhalte speichern.

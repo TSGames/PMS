@@ -1,0 +1,7 @@
+Bei Downloads zunächst Download-Vorschaltseite
+
+Ist diese Option gewählt, verweist bei einem Download-Inhalt der Link nicht direkt auf die Datei, sondern zunächst auf eine Download-Vorschaltseite. Diese Vorschaltseite kann beliebig angepasst werden (Spezialseite "Download-Seite").
+
+Es wird empfohlen, diese Option zu aktivieren, wenn Downloads bestimmten Lizenzvereinbarungen unterliegen, auf die man vor jedem Download aufmerksam machen möchte.
+
+Stichwort: Download-Vorschaltseite verwenden

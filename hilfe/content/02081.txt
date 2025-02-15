@@ -1,0 +1,5 @@
+Allgemeines
+
+Umfragen sind eine ideale Möglichkeit, sich die Meinungen der Besucher einzuholen. Egal, ob zu Wissen ob ihnen das Page-Layout zusagt oder ob sie mit dem aktuellen Seitenaufbau zufrieden sind.
+
+PMS bietet ein intelligentes Umfrage-System. Der Clou dabei ist, dass problemlos mehrere Umfragen gleichzeitig laufen können. Hat ein Besucher an einer Umfrage bereits teilgenommen, wird eine andere angezeigt. Hat der Besucher bereits alle Umfragen durchgeführt, sieht er die Ergebnisse einer zufällig ausgewählten Umfrage.

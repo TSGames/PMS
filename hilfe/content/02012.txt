@@ -1,0 +1,3 @@
+Seiten-Adresse
+
+Hier muss die Seitenadresse eingegeben werden. Dieser muss umbedingt http:// vorangestellt werden! Die Seitenadresse wird beispielsweise benötigt, wenn Mails mit Links (z.B. zum Registrieren) versendet werden.

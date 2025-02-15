@@ -1,0 +1,9 @@
+switch
+
+Der Style für die Ausgabe der Wechsel-Funktion in den Inhalten (Vorheriges / Nächstes Button)
+Beispiel:
+
+.switch
+{
+display:none; /* Keine Ausgabe der Buttons */
+}

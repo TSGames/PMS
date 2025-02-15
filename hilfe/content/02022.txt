@@ -1,0 +1,3 @@
+Sortierung
+
+Position im Menü. Je niedriger diese Zahl, desto weiter Vorne/Oben. Es sind negative Zahlen möglich.

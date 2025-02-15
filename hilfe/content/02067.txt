@@ -1,0 +1,10 @@
+Gelöschten Inhalt Wiederherstellen
+
+Analog zur Funktion, existierende Inhalte auf einen anderen Stand zurückzusetzen, kann PMS selbstverständlich auch "versehentlich" gelöschte Inhalte wiederherstellen.
+
+Wechseln Sie dazu im Admin-Bereich auf "Inhalte". Unter der Schaltfläche "Inhalt Hinzufügen" finden sie die Option "Gelöschten Inhalt Wiederherstellen". Klicken Sie darauf, um den Wiederherstellungsassistenten anzuzeigen.
+
+Sie müssen nun anschließend einen Inhalt aus der Liste wählen, welcher gelöscht wurde. Nachdem Sie dies getan haben, können Sie noch das Datum des Backups wählen, aus welchem der Inhalt wiederhergestellt werden soll.
+
+
+Hinweis: Die Funktion ist nur verfügbar, wenn Backups der Webseite existieren.

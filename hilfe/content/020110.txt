@@ -1,0 +1,4 @@
+Minimum-Kommentaranzahl für "Meist diskutiert"
+
+Mit dieser Einstellung wird bestimmt, wieviel Kommentare ein Artikel mindestens haben muss, um zufällig bei "Meist diskutiert" aufzutauchen (#mostdiscussed)
+Wird hier eine zu hohe Anzahl angegeben (es existiert kein Artikel mit sovielen Kommentaren), wird unter #mostdiscussed ein Hinweis ausgegeben.

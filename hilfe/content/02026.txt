@@ -1,0 +1,4 @@
+Link-Code verwenden
+
+Wenn Sie selbst eine Adresse angeben wollen bzw. auf etwas anderes verlinken wollen (z.B. eine Javascript-Funktion) können Sie hier den Link-Code eingeben.
+Verwenden Sie als Hilfestellung das darunter gegebene Beispiel.

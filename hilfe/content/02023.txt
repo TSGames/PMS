@@ -1,0 +1,9 @@
+Sichtbar für
+
+Gibt an, ab welchen Benutzer-Status dieser Menüeintrag angezeigt werden soll.
+
+"Alle" - Alle Besucher (auch Gäste) können diesen Menüeintrag sehen
+"Standard-User" - Alle eingeloggten User können diesen Menüeintrag sehen
+"Moderator" - Alle User, die mindestens den Moderatoren-Status haben, können diesen Menüeintrag sehen
+"Administrator"  - Alle User, die mindestens den Administratoren-Status haben, können diesen Menüeintrag sehen
+"Super-Administrator" - Nur Super-Administratoren können diesen Menüeintrag sehen

@@ -1,0 +1,10 @@
+count_db_exp(Tabelle,Bedingung)
+
+Zählt die Inhalte einer Tabelle. Optional kann eine Bedingung angegeben werden.
+
+Beispiel:
+
+[php]
+echo "Insgesamt gibt es ".count_db_exp("comments","")." Kommentare.";
+echo "Das Inhaltsobjekt mit der ID 5 hat ".count_db_exp("comments","WHERE item = 5")." Kommentare.";
+[/php]

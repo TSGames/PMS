@@ -1,0 +1,18 @@
+Allgemeines
+
+Bei einer Homepages sind Backups sehr sehr wichtig. Ohne regelmäßige Datensicherung kann bei einem eventuellen Systemcrash oder auch einen Angriff von Außen der gesamte Datenbestand verloren gegangen sein.
+
+Bei simplen Websites ist eine Datensicherung sehr einfach: Alle HTML-Dateien von Webspace auf den PC kopieren - fertig.
+
+Leider ist dies bei Content Management Systemen nicht möglich. Hier muss die gesamte Datenbank zusätzlich per PHPMyAdmin exportiert werden. Für einen Anfänger ist dass sehr umständlich, viele Wissen nichteinmal, was "PHPMyAdmin" überhaupt ist.
+
+Um dieses Problem eines CMS zu umgehen, kommt das PMS mit einem integrierten Backup-Modul. Dieses sichert zum einen alle Bilder von Artikeln (welche direkt über die Funktion vom System eingebunden wurden), als auch den gesamten Datenbestand in einer sql-Datei. Das Backup kann man sich dann ganz einfach über einen FTP-Zugang herunterladen. Weiterhin können mehrere Backups ganz einfach parallel angelegt werden, sie werden korrekt nach Datum und Uhrzeit benannt, um sie einfacher zu sortieren. So können Fehler, die z.B. bereits im letzten Backup vorhanden waren, dennoch behoben werden indem man das vorherige Backup wiederherstellt.
+
+Bitte bedenken Sie, dass die korrekte Funktionalität dieses Features nicht garantiert werden kann!
+Das importieren/exportieren von Datenbestand aus älteren/neueren Versionen, kann zwar funktionieren, ist jedoch auf eigene Gefahr!
+
+Hinweis: Wir empfehlen, Backups nicht auf dem Server liegen zulassen, da bei falscher Berechtigung eventuell ein Zugriff von Außen möglich ist. Die Passwörter sind zwar verschlüsselt, jedoch ist eine 100 Prozentige Sicherheit nicht garantiert.
+Sie können überprüfen, ob Sie Zugriff haben, indem Sie folgendes ausprobieren.
+Geben Sie in Ihren Webbrowser folgende Adresse ein:
+http://www.ihreSeite.de/backup/
+Kommt eine Meldung wie "Forbidden", ist dies ok. Andernfalls besteht die Gefahr, dass Besucher an die Backup-Dateien gelangen können.

@@ -1,0 +1,4 @@
+Kommentar-Anzahl
+
+Bestimmt, wieviel Kommentare standardmäßig angezeigt werden.
+Beinhaltet ein Artikel mehr als die gegebene Zahl der Kommentare, kann der Besucher mit Klick auf "Alle Kommentare anzeigen" auch alle weiteren Kommentare ansehen.

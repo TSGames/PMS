@@ -1,0 +1,11 @@
+comment_write
+
+Der Style für den Bereich "Neuen Kommentar schreiben"
+
+Beispiel:
+
+.comment_write
+{
+color: #555555;
+font-weight: bold;
+}

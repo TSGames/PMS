@@ -1,0 +1,12 @@
+list_heading
+
+Bezieht sich auf die Titel von Kategorien und Unterkategorien, wenn die Liste angezeigt wird.
+
+Beispiel:
+
+.list_heading
+{
+ color: #222232;
+	font-size: 22px;
+	font-weight: bold;
+}

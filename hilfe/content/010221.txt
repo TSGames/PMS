@@ -1,0 +1,11 @@
+comment_heading
+
+Das Layout für die Titel der Kommentare
+
+Beispiel:
+
+.comment_heading
+{
+color: #555555;
+font-weight: bold;
+}

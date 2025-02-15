@@ -1,0 +1,16 @@
+Übersichtsseite
+
+<b>ID</b>
+Gibt die Identifikationsnummer der Umfrage an
+
+<b>Name</b>
+Der Name (Titel) des Inhaltes
+
+<b>Frage</b>
+Die "Frage", die Auslöser ist, z.B. "Wie gefällt Ihnen die Website?"
+
+<b>Sortierung</b>
+Position im System Dies ist nur für die interne Übersicht gedacht. Je niedriger diese Zahl, desto weiter Oben. Es sind negative Zahlen möglich. 
+
+<b>Verfügbar</b>
+Gibt an, ob die Umfrage verfügbar ist. (ob sie angezeigt wird)

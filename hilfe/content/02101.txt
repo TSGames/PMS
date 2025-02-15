@@ -1,0 +1,7 @@
+Allgemeines
+
+Die Ereignisse sind eine gute Möglichkeit, um die Aktivitäten der letzten Tage auf der Website zu überprüfen. Es werden folgende Aktionen gespeichert:
+Inhalte: Erstellung
+Benutzer: Registration, Login (nur letzter erfolgreicher)
+Kommentare: Erstellung
+

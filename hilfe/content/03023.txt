@@ -1,0 +1,13 @@
+[nohtml]
+def(String)
+
+Ersetzt alle Umbrüche von "String" mit <br>, um Sie in HTML korrekt anzuzeigen.
+
+Beispiel:
+
+[php]
+echo def("Dies
+ist
+ein
+Test!");
+[/php]

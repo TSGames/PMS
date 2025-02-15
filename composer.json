@@ -1,0 +1,17 @@
+{
+    "name": "tsgames/pms",
+    "require": {
+        "tinymce/tinymce": "^7.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tsgames\\Pms\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Torsten Simon",
+            "email": "anfragen@tsgames.de"
+        }
+    ]
+}

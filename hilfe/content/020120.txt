@@ -1,0 +1,3 @@
+Registration erlauben
+
+Bestimmt, ob sich neue Benutzer registrieren können. Diese Einstellung bezieht sich allerdings nur auf die Registrierung über das FrontEnd. Über das BackEnd können Admins weiterhin Nutzer erzeugen. Ist diese Option aktiv, wird im Login-Panel (#user) "Registrieren" angezeigt.

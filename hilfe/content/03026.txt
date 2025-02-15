@@ -1,0 +1,13 @@
+from_db(Tabelle,ID,Spalte)
+
+Gibt eine Zelle aus der Datenbank zurück.
+
+Beispiel
+
+[php]
+echo "Name: ".from_db("item",$item,"name").", Beschreibung: ".from_db("item",$item,"description");
+[/php]
+
+[php]
+echo "Kategorie: ".from_db("cat",$cat,"name");
+[/php]

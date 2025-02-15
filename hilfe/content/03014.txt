@@ -1,0 +1,34 @@
+Grundelemente des Systems
+
+Dieser Teil bezieht sich nun explizit auf die Programmierung.
+Es gibt folgende Grundelemente, auf die der PHP-Code, der eingebunden wurde, zugreifen kann:
+
+$cat
+Diese Variable beinhaltet die aktuelle Kategorie bzw. die übergeordnete Kategorie, wenn die aktuelle Position z.b. eine Unterkategorie ist. Ist keine Kategorie gewählt, ist der Wert 0. Andernfalls ein Wert > 0, der die ID der Kategorie angibt.
+
+Beispiel: 
+[php]echo $cat;[/php]
+Gibt die aktuelle Kategorie aus
+
+$subcat
+Diese Variable beinhaltet die aktuelle Unterkategorie bzw. die übergeordnete Unterkategorie, wenn die aktuelle Position ein Inhaltsobjekt ist. Ist keine Unterkategorie gewählt, ist der Wert 0. Andernfalls ein Wert > 0, der die ID der Unterkategorie angibt.
+
+Beispiel:
+#subcat:[php]echo $subcat;[/php]
+Würde eine dynamische Verlinkung auf die aktuelle Unterkategorie bzw. die Unterkategorie, inder sich das aktuelle Inhaltsobjekt befindet, ausgeben (siehe Platzhalter)
+
+$item
+Diese Variable beinhaltet die ID des aktuellen Inhaltsobjekts. 
+Hinweis: Auch Spezialseiten haben eine ID!
+Ist gerade eine Kategorie bzw. Unterkategorie geöffnet und kein Inhaltsobjekt gewählt, ist dieser Wert 0. Andernfalls ein Wert >0.
+
+Beispiel:
+#item:[php]echo $item;[/php]
+Würde eine dynamische Verlinkung auf die aktuelle Seite erzeugen.
+
+$id
+Dies ist ein Wert, der nur verfügbar ist, wenn die Download-Seite gewählt ist. Dann enthält dieser Wert die ID des Download-Objektes (>0), dass gedownloadet werden soll. Andernfalls ist dieser Wert 0.
+
+Beispiel:
+#item:[php]echo $id;[/php]
+Würde eine dynamische Verlinkung zum aktuellen Download erzeugen. Funktioniert nur auf der Spezialseite "Download-Seite"

@@ -1,0 +1,16 @@
+Inhalt Wiederherstellen
+Existierende Inhalte zurücksetzen
+
+PMS Unterstützt die Möglichkeit, im System existierende Inhalte (Seiten) auf einen vorhergehenden Stand zurückzusetzen.
+
+Ein Beispiel: Die Startseite wurde neu gestaltet. Nach mehrfacher Abstimmungen hat man nun aber beschlossen, doch lieber die alte Version zu behalten.
+
+
+Um eine andere Version eines Inhalts wiederherzustellen, suchen Sie den gewünschten Inhalt in der Liste und klicken Sie anschließend auf "Bearbeiten". Bestätigen Sie die Vorauswahl mit "Weiter". Es erscheint oben links unter dem Feld "Seite in neuem Fenster anzeigen" die Option "Version wiederherstellen...". Klicken Sie auf diese.
+
+Wählen Sie nun nurnoch aus der Liste das gewünschte Datum aus, auf welches dieser Inhalt zurückgesetzt werden soll. Je mehr Backups Sie machen, desto mehr Daten stehen Ihnen zur Auswahl.
+
+Achtung! Die aktuelle Version des Inhalts wird verworfen. Um dies zu verhindern, legen Sie vorher ein Backup an.
+
+
+Hinweis: Wird bei Ihnen die Option "Version wiederherstellen..." nicht eingeblendet, so haben Sie noch keine Backups angelegt bzw. in keinem Backup hat diese Seite existiert. Eine alte Version kann nur wiederhergestellt werden, wenn Sie zum Zeitpunkt eines Backups bereits existiert hat und das Backup auf dem Server vorhanden ist.

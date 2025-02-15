@@ -1,0 +1,15 @@
+make_date(Time,long)
+
+Gibt eine formatierte Datumsangabe zurück. 
+
+Beispiel:
+
+[php]
+make_date(time(),1);
+[/php]
+Gibt aus: Heute, um xx:xx Uhr
+
+[php]
+make_date(time(),0);
+[/php]
+Gibt aus: Heute, xx:xx

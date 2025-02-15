@@ -1,0 +1,9 @@
+get_weekday(Time)
+
+Gibt den Wochentag, z.B. "Montag" zurück. Als Time muss ein UNIX-Timestamp gegeben werden.
+
+Beispiel:
+
+[php]
+echo "Heute ist ".get_weekday(time()).", der ".date("d.m.Y");
+[/php]

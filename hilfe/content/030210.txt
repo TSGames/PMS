@@ -1,0 +1,9 @@
+make_mail(Mail)
+
+Erzeugt eine Mail-Ausgabe. Ist die Funktion E-Mailadressen verschlüsseln zusätzlich aktiviert, wird die Mail verschlüsselt.
+
+Beispiel:
+
+[php]
+echo make_mail("webmaster@tsgames.de");
+[/php]

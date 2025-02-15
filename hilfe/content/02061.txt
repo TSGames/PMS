@@ -1,0 +1,5 @@
+Allgemeines
+
+Die sogenannten "Inhalte" sind der wichtigste Bestandteil einer Website überhaupt. In Ihnen werden später die Informationen gespeichert. Ein Inhaltsobjekt muss immer genau einer Kategorie und einer gewünschten Unterkategorie dieser Kategorie zugeordnet sein.
+
+Beispiel: News [Kategorie] -> News Archiv [Unterkategorie] -> Unsere Alte Seite [Inhaltsobjekt]

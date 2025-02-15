@@ -1,0 +1,11 @@
+register_fail
+
+Gibt den Style an für den ausgegebenen Text bei der Registration
+
+Beispiel:
+
+.register_fail
+{
+color: #995555;
+font-weight: bold;
+}

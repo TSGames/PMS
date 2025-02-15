@@ -1,0 +1,3 @@
+Eintrag ist sichtbar
+
+Diese Option legt fest, ob dieser Menüeintrag überhaupt sichtbar ist. Die Verwendung ist nützlich, um z.B. aktuell nicht benötigte Menü-Einträge vorübergehend zu deaktivieren, jedoch nicht zu löschen.

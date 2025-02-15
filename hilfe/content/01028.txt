@@ -1,0 +1,46 @@
+poll_bar
+
+Gibt den Style für die einzelnen Umfrage-Balken (bis zu 10) an
+
+Beispiel:
+
+.poll_bar1
+{
+background-color: #AA0000;
+}
+.poll_bar2
+{
+background-color: #00AA00;
+}
+.poll_bar3
+{
+background-color: #0000AA;
+}
+.poll_bar4
+{
+background-color: #AAAA00;
+}
+.poll_bar5
+{
+background-color: #AA00AA;
+}
+.poll_bar6
+{
+background-color: #00AAAA;
+}
+.poll_bar7
+{
+background-color: #001080;
+}
+.poll_bar8
+{
+background-color: #000000;
+}
+.poll_bar9
+{
+background-color: #777777;
+}
+.poll_bar10
+{
+background-color: #FC8612;
+}

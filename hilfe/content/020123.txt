@@ -1,0 +1,3 @@
+E-Mailadressen verschlüsseln
+
+Ist diese Funktion aktiv, verschlüsselt das System die E-Mailadressen der Benutzer bei Kommentaren und auf der Top-user Seite. Es wird dringends empfohlen, diese Funktion zu aktivieren, da die E-Mailadressen sonst sehr leicht von Spam-Bots ausgelesen werden können. Wie man dieses System auch für manuell eingebundene Mail-Adressen nutzt, ist in der Programmierung/SDK zu finden (Funktion: make_mail)

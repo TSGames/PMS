@@ -1,0 +1,3 @@
+Bilderqualität
+
+Hier muss die Qualität der JPG-Komprimierung angegeben werden. Erlaube Werte sind von 10 bis 100. 10 ist schlechte Qualiät (geringe Dateigröße), 100 ist gute Qualität (größere Dateien)

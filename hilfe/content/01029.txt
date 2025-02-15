@@ -1,0 +1,11 @@
+poll_question
+
+Gibt das Layout für die gestellte Frage bei den Umfragen an.
+
+Beispiel:
+
+.poll_question
+{
+color: #555555;
+font-weight: bold;
+}

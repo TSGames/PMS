@@ -1,0 +1,10 @@
+download
+
+Gibt die Klasse für das Feld "Download" an
+
+Beispiel:
+
+.download
+{
+font-size:20px;
+}

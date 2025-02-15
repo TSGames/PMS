@@ -1,0 +1,14 @@
+Allgemeines
+
+Dieser Teil ist einer der Gründe, warum das Professional Management System den Part "Professional" besitzt.
+
+Variablen sind dynamische Platzhalter, die einen Wert besitzen, welchen man dauerhaft ändern kann. Überall, wo dann der Variablenname in einem Inhaltsobjekt vorkommt, wird er mit dem Wert dieser Variable ersetzt.
+ Hierzu zunächst ein ganz einfaches Beispiel:
+Variable: name
+Wert: Firma Wiegand & Partner
+
+Würde man nun in einem Inhaltsobjekt irgendwo "name" schreiben, würde diese Stelle automatisch mit "Firma Wiegand & Partner" ersetzt werden.
+Eine Verwendungsmöglichkeit ist z.B. folgende: Man besitzt 20 verschiedene Inhalte, die alle die E-Mailadresse enthalten sollen. Ändert sich nun irgendwann einmal die Mail-Adresse, müsste man theoretisch alle 20 Artikel erneut bearbeiten - umständlich und zeitaufwendig.
+Verwendet man jedoch eine Variable, z.b. #email, müsste man danach nur den Wert dieser Variable ändern - Alle Inhalte haben nun auch die neue E-Mailadresse.
+
+Natürlich ist dies nur ein Beispiel von vielen. Wichtig ist jedoch zu Wissen, dass wirklich überall der Variablenname ersetzt wird. Man sollte also nicht als Namen "der" oder ähnliches nehmen, da ansonsten überall "der" mit dem Wert der Variable überschrieben wird. Es bieten sich z.b. immer vorangestellte Sonderzeichen, etwa "#", "%" oder "$" gut an.

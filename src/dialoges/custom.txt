@@ -1,0 +1,7 @@
+// Hier können Sie existierende Dialoge überschreiben
+// Kopieren Sie einfach den Dialog aus einer anderen Datei in diese
+// und ändern anschließend den Text nach Ihren Wünschen ab
+// Sie können beliebig viele Dialoge überschreiben
+// Behalten Sie bitte die Struktur wie in den anderen Dateien bei
+// Ab diesem Punkt beginnt die Interpretation des Files!
+

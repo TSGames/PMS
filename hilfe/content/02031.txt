@@ -1,0 +1,28 @@
+Übersichtsseite
+
+<b>ID</b>
+Gibt die Identifikationsnummer des Users an. Durch den Befehl #user:id kann ein Benutzer in ein Inhalts-Objekt dynamisch eingebunden werden. Mehr dazu ist in den Platzhaltern zu finden. Über http://seite.de/?action=user&id=id kann auf die Seite des Benutzers verlinkt werden. Mehr zu dem Thema ist in der Programmierung/SDK zu finden.
+
+<b>Name</b>
+Der Login-Name des Users
+
+<b>E-Mail</b>
+Die Mail-Adresse des Users
+
+<b>Typ</b>
+Der Benutzer-Status
+
+<b>Letzter Login</b>
+Datum des letzten erfolgreichen Logins
+
+<b>Registriert</b>
+Datum der Registrierung
+
+<b>Registrations-IP</b>
+Die IP des Benutzers zum Zeitpunkt der Registration
+
+<b>Punke</b>
+Der Punktestand des Benutzers
+
+<b>Aktiviert</b>
+Gibt an, ob der Benutzer aktiviert ist und sich einloggen kann

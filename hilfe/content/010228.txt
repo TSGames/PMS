@@ -1,0 +1,14 @@
+position_row
+
+Der Style für die Links im Plugin #position_row, welches die aktuelle Inhaltsposition anzeigt.
+
+Beispiel:
+
+a.position_row:link,a.pms_footer:visited
+{
+color:#660000;
+}
+a.position_row:hover
+{
+color:#881111;
+}

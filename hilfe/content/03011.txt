@@ -1,0 +1,14 @@
+Allgemeines
+
+Dieser Teil beschäftigt sich mit der Programmierung bzw. Modifikation und Funktionserweiterung des Systems. Für diesen Teil werden rudimentäre Programmierkenntnisse in PHP vorausgesetzt. Außerdem sollten Grundlagen über MySQL vorhanden sein. Für Einsteiger bzw. Neulinge ist dieser Part nicht gedacht.
+
+Hinweis: Wir empfehlen immer, PHP-Code über die Tags [php] und [/php] einzubinden. Das direkte bearbeiten der Scripte ist nicht zu empfehlen, da bei einem Systemupdate diese wieder überschrieben werden!
+
+Der PHP-Code lässt sich mit diesen Tags sowohl in jeden Artikel, als auch direkt in das Template einbinden. Um die Funktion zu prüfen, schreiben Sie einfach in ein Inhaltsobjekt:
+
+[php]echo "Ein kleiner Test: Ausgabe einer Zahl zwischen 1 und 100: ".rand(1,100);[/php]
+
+Nun müsste das System eine Zufallszahl und den Text ausgeben.
+Wichtig! Wir empfehlen immer, bei der Eingabe von PHP-Scripten den Grafischen HTML-Editor (TinyMCE) NICHT zu verwenden, da er eventuelle Zeichen nicht richtig in den Code schreibt und somit Fehler verursachen kann.
+
+Tipp: PHP-Code kann mit diesen Tags auch in eine Variable eingebettet werden.

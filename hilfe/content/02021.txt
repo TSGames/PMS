@@ -1,0 +1,3 @@
+Name
+
+Bestimmt den Namen des Menüeintrags, z.B. "News".

@@ -1,0 +1,12 @@
+item_intro
+
+Gibt die Art für den Layout der Einleitung zum Text (Kurzbeschreibung) an. Gilt NICHT für die Listenansicht, sondern für die Artikelansicht.
+
+Beispiel:
+
+.item_intro
+{
+ color: #666666;
+	font-size: 12px;
+	font-weight: bold;
+}

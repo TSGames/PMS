@@ -1,0 +1,16 @@
+check_mail (Adresse)
+
+Überprüft, ob die gegebene E-Mailadresse gültig ist und gibt bei Erfolg 1 zurück, sonst 0.
+
+Beispiel:
+[php]
+$mail="webmaster@tsgames.de";
+if(check_mail($mail)==1)
+{
+echo "Die Mailadresse $mail ist gültig!";
+}
+else
+{
+echo "Die Mailadresse $mail ist nicht gültig!";
+}
+[/php]

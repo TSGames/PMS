@@ -1,0 +1,5 @@
+Verlinkung zu Kategorie/Inhalt-Liste
+
+Ist diese Option gewählt, verweist der jeweilige Link auf eine nachfolgend gewählte Kategorie bzw. Inhaltsobjekt.
+Wählen Sie die Kategorie, und Klicken Sie anschließend auf Aktualisieren. Es werden alle Unterkategorien dieser Kategorie eingeblendet. Sie können nun anschließend eine Unterkategorie wählen und erneut aktualisieren. Jetzt können Sie ein Inhaltsobjekt dieser Kategorie auswählen, um auf dieses direkt zu verlinken.
+Wenn Sie nur auf die Übersicht verlinken wollen, wählen Sie [Alle].

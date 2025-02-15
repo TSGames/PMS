@@ -1,0 +1,3 @@
+Verfassen neuer Gästebucheinträge möglich
+
+Ist diese Option gewählt, dürfen neue Einträge im Gästebuch verfasst werden. Diese Funktion ist nur wirksam, wenn die Spezialseite "Gästebuch" vorhanden ist

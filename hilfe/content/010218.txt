@@ -1,0 +1,11 @@
+rating
+
+Der Style für den Text "Aktuelle Bewertung: ..."
+
+Beispiel:
+
+.rating
+{
+ color: #666666;
+	font-size: 12px;
+}

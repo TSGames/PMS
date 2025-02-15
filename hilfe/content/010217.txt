@@ -1,0 +1,12 @@
+code
+
+Der Style für [code] ... [/code] markierte Bereiche
+
+Beispiel:
+
+.code
+{
+font-family:Lucida Console;
+font-size:12px;
+background-color:#AAAAAA;
+}

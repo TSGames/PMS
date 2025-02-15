@@ -1,0 +1,11 @@
+comment_error
+
+Wurde das Kommentar nicht gespeichert, wird die zurückgebrachte Fehlermeldung mit diesem Style versehen.
+
+Beispiel:
+
+.comment_error
+{
+color: #995555;
+font-weight: bold;
+}

@@ -1,0 +1,6 @@
+Suchmaschinen-freundliche Links
+
+Aktivieren Sie diese Funktion, wenn die Verlinkungen so gestaltet werden sollen, dass Suchmaschinen als auch Besucher das Gefühl haben, jeder Inhalt wäre eine eigene HTML-Seite anstatt lediglich ein anderer Parameter der PHP-Datei.
+Für eine professionelle Website wird diese Einstellung empfohlen.
+
+Bitte beachten Sie, dass beim Wahl dieser Option die "Seiten-Adresse" absolut korrekt eingetragen sein muss, andernfalls werden die Links nicht korrekt funktionieren.

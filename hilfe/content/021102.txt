@@ -1,0 +1,6 @@
+Backups Wiederherstellen
+
+Um ein Backup wiederherzustellen, gehen Sie wie folgt vor:
+<ol>
+<li>Laden Sie den Install-Ordner von PMS erneut hoch.</li><li>Löschen Sie die Datei "config.php" vom Webspace<li>Öffnen Sie Ihre Website. Die Installationsroutine erscheint. Wählen Sie die Option "Backup wieder verwenden"</li><li>Falls Sie in der Liste bei "Backup einlesen" direkt ihr Backup auswählen, ist der Prozess beendet. Andernfalls müssen Sie den Ordner "images" sowie die Template-Dateien im Backup manuell hochladen.</li>
+</ol>

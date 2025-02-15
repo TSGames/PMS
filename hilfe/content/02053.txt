@@ -1,0 +1,12 @@
+Unterkategorien Löschen
+
+Wenn man eine Unterkategorie löscht, sollte man äußerst vorsichtig vorgehen. Das System fordert zuvor jedes mal zu einer Bestätigung auf. Der Grund: Alle  Inhalte, die sich in dieser Unterkategorie befinden, werden ebenfalls gelöscht! Dasselbe gilt, wenn man die Unterkategorie nicht verfügbar macht. Daraufhin sind alle Inhalte ebenfalls nicht verfügbar.
+
+Eine Wiederherstellung der gelöschten Objekte ist nicht möglich. Das Löschen einer Unterkategorie kann nur ein Super-Administrator durchführen.
+
+Beispiel:
+
+Unterkategorie: Freeware
+Inhalte von Freeware: Gimp, Google Earth, VLC
+
+Löschen der Unterkategorie Freeware bewirkt nun das Löschen der Inhalte Gimp, Google Earth und VLC

@@ -1,0 +1,6 @@
+Zeit (Minuten), die ein Besucher als "Online" gilt
+
+Geben Sie hier den Wert ein, der für die Online-Besucherzählung benötigt wird.
+Eine höhere Zeit bedeutet theoretisch, dass die Zahl der Besucher, die Online sind durchschnittlich höher ist. Kleinere Werte bezwecken, dass Besucher, die die Website aufrufen, sehr schnell wieder gelöscht werden, wenn sie keine Aktion ausführen.
+
+Empfohlen wird ein Wert zwischen 10 - 20 Minuten

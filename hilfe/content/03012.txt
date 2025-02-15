@@ -1,0 +1,30 @@
+Platzhalter
+
+Dies ist noch keine direkte Programmierung, aber eher für fortgeschrittene Benutzer empfohlen.
+
+Das System hat ein integrietes Modul für dynamische Verlinkungen. Es gibt dabei folgende Platzhalter, wodurch sich das Modul aktiviert:
+
+#subcat:id (Umfangreiche Verlinkung einer Unterkategorie)
+#item:id (Umfangreiche Verlinkung eines Inhaltes)
+#user:id (Umfangreiche Verlinkung eines Benutzers)
+#cat_link:id (Simple Verlinkung einer Kategorie)
+#subcat_link:id (Simple Verlinkung einer Unterkategorie)
+#item_link:id (Simple Verlinkung eines Inhaltes)
+#user_link:id (Simple Verlinkung eines Benutzers)
+
+Der große Vorteil hierbei: Die Verlinkungen sind dynamisch. Das bedeutet, ändert sich einmal der Name des verlinkten Artikels, ändert sich dieser automatisch in der Verlinkung. Die ID's der Objekte können Sie auf der jeweiligen Übersichtsseite im BackEnd finden.
+
+Tipp: Diese Funktionalität kann auch in eine Variable eingebunden werden
+
+Hinweis: Existiert das Objekt mit der gegebenen ID nicht, wird nichts ausgegeben.
+
+Beispiele:
+
+#item:100
+Verlinkt den Artikel mit der ID 100.
+
+#subcat:12
+Verlinkt auf die Unterkategorie mit der ID 12
+
+#user:1
+Verlinkt den User mit der ID 1 (in der Regel der Administrator)

@@ -1,0 +1,10 @@
+Übersichtsseite
+
+<b>ID</b>
+Gibt die Identifikationsnummer des Bans an.
+
+<b>Begründung</b>
+Eine kurze Begründung der Sperrung (sofern angegeben)
+
+<b>Verbleibende Dauer</b>
+Die Zeit in Tagen, die noch verbleibt, bis diese Sperrung automatisch vom System gelöscht wird. Sie kann jedoch auch "unendlich" sein.

@@ -1,0 +1,11 @@
+Allgemeines
+
+Das Verwenden dieser Funktion ist praktisch, um bestimmte Besucher/Besuchergruppen von der Website zu sperren.
+
+Durch die Eingabe einer IP-Adresse wird diese von der Website gesperrt.
+Es ist auch möglich, einen IP-Range zu sperren, das geht so:
+217.85.
+Dies sperrt alle IP-Adressen, die mit 217.85. beginnen
+Ein absoluter IP-Ban kann so aussehen:
+217.85.32.18
+Dies würde nur für die betreffene IP gelten. Allerdings ist dies meist nicht sehr wirksam, nur in Ausnahmefällen kann es den Besucher wirklich dauerhaft sperren.

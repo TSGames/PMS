@@ -1,0 +1,10 @@
+search_url
+
+Gibt das Layout für die sogenannte "Such-URL" an, welche man unterhalb der Suchergebnisse sieht
+
+Beispiel:
+
+.search_url
+{
+display:none; /*Keine Such-URL anzeigen*/
+}

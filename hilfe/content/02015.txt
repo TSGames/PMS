@@ -1,0 +1,6 @@
+Menüumbruch
+
+Hier muss angegeben, nach wievielen Menüeinträgen eine Neue Zeile / Spalte erzeugt werden soll. 0 bedeutet, dass die Umbruchfunktion deaktiviert ist. Als Beispiel würde die Zahl 5 bei einem horizontal ausgerichteten Menü folgende Ausgabe erzeugen:
+
+|Menüpunkt||Menüpunkt||Menüpunkt||Menüpunkt||Menüpunkt|
+|Menüpunkt||Menüpunkt||Menüpunkt||Menüpunkt||Menüpunkt|

@@ -1,0 +1,10 @@
+birthday
+
+Das Layout für das #birthday - Plugin, welches nur sichtbar ist, wenn ein Benutzer Geburtstag hat.
+
+Beispiel:
+
+.birthday
+{
+color: #181f5d;
+}

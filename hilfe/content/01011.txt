@@ -1,0 +1,42 @@
+Template-Platzhalter
+Hier sind verschiedene Platzhalter zu finden, die innerhalb des Templates (Template.html) verwendet werden können
+<b>#title</b>
+Dieser Platzhalter beinhaltet den Seitentitel. Angewendet werden sollte er wie folgt:
+&lt;title&gt;#title&lt;/title&gt;
+
+<b>#menu</b>
+Hierin sind alle Menü-Elemente enthalten. Ob das Menü Horizontal oder Vertikal ausgerichtet werden soll, kann im BackEnd konfiguriert werden.
+
+<b>#content</b>
+An dieser Stelle erfolgt die gesamte Inhalts-Ausgabe.
+
+<b>#user_panel</b>
+Dies wird mit dem Login-Panel ersetzt.
+
+<b>#serach</b>
+Die Suchfunktion kann mit diesem Platzhalter eingebunden werden
+
+<b>#topuser</b>
+Ist dieses Element eingebunden, wird hier zufällig ein Top-User angezeigt. (Funktioniert nur, wenn im BackEnd die Top-Userliste aktiviert ist!)
+
+<b>#poll</b>
+Dieser Platzhalter ist für die Umfragen-Anzeige
+
+<b>#position_row</b>
+Dieser Platzhalter wird durch die Anzeige der aktuellen Position ersetzt.
+z.B.: Home -> Downloads -> Games
+
+<b>#mostdiscussed</b>
+Hier wird zufällig ein Artikel ausgegeben, der häufiger diskutiert wurde. Weitere Einstellungen dazu findet man im BackEnd.
+
+<b>#counter</b>
+Statistikenanzeige wie Besucherzähler, IP-Adresse des Besuchers usw.
+
+<b>#birthday</b>
+An dieser Stelle wird (nur, wenn zutreffend) den Usern zum Geburtstag gratuliert.
+
+<b>#mostdiscussed</b>
+Hier wird zufällig ein Artikel ausgegeben, der häufiger diskutiert wurde. Weitere Einstellungen dazu findet man im BackEnd.
+
+<b>#footer</b>
+Die Fußzeile mit Copyright sowie den System-Informationen (Pflichteinbindung)

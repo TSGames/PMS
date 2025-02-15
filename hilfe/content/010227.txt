@@ -1,0 +1,14 @@
+pms_footer
+
+Der Style für die Links im Footer
+
+Beispiel:
+
+a.pms_footer:link,a.pms_footer:visited
+{
+color:#1424c0;
+}
+a.pms_footer:hover
+{
+color:#121a6b;
+}

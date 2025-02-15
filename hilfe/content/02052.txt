@@ -1,0 +1,14 @@
+Übersichtsseite
+
+<b>ID</b>
+Gibt die Identifikationsnummer der Unterkategorie an. Auf eine Unterkategorie kann mit dem Platzhalter #subcat:id dynamisch verwiesen werden. Mehr hierzu in den Platzhaltern.
+Über den Link http://seite.de/?subcat=id kann direkt darauf zugegriffen werden. Weiteregehende Informationen zu diesen Thema ist in der Programmierung/SDK zu finden
+
+<b>Name</b>
+Der Name der Unterkategorie
+
+<b>Sortierung</b>
+Position im System Dies ist sowohl für die interne Übersicht als auch für die Auflistung gedacht. Wird in einer Kategorie die verschiedenen Unterkategorien angezeigt, werden diese nach ihren Zahlenwert sortiert. Je niedriger diese Zahl, desto weiter Oben. Es sind negative Zahlen möglich.
+
+<b>Verfügbar</b>
+Ist die Unterkategorie verfügbar (diese Berechtigung gilt für alle darunterliegenden Inhalte)

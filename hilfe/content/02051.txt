@@ -1,0 +1,7 @@
+Allgemeines
+
+Eine Unterkategorie ist immer einer bestimmten Kategorie zugeordnet.
+Eine Passende Zuordnung wäre zum Beispiel die Unterkategorie "News Archiv" zugeordnet zu der Kategorie "News".
+In eine Unterkategorie werden später die Inhalte eingetragen.
+
+Das System benötigt mindestens 1 Unterkategorie. Ohne Unterkategorie kann das System keine Inhalte speichern.

@@ -1,0 +1,302 @@
+/* CSS Document */
+
+html {
+    height: 100%;
+}
+
+
+
+ul
+{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+li
+{
+    line-height: 17px;
+    padding-left: 15px;
+    padding-top: 0px;
+    background-image: url(list.gif);
+    background-repeat: no-repeat;
+    background-position: 0px 6px;
+}
+h1,h2
+{
+    line-height:125%;
+}
+
+td {
+    text-align: left;
+    font-size: 12px;
+}
+th {
+    font-size: 12px;
+}
+
+textarea
+{
+    font-family:Verdana,Arial,sans-serif;
+    font-size:11px;
+}
+
+body {
+    margin: 5px;
+    height: 100%;
+    padding: 0px;
+    font-family: Arial, Helvetica, Sans Serif;
+    line-height: 16px;
+    font-size: 11px;
+    color: #333333;
+    background: #ffffff;
+}
+
+a:link, a:visited {
+    color: #1424c0; text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #5b64bc;	text-decoration: none;
+    font-weight: bold;
+}
+a.menu:link,a.menu:visited
+{
+    color:#ffffff;
+    padding-left:8px;
+}
+a.menu:hover
+{
+    color:#EAEAEA;
+    padding-left:12px;
+}
+a.pms_footer:link,a.pms_footer:visited
+{
+    color:#89ff94;
+}
+a.pms_footer:hover
+{
+    color:#c3fec9;
+}
+.pms_footer{
+    color: #ffffff;
+}
+
+form {
+    /* removes space below form elements */
+    margin: 0;
+    padding: 0;
+}
+
+.bggrey 
+{
+    background-color:#DDDDDD;
+}
+.menu
+{
+    background-color:#007700;
+    color:#ffffff;
+    font-size:13px;
+    font-weight:bold;
+    text-align:left;
+    padding:0px;
+    padding-left:6px;
+    border-spacing:0px;
+}
+
+.bezeichnung
+{
+    background-color:#777777;
+    color:#ffffff;
+}
+.description
+{
+    color:#666666;
+}
+.list_heading
+{
+    color: #222232;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.item_heading
+{
+    color: #222232;
+    font-size: 22px;
+    font-weight: bold;
+}
+.item_user
+{
+    color: #666666;
+    font-size: 10px;
+}
+.download
+{
+    font-size:20px;
+}
+.comment_heading
+{
+    color: #555555;
+    font-weight: bold;
+}
+.comment_content
+{
+    color: #555555;
+}
+.signatur
+{
+    color: #888888;
+}
+.signatur_line
+{
+    height:1px;
+    border:0px;
+    background-color:#DDDDDD;
+}
+.comment_write
+{
+    color: #555555;
+    font-weight: bold;
+}
+.comment_error
+{
+    color: #995555;
+    font-weight: bold;
+}
+.login_fail
+{
+    color: #995555;
+    font-weight: bold;
+}
+.rating
+{
+    color: #666666;
+    font-size: 12px;
+}
+.item_intro
+{
+    color: #666666;
+    font-size: 12px;
+    font-weight: bold;
+}
+.item_text
+{
+    color: #222222;
+    font-size: 12px;
+}
+.rg {
+    border-left: 1px solid #222222;
+    border-right: 1px solid #222222;
+    border-top: 1px solid #222222;
+    border-bottom: 1px solid #222222;
+}
+
+.border {
+    border: 1px solid #007700;
+}
+.poll_bar1
+{
+    background-color: #AA0000;
+}
+.poll_bar2
+{
+    background-color: #00AA00;
+}
+.poll_bar3
+{
+    background-color: #0000AA;
+}
+.poll_bar4
+{
+    background-color: #AAAA00;
+}
+.poll_bar5
+{
+    background-color: #AA00AA;
+}
+.poll_bar6
+{
+    background-color: #00AAAA;
+}
+.poll_bar7
+{
+    background-color: #001080;
+}
+.poll_bar8
+{
+    background-color: #000000;
+}
+.poll_bar9
+{
+    background-color: #777777;
+}
+.poll_bar10
+{
+    background-color: #FC8612;
+}
+.poll_question
+{
+    color: #555555;
+    font-weight: bold;
+}
+.poll_answer
+{
+    color: #555555;
+}
+.register_fail
+{
+    color: #995555;
+    font-weight: bold;
+}
+.password_recover
+{
+    color: #995555;
+    font-weight: bold;
+}
+.search_url
+{
+    color: #777777;
+    font-style:italic;
+    font-size:11px;
+}
+.info {
+    background-color: #DA5B4F;
+    outline: 1px;
+    outline-style: dashed;
+}
+.group {
+    background-color: #DDDDDD;
+    border-left: 1px solid #222222;
+    border-right: 1px solid #222222;
+    border-top: 1px solid #222222;
+    border-bottom: 1px solid #222222;
+}
+.example
+{
+    color:#808080;
+}
+.bggrey 
+{
+    background-color:#DDDDDD;
+}
+.download_button
+{
+    font-size: 20px;
+    text-align:center;
+}
+.user_counter
+{
+    color: #181f5d;
+}
+.birthday
+{
+    color: #181f5d;
+}
+.code
+{
+    font-family:Lucida Console;
+    font-size:12px;
+    background-color:#AAAAAA;
+}

@@ -1,0 +1,11 @@
+item_user
+
+Gibt die Klasse für den Dialog "Geschrieben von..." an
+
+Beispiel:
+
+.item_user
+{
+ color: #666666;
+	font-size: 10px;
+}

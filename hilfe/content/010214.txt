@@ -1,0 +1,9 @@
+download_button
+
+Gibt das Style-Layout für den Download-Button auf der Download-Vorschaltseite an, welchen man mit #button einfügt.
+
+.download_button
+{
+font-size: 20px;
+text-align:center;
+}

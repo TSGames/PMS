@@ -1,0 +1,4 @@
+Anzahl der Top-User
+
+Gibt an, wieviel Benutzer in der Top-Userliste angezeigt werden.
+Ist die Top-Userliste nicht aktiv, ist diese Einstellung ohne Wirkung.

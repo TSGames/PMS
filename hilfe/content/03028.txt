@@ -1,0 +1,10 @@
+make_contentsmall(Typ,ID)
+
+Erzeugt eine kleine Content-Ausgabe, ähnlich wie bei den Platzhaltern #item, #subcat oder #user.
+
+Beispiel:
+
+[php]
+echo make_contentsmall("item",10);
+[/php]
+Erzeugt dieselbe Ausgabe wie #item:10

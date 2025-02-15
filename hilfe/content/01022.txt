@@ -1,0 +1,12 @@
+item_heading
+
+Der Titel eines Inhaltsobjekts
+
+Beispiel:
+
+.item_heading
+{
+ color: #222232;
+	font-size: 22px;
+	font-weight: bold;
+}

@@ -1,0 +1,3 @@
+Nur Platzhalter (Keine Funktion)
+
+Bei Wahl dieser Option gilt dieser Menüeintrag lediglich als Platzhalter. Er hat keine Funktion beim Klicken.

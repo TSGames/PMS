@@ -1,0 +1,12 @@
+user_heading
+
+Der Style für die Ausgabe für die Benutzerüberschrift eines Benutzers (?action=user&id=id)
+
+Beispiel:
+
+.user_heading
+{
+ color: #222232;
+	font-size: 22px;
+	font-weight: bold;
+}

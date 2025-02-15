@@ -1,0 +1,8 @@
+num_comments
+
+Der Style für die Ausgabe des Links für die Anzahl der Kommentare in der Listenansicht, nur sichtbar wenn "Zahl der Kommentare bei Inhalts-Liste anzeigen" im BackEnd aktiviert ist.
+
+a.num_comments:hover
+{
+font-weight:bold;
+}
