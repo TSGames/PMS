@@ -452,6 +452,7 @@ return 'tinymce.init({
     selector: "#'.$match.'",
     width: 640,
     height: "'.$height.'",
+    resize: "both",
     language: "de",
     plugins: "advlist autolink lists link image charmap preview anchor \
               searchreplace visualblocks code fullscreen insertdatetime media \
