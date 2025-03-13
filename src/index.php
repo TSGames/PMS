@@ -577,10 +577,10 @@ if($action=="user_panel" && $login)
     else
     unset($bday);
     
-    $link=$pms_db_connection->query("SELECT COUNT(id) FROM ".$pms_db_prefix."comments WHERE user = '$user_id';");
-    if($link && $a=mysqli_fetch_array($link))
+    $link=$pms_db_connection->query("SELECT COUNT(id) as `count` FROM ".$pms_db_prefix."comments WHERE user = '$user_id';");
+    if($link && $a=mysqli_fetch_object($link))
     {
-        $points=$a[0]*60;
+        $points=$a->count*60;
     }
     $points+=from_db("user",$user_id,"points");
     $content.="<table class=\"user_edit\">

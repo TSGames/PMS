@@ -60,7 +60,9 @@ textarea {
 
 .drop_zone {
     width: 100%;
-    min-width: 600px;
+    max-width: 800px;
+    margin: auto;
+    min-width: 300px;
     padding: 20px;
     border: 3px dashed #607D8B;
     color: #37474F;

@@ -114,13 +114,13 @@ function show_info(a)
 {
 	if(!tempX && !tempY) return;
 	var b=document.getElementById(\'info_1\');
-	b.style.left=tempX+14;
-	b.style.top=tempY+15;
+	b.style.left=(tempX+14) + "px";
+	b.style.top=(tempY+15) + "px";
 	b.firstChild.nodeValue=a;
 	b.style.display=\'\';
 	b=document.getElementById(\'info_2\');
-	b.style.left=tempX+18;
-	b.style.top=tempY+19;
+	b.style.left=(tempX+18) + "px";
+	b.style.top=(tempY+19) + "px";
 	b.firstChild.nodeValue=a;
 	b.style.display=\'\';
 }
