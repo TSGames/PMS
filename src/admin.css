@@ -190,3 +190,34 @@ textarea {
     padding-left: 10px;
     text-align: center;
 }
+
+input[type="submit"] {
+    background-color: #0288D1;
+    color: #FFFFFF;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.2s;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    font-family: 'Roboto', Arial, sans-serif;
+}
+
+input[type="submit"]:hover {
+    background-color: #0277BD;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.25);
+}
+
+input[type="submit"]:active {
+    background-color: #01579B;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2) inset;
+}
+
+input[type="submit"]:disabled {
+    background-color: #B0BEC5;
+    cursor: not-allowed;
+    color: #ECEFF1;
+    box-shadow: none;
+}

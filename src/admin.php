@@ -591,9 +591,7 @@ if($login==1)
 			{
 				if(!$edit)
 				{
-					$link=$pms_db_connection->query(make_sql("item","","","last_insert_id()"));
-					if($link && $edit=mysqli_fetch_array($link))
-					$edit=$edit[0];
+					$edit=$pms_db_connection->lastInsertId();
 					
 				}
 				if($image || $image2)
@@ -622,11 +620,12 @@ if($login==1)
 				$ok="<div align=\"center\">Inhalt erfolgreich gespeichert!
 				<br><a href=\"index.php?item=".$edit."\">Inhalt anzeigen</a></div>";
 			}
-			else
+			else {
 			$error="Fehler beim Speichern des Inhalts!";
+			}
 			if($save_ok && $_POST["next"]=="image") $add_image=$edit;
 			else if($_POST["next"]!="dragdrop") ok_error();
-			if($_POST["item_step2"]!="Übernehmen")
+			if(utf8_encode($_POST["item_step2"])!="Übernehmen")
 			{
 				unset($edit);
 			}

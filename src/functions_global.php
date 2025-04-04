@@ -105,6 +105,9 @@ class pms_db_class
     {
         return $this->connection->escapeString(stripslashes($str));
     }
+    public function lastInsertId() {
+        return $this->fetch($this->query("SELECT last_insert_rowid();"))[0];
+    }
 }
 
 $pms_db_connection = new pms_db_class();
