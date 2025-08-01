@@ -1978,7 +1978,7 @@ if($login==1)
 					if($pms_db_connection->query("DELETE FROM ".$pms_db_prefix."item WHERE id = '".$_GET["item"]."'"))
 					{
 						$back=recover_item($_GET["item"]);
-						if($pms_db_connection->query($back[$_GET["recover_id"]][1])) $ok=1;
+						if($pms_db_connection->query(str_replace("\\r\\n", "\r\n", $back[$_GET["recover_id"]][1]))) $ok=1;
 					}
 					$action="item";
 					if($ok) $ok="<div align=\"center\">Inhalt erfolgreich zurückgesetzt<br><a href=\"index.php?item=".$_GET["item"]."\">Inhalt anzeigen</a></div>"; else $error="Fehler beim Wiederherstellen des Inhalts!";
