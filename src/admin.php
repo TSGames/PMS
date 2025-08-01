@@ -254,9 +254,9 @@ if($login==1)
 	echo '<label id="info_1" style="z-index:2;background-color:#efefef;padding: 5px;box-shadow:3px 3px 5px #00000088;position:absolute;display:none;">a</label>
 	<label id="info_2" style="opacity: .5;z-index:1;color:#606060;background-color:#606060;position:absolute;display:none;">a</label>';
 	echo "
-	<table width=\"100%\" height=\"100%\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"admin_menu\" width=\"180px\">
+	<table width=\"100%\" height=\"100%\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"admin_menu\" width=\"250px\">
 	<div id=\"menu_id\" class=\"menu_div\">
-	<table class=\"menu\" cellspacing=\"0\" width=\"180px\">";
+	<table class=\"menu\" cellspacing=\"0\" width=\"250px\">";
 	echo "</td></tr>
 	<tr><td class=\"menu_welcome\">Hallo, ".from_db("user",$_SESSION['userid'],"name")." (<a href=\"admin.php?action=logout\">Logout</a>)";
 	echo '<tr><td>Menü</td></tr>
@@ -1885,7 +1885,7 @@ if($login==1)
 			{
 				$action="item";
 				$found=recover_item($_POST["item_select"],0);
-				if($pms_db_connection->query($found[$_POST["date_select"]][1])) $ok="Inhalt erfolgreich Wiederhergestellt"; else $error="Fehler beim Wiederherstellen des Inhalts";
+				if($pms_db_connection->query(str_replace("\\r\\n", "\r\n", $found[$_POST["date_select"]][1]))) $ok="Inhalt erfolgreich Wiederhergestellt"; else $error="Fehler beim Wiederherstellen des Inhalts";
 				ok_error();
 			}
 			if($action=="item_restore")
@@ -1918,7 +1918,7 @@ if($login==1)
 						$ok=1;
 						echo '<input type="hidden" name="item_select" value="'.$_POST["item_select"].'">
 						<input type="hidden" name="do_restore" value="1">
-						Bitte wählen Sie ein Datum aus, um das Inhaltsobjekt <b>'.$found[0][3].'</b> (ID: '.$found[0][2].') wiederherzustellen:';
+						Bitte wählen Sie ein Datum aus, um das Inhaltsobjekt <b>'.$found[0][3].'</b> (ID: '.$found[0][2].') wiederherzustellen';
 					}
 					else
 					{
@@ -1941,6 +1941,7 @@ if($login==1)
 				}
 				if($ok)
 				{
+
 					echo ':<br><br>
 					<select name="'.$list_name.'">';
 					if($step)
@@ -1954,14 +1955,14 @@ if($login==1)
 					}
 					else
 					{
+						$ids_shown=[];
 						foreach($found as $a)
 						{
 							if(@in_array($a[2],$ids_shown)) continue;
 							unset($sel);
 							echo '<option value="'.$a[2].'"'.$sel.'>(ID: '.$a[2].') '.$a[3].'</option>
 							';
-							$ids_shown[$i]=$a[2];
-							$i++;
+							$ids_shown[]=$a[2];
 						}
 					}
 					echo '</select><br><br>';
@@ -2033,14 +2034,14 @@ if($login==1)
 						}
 						if($pms_db_connection->query("INSERT INTO ".$pms_db_prefix."item (".$str.") SELECT ".$str." FROM ".$pms_db_prefix."item WHERE id = '".$_GET["do_copy"]."'"))
 						{
-							$link=$pms_db_connection->query("SELECT LAST_INSERT_ID() FROM ".$pms_db_prefix."item");
-							if($link && $a=mysqli_fetch_array($link))
+							$a = $pms_db_connection->lastInsertId();
+							if($link && $a)
 							{
-								$name=addslashes(from_db("item",$a[0],"name"))." - Kopie";
-								$pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET name = '".$name."' WHERE id = '".$a[0]."'");
+								$name=addslashes(from_db("item",$a,"name"))." - Kopie";
+								$pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET name = '".$name."' WHERE id = '".$a."'");
 								$typ=from_db("item",$_GET["do_copy"],"image");
-								@copy($image_path."item/".$_GET["do_copy"].".".$typ,$image_path."item/".$a[0].".".$typ);
-								@copy($image_path."item/".$_GET["do_copy"]."_large.".$typ,$image_path."item/".$a[0]."_large.".$typ);
+								@copy($image_path."item/".$_GET["do_copy"].".".$typ,$image_path."item/".$a.".".$typ);
+								@copy($image_path."item/".$_GET["do_copy"]."_large.".$typ,$image_path."item/".$a."_large.".$typ);
 								unset($error);
 								$ok="Inhalt erfolgreich kopiert";
 							}

@@ -91,9 +91,9 @@ class pms_db_class
         return $this->connection->lastErrorMsg();
     }
 
-    public function list_tables(): ?mysqli_result
+    public function list_tables(): SQLite3Result
     {
-        return $this->query("SHOW TABLES FROM " . $this->escape($this->db_name));
+        return $this->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
     }
 
     public function tablename($link, int $i): ?string

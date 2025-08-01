@@ -215,7 +215,7 @@ $password_recovery_activated=$config_values->password_recovery_activated;
 $guestbook_activated=$config_values->guestbook_activated;
 
 $image_path="images/";
-$backup_folder="backup";
+$backup_folder="/var/db/backup";
 if($_SESSION["config_id"]) $backup_folder.="_".$_SESSION["config_id"];
 $backup_folder.="/";
 $supported_img=array('jpg','jpeg','gif','png');
@@ -615,11 +615,10 @@ $exp="-- MYSQL Dump erzeugt von PMS, Version ".$pms_version."
 -- Entfernen Sie die Kommentare vor den Folgenden Zeilen, um alle alten Daten vor dem Einlesen zu lï¿½schen.
 ";
 
-$result = $pms_db_connection->list_tables();
-$num_rows = mysqli_num_rows($result);
-for($i=0;$i<$num_rows;$i++)
+$result = $pms_db_connection->fetchAllObject($pms_db_connection->list_tables());
+foreach($result as $r)
 {
-	$tablename = $pms_db_connection->fetch($result)[0];
+	$tablename = $r->name;
 	if(!in_array($tablename,$sys_tables))
 	{
 	continue; // we don't need to export the visitors
@@ -628,10 +627,9 @@ for($i=0;$i<$num_rows;$i++)
 	";
 }
 $exp.=chr(10);
-$result = $pms_db_connection->list_tables();
-for($i=0;$i<$num_rows;$i++) // we start and going to list every table
+foreach($result as $r)
 {
-$table=$pms_db_connection->fetch($result)[0];
+$table=$r->name;
 if(!in_array($table,$sys_tables))
 {
 continue; // we don't need to export the visitors
@@ -641,12 +639,13 @@ $link=$pms_db_connection->query("SELECT * FROM ".$table);
 if($link)
 {
 unset($field_name);
-$end=mysqli_num_fields($link);
+$end=$link->numColumns();
 for($j=0;$j<$end;$j++)
 {
-$field_name[$j]=mysqli_field_name($link,$j);
+$field_name[$j] = $link->columnName($j);
 }
-for($j=0;$a=$pms_db_connection->fetch($link);$j++)
+$dump = $pms_db_connection->fetchAllObject($link);
+foreach($dump as $d)
 {
 $exp.="INSERT INTO ".$table." (";
 for($k=0;$k<count($field_name);$k++)
@@ -660,7 +659,7 @@ $exp.=",";
 $exp.=") VALUES (";
 for($k=0;$k<count($field_name);$k++)
 {
-$exp=$exp."'".str_replace(array(chr(10),chr(13),"'"),array('\n','\r',"''"),$a[$k])."'";
+$exp=$exp."'".str_replace(array(chr(10),chr(13),"'"),array('\n','\r',"''"),$d->{$field_name[$k]})."'";
 if($k!=count($field_name)-1)
 {
 $exp.=",";

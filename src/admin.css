@@ -177,7 +177,8 @@ textarea {
 }
 
 .menu_icon {
-    width: 25px;
+    padding: 0;
+    width: 2px;
     text-align: left;
 }
 
