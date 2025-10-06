@@ -494,6 +494,56 @@ $str.='
 <!-- /TinyMCE -->';
 return $str;
 }
+function get_monaco(){
+return <<<JS
+
+  <!-- Load Monaco from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js"></script>
+  <script>
+    // Configure the Monaco base path for its internal modules
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } });
+
+
+    // Configure Monaco base path
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } });
+
+    // Load Monaco editor
+    require(['vs/editor/editor.main'], function() {
+      // Get all textarea elements
+      document.querySelectorAll('textarea').forEach(function(textarea) {
+        // Create a wrapper div to host the editor
+        const wrapper = document.createElement('div');
+        wrapper.className = 'monaco-wrapper';
+        wrapper.style.minHeight = '200px';
+
+        // Insert wrapper before textarea
+        textarea.parentNode.insertBefore(wrapper, textarea);
+        // Hide the original textarea
+        textarea.style.display = 'none';
+
+        // Determine language from optional data attribute or simple detection
+        let language = 'php';
+
+        // Create Monaco editor in the wrapper
+        const editor = monaco.editor.create(wrapper, {
+          value: textarea.value,
+          language: language,
+          theme: 'vs-light',
+          minimap: { enabled: false },
+          automaticLayout: true
+        });
+
+        // Sync back to textarea on change (for form submission, etc.)
+        editor.onDidChangeModelContent(() => {
+          textarea.value = editor.getValue();
+        });
+      });
+    });
+
+  </script>
+JS;
+
+}
 function edit_out($string,$name,$class,$edit_mode,$mode=0)
 {
 if(!$edit_mode) return $string;

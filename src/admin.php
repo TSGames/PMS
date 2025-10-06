@@ -2683,7 +2683,7 @@ if($login==1)
 					<tr><td>Ersetzen mit:</td><td><textarea name=\"replace\" rows=\"10\" cols=\"70\">".str_replace('&','&amp;',$replace)."</textarea></td></tr>
 					<tr><td colspan=\"2\"><div align=\"center\"><input type=\"checkbox\" name=\"makebr\" value=\"1\"".$makebr."> Umbrüche mit \"&lt;br&gt;\" ersetzen.</div></td></tr>
 					<tr><td colspan=\"2\"><div align=\"center\"><input type=\"submit\" name=\"var\" value=\"Speichern\"></div></td></tr>
-					</table></form>";
+					</table></form>".get_monaco();
 				}
 				elseif(!$select_reference)
 				{
@@ -3384,8 +3384,8 @@ if($login==1)
 		
 		document.getElementById("menu_id").style.top=top_h;
 		
-		//if(!ie) document.getElementById("help_id").style.bottom=-a1;
-		document.getElementById("help_id").style.width=a2-34;
+		if(document.getElementById("help_id"))
+			document.getElementById("help_id").style.width=a2-34;
 	}
 	scroll_menu();
 	window.setInterval("scroll_menu()", 1);

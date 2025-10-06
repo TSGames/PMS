@@ -30,13 +30,15 @@ class pms_db_class
             if($withData) {
                 $result = $this->connection->querySingle("SELECT * FROM config WHERE id='1'");
                 if(!$result) {
-                $password = substr(bin2hex(random_bytes(20)), 0,  20);
-                error_log("Initial admin password: " . $password);
-                file_put_contents("/var/db/.init_password", $password);
-                $this->connection->exec(str_replace('$PASSWORD', $this->escape(md5($password)), file_get_contents(__DIR__ . "/.db_data.sql")));
+                    $password = substr(bin2hex(random_bytes(20)), 0,  20);
+                    error_log("Initial admin password: " . $password);
+                    file_put_contents("/var/db/.init_password", $password);
+                    $this->connection->exec(str_replace('$PASSWORD', $this->escape(md5($password)), file_get_contents(__DIR__ . "/.db_data.sql")));
                 }
             }
             return $this->valid;
+        } else {
+            error_log('db not connected');
         }
     }
     public function valid() {
