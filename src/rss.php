@@ -1,5 +1,5 @@
 <?php
-function rss_entities(string $a, int $dynamic = 0): string
+function rss_entities(string $a, int $dynamic = 0)
 {
     global $dyn;
     if ($dynamic) {

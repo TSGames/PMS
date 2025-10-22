@@ -151,9 +151,9 @@ class pms_db_class {
     /**
      * Lists all tables in the database that are not system tables.
      *
-     * @return SQLite3Result A result set containing the names of the tables.
+     * @return SQLite3Result|bool A result set containing the names of the tables.
      */
-    public function list_tables(): SQLite3Result {
+    public function list_tables(): SQLite3Result|bool {
         return $this->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
     }
 
@@ -206,9 +206,9 @@ function mysqli_fetch_object($link) {
  * Executes a SQL query and returns the result.
  *
  * @param string $query The SQL query to execute.
- * @return ?SQLite3Result The result of the query, or Null on failure.
+ * @return SQLite3Result|bool The result of the query, or Null on failure.
  */
-function pms_query(string $query): ?SQLite3Result {
+function pms_query(string $query): SQLite3Result|bool {
     global $pms_db_connection;
     return $pms_db_connection->query($query);
 }

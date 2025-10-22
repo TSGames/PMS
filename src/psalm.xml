@@ -10,6 +10,7 @@
 >
     <projectFiles>
         <directory name="." />
+        <file name="src/static.php">
         <ignoreFiles>
             <directory name="hilfe" />
         </ignoreFiles>

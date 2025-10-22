@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="5"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    findUnusedBaselineEntry="true"
+    autoloader="src/psalm-autoload.php"
+    allConstantsGlobal="true"
+    allFunctionsGlobal="true"
+    findUnusedCode="false"
+>
+    <projectFiles>
+        <directory name="src" />
+        <ignoreFiles>
+            <directory name="vendor" />
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <UndefinedFunction errorLevel="suppress" />
+        <UndefinedGlobalVariable errorLevel="suppress" />
+        <InvalidArrayOffset errorLevel="suppress" />
+        <InvalidReturnStatement errorLevel="suppress" />
+        <LoopInvalidation errorLevel="suppress" />
+        <UndefinedConstant errorLevel="suppress" />
+        <UndefinedMethod errorLevel="suppress" />
+        <MissingFile errorLevel="suppress" />
+    </issueHandlers>
+</psalm>

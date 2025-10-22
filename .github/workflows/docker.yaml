@@ -17,7 +17,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.4'
 
       - name: Install PSALM
         run: |
@@ -26,7 +26,7 @@ jobs:
           mv psalm.phar /usr/local/bin/psalm
 
       - name: Run Psalm (allow failure)
-        run: psalm || true
+        run: psalm
 
 
   build:

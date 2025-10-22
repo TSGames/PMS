@@ -3,6 +3,9 @@
     "require": {
         "tinymce/tinymce": "^7.6"
     },
+    "require-dev": {
+        "vimeo/psalm": "^6.0"
+    },
     "autoload": {
         "psr-4": {
             "Tsgames\\Pms\\": "src/"
