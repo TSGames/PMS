@@ -25,8 +25,8 @@ jobs:
           chmod +x psalm.phar
           mv psalm.phar /usr/local/bin/psalm
 
-      - name: Run Psalm (allow failure)
-        run: psalm
+      - name: Run Psalm
+        run: psalm --root=[src]
 
 
   build:
