@@ -73,6 +73,7 @@ ob_start();
 include('counter.php');
 echo '<!DOCTYPE html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" type="text/css" href="admin.css">
 <link rel="SHORTCUT ICON" href="admin.ico">
@@ -254,7 +255,7 @@ if($login==1)
 	echo '<label id="info_1" style="z-index:2;background-color:#efefef;padding: 5px;box-shadow:3px 3px 5px #00000088;position:absolute;display:none;">a</label>
 	<label id="info_2" style="opacity: .5;z-index:1;color:#606060;background-color:#606060;position:absolute;display:none;">a</label>';
 	echo "
-	<table width=\"100%\" height=\"100%\" cellspacing=\"0\" cellpadding=\"0\"><tr><td class=\"admin_menu\" width=\"250px\">
+	<table width=\"100%\" height=\"100%\" cellspacing=\"0\" cellpadding=\"0\" class=\"main-table\"><tr><td class=\"admin_menu\" width=\"250px\">
 	<div id=\"menu_id\" class=\"menu_div\">
 	<table class=\"menu\" cellspacing=\"0\" width=\"250px\">";
 	echo "</td></tr>
@@ -2598,7 +2599,7 @@ if($login==1)
 						echo '</select>';
 					}
 					echo ' <input type="submit" name="item_filter" value="OK"><br><br></form>
-					<table class="group">';
+					<table class="group items">';
 					echo table_header("ID:30px|Name:100px|Typ:80px|In Kategorie:100px|In Unterkategorie:100px|Sortierung:90px|Erstellt am:80px|Verfügbar:60px|Kopie erstellen:90px|Bearbeiten:80px|Löschen:65px");
 					$filter="";
 					if($item_filter)

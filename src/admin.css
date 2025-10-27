@@ -222,3 +222,25 @@ input[type="submit"]:disabled {
     color: #ECEFF1;
     box-shadow: none;
 }
+
+@media screen and (max-width: 800px) {
+    .main-table > tbody > tr {
+        display: flex;
+        flex-direction: column;
+    }
+    .admin_menu {
+        width: 100%;
+        padding: 0;
+    }
+    table.group tr{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, 110px);
+    }
+    table.group tr > td:nth-child(2){
+        font-weight: bold;
+    }
+    table.group td{
+        word-break: break-all;
+        width: 100%;
+    }
+}
