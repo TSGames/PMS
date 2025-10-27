@@ -237,7 +237,7 @@ if($login==0)
 	unset($name);
 	if(!@$_POST["login"]) store_all(); // save last action!
 	if(@$_COOKIE["login_id"]) $name=from_db("user",@$_COOKIE["login_id"]*1,"name");
-	echo form()."<table align=\"center\" style=\"max-width: 500px\"><tr>
+	echo form()."<table align=\"center\" style=\"max-width: 500px; justify-self: center;\"><tr>
 	<td style=\"display:flex;justify-content:center\">
 	</td></tr><tr><td><center><b>PMS Back End Login</b><table><tr><td>Benutzername:</td><td>
 	<input type=\"text\" name=\"login_name\" value=\"".str_replace('"','&quot;',@$name || '')."\"></td></tr>
