@@ -1088,7 +1088,7 @@ document.getElementById(id).style.display=\"none\";
 		global $config_values;
 		global $pms_db_connection;
 		$register=time();
-		$registerip=$_SERVER["REMOTE_ADDR"];
+		$registerip=preg_replace('/^(\d+\.\d+)\..*$/', '$1', $_SERVER["REMOTE_ADDR"]);
 		$ok=1;
 		if(!$id || $password)
 			{

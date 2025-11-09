@@ -364,7 +364,7 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
     $action="guestbook";
     
     if($login) $com_user=$user_id;
-    $ip=$_SERVER["REMOTE_ADDR"];
+    $ip=preg_replace('/^(\d+\.\d+)\..*$/', '$1',$_SERVER["REMOTE_ADDR"]);
     $date=time();
     if(!$user)
     {
@@ -1836,7 +1836,6 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     ".language("COUNTER_ONLINE")." ".count_db_exp("visitors_counter","WHERE time>='".(time()-60*$config_values->visitors_lifetime)."'")."<br>
     ".language("COUNTER_TODAY")." ".$config_values->visitors_today."<br>
     ".language("COUNTER_YESTERDAY")." ".$config_values->visitors_yesterday."<br>
-    ".language("COUNTER_IP")." ".$_SERVER["REMOTE_ADDR"]."<br>
     ".language("COUNTER_COMMENTS")." ".count_db("comments")."<br>
     ".language("COUNTER_VALUES")." ".sum_db("item","numratings")."<br>
     ".language("COUNTER_ITEMS")." ".count_db("item")."<br>
