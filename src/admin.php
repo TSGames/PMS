@@ -2712,7 +2712,7 @@ if($login==1)
 						$replace="Ersetzen mit:150px|";
 					}
 					echo table_header("ID:30px|".$search.$replace."Bearbeiten:80px|Löschen:65px");
-					$link=$pms_db_connection->query(make_sql("dynamic","","id"));
+					$link=$pms_db_connection->query(make_sql("dynamic","","LOWER(searcher)"));
 					$j=0;
 					for($i=0;$link && $a=$pms_db_connection->fetchObject($link);$i++)
 					{
