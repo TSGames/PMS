@@ -45,6 +45,7 @@ COPY src/ /var/www/html/
 
 RUN mkdir /var/db \
     && mkdir /var/template \
+    && mkdir -p /var/www/html/images/uploads \
     && ln -s /var/template /var/www/html/template_files \
     && chown -R www-data:www-data /var/www/html \
     && chown -R www-data:www-data /var/db \

@@ -326,6 +326,12 @@ input[type="submit"]:disabled {
     box-shadow: none;
 }
 
+.image_scale_div {
+    max-width: calc(100vw - 250px - 40px);
+    max-height: calc(100vh - 400px);
+    overflow: auto;
+}
+
 /* Responsive Design */
 @media screen and (max-width: 800px) {
     html, body {

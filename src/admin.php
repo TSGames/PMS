@@ -636,10 +636,7 @@ if($login==1)
 			$action="item";
 			$id=$_POST["item"];
 			if(!$id){
-				$link=$pms_db_connection->query("SELECT LAST_INSERT_ID() FROM ".$pms_db_prefix."item");
-				echo mysqli_error();
-				if($link && $a=mysqli_fetch_array($link))
-				$id=$a[0];
+				$id=$pms_db_connection->lastInsertId();
 			}
 			unset($path);unset($error);
 			if($_POST["drag_name"]){
