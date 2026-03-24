@@ -20,10 +20,12 @@ class pms_db_class {
             $this->connection = new SQLite3("/var/db/" . ($db == null ? "default" : $db) . ".sqlite");
             if ($this->connection) {
                 $this->valid = true;
+                return true; // Return true on successful connection
             }
         } catch (PDOException $e) {
+            error_log("Connection error: " . $e->getMessage()); // Log the error
         }
-        return false;
+        return false; // Return false if connection fails
     }
 
     /**
@@ -210,7 +212,21 @@ function mysqli_fetch_object($link) {
  */
 function pms_query(string $query): SQLite3Result|bool {
     global $pms_db_connection;
-    return $pms_db_connection->query($query);
+    $maxRetries = 3; // Maximum number of retries
+    $attempt = 0;
+
+    // Optimize query execution by ensuring it is efficient
+    $query = trim($query); // Remove unnecessary whitespace
+
+    while ($attempt < $maxRetries) {
+        $result = $pms_db_connection->query($query);
+        if ($result !== false) {
+            return $result; // Return the result if successful
+        }
+        $attempt++;
+        usleep(100000); // Wait for 100ms before retrying
+    }
+    return false; // Return false if all attempts fail
 }
 
 /**
