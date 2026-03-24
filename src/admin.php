@@ -2,6 +2,7 @@
 define("PMS_FRONTEND",0);
 define("PMS_BACKEND",1);
 require('functions.php');
+require_once('../vendor/autoload.php');
 
 $modul=$_GET["modul"];
 
@@ -631,6 +632,33 @@ if($login==1)
 				unset($edit);
 			}
 		}
+		if(array_key_exists("import_xlsx", $_POST))
+		{
+			$action="item";
+			$cat = $_POST['cat'];
+			if ($_FILES['xlsx_file']['tmp_name']) {
+				$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+				$spreadsheet = $reader->load($_FILES['xlsx_file']['tmp_name']);
+				$sheet = $spreadsheet->getActiveSheet();
+				$data = $sheet->toArray();
+				
+				foreach ($data as $row) {
+					// Assuming format: Name, Description, Content, Sort, Available, Visible
+					$name = $pms_db_connection->escape($row[0]);
+					$description = $pms_db_connection->escape($row[1]);
+					$content = $pms_db_connection->escape($row[2]);
+					$sort = (int)$row[3];
+					$available = (int)$row[4];
+					$visible = (int)$row[5];
+					
+					$do="INSERT INTO ".$pms_db_prefix."item (cat,name,description,content,sort,available,visible,time,user) VALUES ('$cat', '$name', '$description', '$content', '$sort', '$available', '$visible', ".time().", '".$_SESSION['userid']."');";
+					$pms_db_connection->query($do);
+				}
+				$ok = "Import erfolgreich!";
+				ok_error();
+			}
+		}
+
 		if($_POST["add_image"]!="")
 		{
 			$action="item";
@@ -2003,7 +2031,22 @@ if($login==1)
 			}
 			if($action=="item")
 			{
-				if($pms_db_use_reference)
+				if($_GET["import"]=="yes") {
+                    echo heading("XLSX Import");
+                    $link=$pms_db_connection->query(make_sql("cat","","sort,name"));
+                    $cats = $pms_db_connection->fetchAllObject($link);
+                    echo form().'<table>
+                    <tr><td>Kategorie:</td><td><select name="cat">';
+                    foreach($cats as $a)
+                    {
+                        echo "<option value=\"".$a->id."\">".$a->name."</option>";
+                    }
+                    echo '</select></td></tr>
+                    <tr><td>Datei:</td><td><input type="file" name="xlsx_file"></td></tr>
+                    <tr><td colspan="2"><center><input type="submit" name="import_xlsx" value="Importieren"></center></td></tr>
+                    </table></form>';
+                }
+                else if($pms_db_use_reference)
 				{
 					if($new)
 					{
@@ -2561,7 +2604,7 @@ if($login==1)
 						ok_error();
 					}
 					echo heading("Inhalte");
-					echo '[<a href="admin.php?action='.$action.'&new=yes">Inhalt hinzufügen</a>]<br>[';
+					echo '[<a href="admin.php?action='.$action.'&new=yes">Inhalt hinzufügen</a>] [<a href="admin.php?action='.$action.'&import=yes">Import XLSX</a>]<br>[';
 					$baks = get_backups();
 					if($baks) {
 						$num_backups=count($baks);

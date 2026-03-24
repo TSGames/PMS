@@ -1,8 +1,12 @@
 {
     "name": "tsgames/pms",
-    "require": {
-        "tinymce/tinymce": "^7.6"
-    },
+      "require": {
+    "tinymce/tinymce": "^7.6",
+    "php": "^8.3",
+    "ext-gd": "*",
+    "ext-iconv": "*",
+    "phpoffice/phpspreadsheet": "^5.5"
+  },
     "require-dev": {
         "vimeo/psalm": "^6.0"
     },
