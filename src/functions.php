@@ -1400,7 +1400,7 @@ document.getElementById(id).style.display=\"none\";
 	{
 		if($add) $add="?".$add;
 		if($on_submit) $on_submit=' onSubmit="'.$on_submit.'"';
-		return '<form action="'.$_SERVER["PHP_SELF"].$add.'"'.$on_submit.' name="pms_form" method="'.$method.'" enctype="multipart/form-data" accept-charset="ISO-8859-1">';
+		return '<form action="'.$_SERVER["PHP_SELF"].$add.'"'.$on_submit.' name="pms_form" method="'.$method.'" enctype="multipart/form-data" accept-charset="utf-8">';
 	}
 	function count_db_exp($table,$exp)
 	{
