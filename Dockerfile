@@ -27,6 +27,7 @@ RUN echo "display_errors=On" >> /usr/local/etc/php/conf.d/docker-php.ini \
 COPY template/ /var/template_init/
 COPY composer.json composer.lock /var/composer/
 RUN cd /var/composer && composer install --no-dev --optimize-autoloader \
+    && cp -r ./vendor /var/www/html/ \
     && cp -r ./vendor/tinymce/* /var/www/html/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
