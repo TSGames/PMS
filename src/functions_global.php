@@ -126,6 +126,8 @@ class pms_db_class {
             }
             return $result;
         } catch (\Exception $e) {
+            error_log("SQL ERROR: " . $e->getMessage());
+            error_log("QUERY: " . $sql);
             return false;
         }
     }
