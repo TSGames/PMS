@@ -19,6 +19,10 @@ class pms_db_class {
         try {
             $this->connection = new SQLite3("/var/db/" . ($db == null ? "default" : $db) . ".sqlite");
             if ($this->connection) {
+                // Set busy timeout to 10 seconds (10000 milliseconds) to prevent database locked errors
+                $this->connection->busyTimeout(10000);
+                // Enable WAL mode for better concurrency
+                $this->connection->exec('PRAGMA journal_mode=WAL;');
                 $this->valid = true;
                 return true; // Return true on successful connection
             }
