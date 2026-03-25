@@ -64,7 +64,10 @@ if (preg_match('/(mozilla|chrome|safari|firefox|edge|opera)/i', $ua)) {
     if(!$ok)
     {
     $pms_db_connection->query("INSERT INTO ".$pms_db_prefix."visitors (ip) VALUES ('$this_ip');");
-    $pms_db_connection->query("UPDATE ".$pms_db_prefix."config SET visitors = visitors+1, visitors_today = visitors_today+1;");
+    }
+    if(!$_SESSION["user_visit_counted"]) {
+        $pms_db_connection->query("UPDATE ".$pms_db_prefix."config SET visitors = visitors+1, visitors_today = visitors_today+1;");
+        $_SESSION["user_visit_counted"] = true;
     }
     $number_visitors=(int)from_db("config",1,"visitors")+(int)from_db("config",1,"visitors_increment");
 
