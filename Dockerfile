@@ -23,6 +23,8 @@ RUN echo "display_errors=On" >> /usr/local/etc/php/conf.d/docker-php.ini \
     && echo "error_reporting=E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT" >> /usr/local/etc/php/conf.d/docker-php.ini \
     && echo "upload_max_filesize=20M" > /usr/local/etc/php/conf.d/docker-php.ini \
     && echo "post_max_size=20M" >> /usr/local/etc/php/conf.d/docker-php.ini
+
+COPY mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 COPY template/ /var/template_init/
 COPY composer.json composer.lock /var/composer/
 RUN cd /var/composer && composer install --no-dev --optimize-autoloader \
