@@ -41,8 +41,16 @@ if(from_db("config",1,"visitors_lifetime")*60>$min) $min=from_db("config",1,"vis
 $time_up=time()-$min;
 $time=time();
 $pms_db_connection->query("DELETE FROM ".$pms_db_prefix."visitors_counter WHERE time < '$time_up'");
-if(from_db("visitors_counter",$sid,"id")==$sid) $pms_db_connection->query("UPDATE ".$pms_db_prefix."visitors_counter SET browser = '$browser', user = '$user_id', typ = '$typ', content = '$con', time = '$time' WHERE id = '$sid'");
-else $pms_db_connection->query("INSERT INTO ".$pms_db_prefix."visitors_counter (id,browser,user,typ,content,time) VALUES ('$sid','$browser','$user_id','$typ','$con','$time')");
+$pms_db_connection->query("
+INSERT INTO {$pms_db_prefix}visitors_counter (id, browser, user, typ, content, time)
+VALUES ('$sid', '$browser', '$user_id', '$typ', '$con', '$time')
+ON CONFLICT(id) DO UPDATE SET
+    browser = excluded.browser,
+    user = excluded.user,
+    typ = excluded.typ,
+    content = excluded.content,
+    time = excluded.time
+");
 
 $link=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix."visitors WHERE ip = '$this_ip' LIMIT 1;");
 $ok=0;
