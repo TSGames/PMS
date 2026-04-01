@@ -5,7 +5,7 @@ $sid = $pms_db_connection->escape(session_id());
 $browser=$pms_db_connection->escape($_SERVER["HTTP_USER_AGENT"]);
 $user_id=$_SESSION["userid"];
 $ua = strtolower($browser);
-if (preg_match('/(mozilla|chrome|safari|firefox|edge|opera)/i', $ua)) {    
+if (preg_match('/(mozilla|chrome|safari|firefox|edge|opera)/i', $ua) && !preg_match('/(bot|crawler|spider|slurp|archiver|fetcher|monitor|seo|scan|validator|parser|feed|news|rss|bot|crawler|spider|slurp|archiver|fetcher|monitor|seo|scan|validator|parser|feed|news|rss)/i', $ua)) {    
     $day=date('j');
     if($cat) 
     {
