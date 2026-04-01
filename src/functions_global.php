@@ -182,8 +182,8 @@ class pms_db_class {
      * @param ?string $str The string to escape.
      * @return string The escaped string.
      */
-    public function escape(?string $str): string {
-        return $this->connection->escapeString(stripslashes($str));
+    public function escape(?string $str, $strip = true): string {
+        return $this->connection->escapeString($strip ? stripslashes($str) : $str);
     }
 
     /**

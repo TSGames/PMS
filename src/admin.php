@@ -544,7 +544,7 @@ if($login==1)
 				$cat=0;
 				$subcat=0;
 			}
-			$content=$pms_db_connection->escape($_POST['content']);
+			$content=$pms_db_connection->escape($_POST['content'], false);
 			$typ=$pms_db_connection->escape($_POST['typ']);
 			$typ2=$pms_db_connection->escape($_POST['typ2']);
 			$link=$pms_db_connection->escape($_POST['link']);
@@ -626,7 +626,7 @@ if($login==1)
 			}
 			if($save_ok && $_POST["next"]=="image") $add_image=$edit;
 			else if($_POST["next"]!="dragdrop") ok_error();
-			if(utf8_encode($_POST["item_step2"])!="Übernehmen")
+			if($_POST["item_step2"]!="Übernehmen")
 			{
 				unset($edit);
 			}
