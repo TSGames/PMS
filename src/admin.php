@@ -2426,7 +2426,7 @@ if($login==1)
 							<legend>XLSX Datei importieren</legend>
 							<input type=\"file\" name=\"xlsx_import\" accept=\".xlsx\" />
 							<button type=\"submit\" name=\"import_xlsx\" value=\"1\" style=\"margin-left:10px;\">XLSX Inhalt importieren</button>
-							<br/><small>Zeichentabelle wird als Rohtext mit Pipes (|) als Trennzeichen eingefügt</small>
+							<br/><small>Zeichentabelle wird als Rohtext mit Leerzeichen als Trennzeichen eingefügt</small>
 						</fieldset>
 						</center></td></tr>";
 						if($_SESSION['tinymce']==2) echo "<tr><td colspan=\"2\">

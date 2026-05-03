@@ -151,13 +151,13 @@ function parse_xlsx_to_text($file_path, $sheet_index = 0)
 				$cells_in_row[] = $cell_value;
 			}
 
-			// Join cells with pipe delimiter
+			// Join cells with whitespace separator
 			if (!empty($cells_in_row)) {
 				// Remove trailing empty cells
 				while (!empty($cells_in_row) && end($cells_in_row) === '') {
 					array_pop($cells_in_row);
 				}
-				$output .= implode(' | ', $cells_in_row) . "\n";
+				$output .= implode(' ', $cells_in_row) . "\n";
 			}
 		}
 
