@@ -8,6 +8,7 @@ require_once 'functions_image.php';
 require_once 'functions_mail.php';
 require_once 'functions_editor.php';
 require_once 'functions_utility.php';
+require_once 'functions_xlsx.php';
 
 if(@PMS_FRONTEND==1 || @PMS_BACKEND==1)
 	{

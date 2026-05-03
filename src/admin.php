@@ -522,6 +522,63 @@ if($login==1)
 				$post=2;
 			}
 		}
+		// Handle XLSX import
+		if(array_key_exists("import_xlsx",$_POST) && isset($_FILES['xlsx_import']))
+		{
+			$xlsx_file = $_FILES['xlsx_import'];
+
+			if($xlsx_file['error'] === UPLOAD_ERR_OK)
+			{
+				// Ensure temp directory exists
+				@mkdir('images/uploads/temp/', 0755, true);
+
+				// Move uploaded file to temp directory
+				$temp_file = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
+				if(move_uploaded_file($xlsx_file['tmp_name'], $temp_file))
+				{
+					// Parse XLSX file
+					$xlsx_result = parse_xlsx_to_text($temp_file);
+
+					if(is_array($xlsx_result) && isset($xlsx_result['error']))
+					{
+						$error = "XLSX Import Fehler: " . $xlsx_result['error'];
+					}
+					else if(is_string($xlsx_result) && !empty($xlsx_result))
+					{
+						// Get existing content
+						$existing_content = isset($_POST['content']) ? $_POST['content'] : '';
+
+						// Combine: prepend XLSX data to existing content with separator
+						if($existing_content)
+						{
+							$_POST['content'] = $xlsx_result . "\n\n--- Bestehender Inhalt ---\n\n" . $existing_content;
+						}
+						else
+						{
+							$_POST['content'] = $xlsx_result;
+						}
+						$ok = "XLSX Inhalt erfolgreich importiert";
+					}
+					else
+					{
+						$error = "XLSX Datei ist leer oder konnte nicht gelesen werden";
+					}
+
+					// Clean up temp file
+					@unlink($temp_file);
+					cleanup_xlsx_temp_files(1);
+				}
+				else
+				{
+					$error = "Fehler beim Hochladen der XLSX Datei";
+				}
+			}
+			else
+			{
+				$error = "Fehler beim Datei-Upload";
+			}
+		}
+
 		if(array_key_exists("item_step2",$_POST))
 		{
 			if($_POST["item_step2"]=="Übernehmen")
@@ -2363,6 +2420,14 @@ if($login==1)
 						echo "
 						<tr><td colspan=\"2\"><center>Inhalt:</center></td></tr>
 						<tr><td colspan=\"2\"><center><textarea rows=\"22\" cols=\"95\" id=\"content\" name=\"content\">".str_replace('&','&amp;',$content)."</textarea>
+						</center></td></tr>
+						<tr><td colspan=\"2\"><center>
+						<fieldset style=\"margin-top:10px; padding:10px; border:1px solid #ccc; width:90%;\">
+							<legend>XLSX Datei importieren</legend>
+							<input type=\"file\" name=\"xlsx_import\" accept=\".xlsx\" />
+							<button type=\"submit\" name=\"import_xlsx\" value=\"1\" style=\"margin-left:10px;\">XLSX Inhalt importieren</button>
+							<br/><small>Zeichentabelle wird als Rohtext mit Pipes (|) als Trennzeichen eingefügt</small>
+						</fieldset>
 						</center></td></tr>";
 						if($_SESSION['tinymce']==2) echo "<tr><td colspan=\"2\">
 						".'<input type="hidden" name="next" id="next" value="">
