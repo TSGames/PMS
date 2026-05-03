@@ -277,10 +277,10 @@
 	}
 
 		/**
-		 * Replace text smileys with emoji/images
+		 * Replace text smileys with UTF-8 emoji
 		 *
 		 * @param str Text with smileys
-		 * @return string Text with smileys replaced
+		 * @return string Text with smileys replaced by emoji
 		 */
 		function smileys($str)
 		{
@@ -298,13 +298,13 @@
 ':|',':-|',
 ':P',':-P',':p',':-p');
 				$smiley_replace=array(
-					make_img("smileys/1.gif",0),make_img("smileys/1.gif",0),
-					make_img("smileys/2.gif",0),make_img("smileys/2.gif",0),make_img("smileys/2.gif",0),make_img("smileys/2.gif",0),
-					make_img("smileys/3.gif",0),make_img("smileys/3.gif",0),
-					make_img("smileys/4.gif",0),make_img("smileys/4.gif",0),
-					make_img("smileys/5.gif",0),
-					make_img("smileys/6.gif",0),make_img("smileys/6.gif",0),
-					make_img("smileys/7.gif",0),make_img("smileys/7.gif",0),make_img("smileys/7.gif",0),make_img("smileys/7.gif",0));
+					'😊','😊',
+					'😄','😄','😄','😄',
+					'😉','😉',
+					'☹️','☹️',
+					'😢',
+					'😐','😐',
+					'😜','😜','😜','😜');
 					if(!strstr($str,$s[0][0]) && !strstr($str,$s[1][0]))
 						{
 						return str_replace($smiley_search,$smiley_replace,$str);
