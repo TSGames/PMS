@@ -1,6 +1,12 @@
 <?php
 // Module: functions_user.php
 
+	/**
+	 * Get translated language string from global language array
+	 *
+	 * @param str Language key to translate
+	 * @return string Translated language string or original key if not found
+	 */
 	function language($str)
 	{
 		global $language;
@@ -8,6 +14,12 @@
 		return $str;
 	}
 
+	/**
+	 * Validate username for invalid special characters
+	 *
+	 * @param n Username to validate
+	 * @return int 1 if valid, 0 if contains invalid characters
+	 */
 	function name_condition($n)
 	{
 		$invalid=array('[',']','(',')',"'",'"','{','}');
@@ -18,6 +30,26 @@
 		return 1;
 	}
 
+	/**
+	 * Create or update a user account with validation
+	 *
+	 * @param id User ID for update, empty for new user
+	 * @param name Username
+	 * @param password Password (plain text)
+	 * @param passwordr Password confirmation
+	 * @param mail Email address
+	 * @param website User website URL
+	 * @param typ User type/role
+	 * @param image Profile image
+	 * @param image2 Secondary image
+	 * @param image_delete Flag to delete existing image
+	 * @param bday Birth date
+	 * @param top Top status
+	 * @param active Active status
+	 * @param sendmail Send email flag
+	 * @param signatur User signature
+	 * @return string Error message on failure, or success indicator
+	 */
 	function make_user($id,$name,$password,$passwordr,$mail,$website,$typ,$image,$image2,$image_delete,$bday,$top,$active,$sendmail,$signatur = "",$showmail = 1)
 	{
 		global $pms_db_prefix;
@@ -166,6 +198,12 @@
 		}
 	}
 
+	/**
+	 * Format ban duration for display
+	 *
+	 * @param time Unix timestamp of ban
+	 * @return string Formatted ban time information
+	 */
 	function ban_time($time)
 	{
 		if($time>0)
@@ -178,6 +216,15 @@
 		}
 	}
 
+	/**
+	 * Authenticate user and create session
+	 *
+	 * @param name Username
+	 * @param password Password (plain text)
+	 * @param min_rights Minimum required user level
+	 * @param do_md5 Whether password is MD5 encoded
+	 * @return int User ID on success, 0 on failure
+	 */
 	function do_login($name,$password,$min_rights,$do_md5=1)
 	{
 		global $pms_db_prefix;
@@ -221,6 +268,12 @@
 		return 1;
 	}
 
+	/**
+	 * Validate email address format
+	 *
+	 * @param mail Email address to validate
+	 * @return int 1 if valid email, 0 otherwise
+	 */
 	function check_mail($mail)
 	{
 		if(strlen($mail)<8  || !stristr($mail,"@") || !stristr($mail,"."))
@@ -230,6 +283,18 @@
 		return 1;
 	}
 
+	/**
+	 * Format and display user information
+	 *
+	 * @param rang User rank/level
+	 * @param id User ID
+	 * @param all Include all details flag
+	 * @param linkit Make name clickable link
+	 * @param sig Include signature
+	 * @param head Include header
+	 * @param points User points/reputation
+	 * @return string Formatted user HTML output
+	 */
 	function user_out($rang,$id,$all,$linkit=0,$sig=0,$head=0,$points="")
 	{
 		global $config_values;
@@ -336,6 +401,13 @@
 			return $str;
 		}
 
+				/**
+				 * Update user points/reputation
+				 *
+				 * @param id User ID
+				 * @param points Points to add/subtract
+				 * @return void
+				 */
 				function user_points($id,$points)
 				{
 					global $pms_db_prefix;

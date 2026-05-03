@@ -1,6 +1,14 @@
 <?php
 // Module: functions_mail.php
 
+	/**
+	 * Compare spam content
+	 *
+	 * @param a First content
+	 * @param session Session ID
+	 * @param count Check count
+	 * @return int Comparison result
+	 */
 	function comp_spam($a,$session,$count)
 	{
 		if(strlen($session)<1) return 0;
@@ -11,6 +19,14 @@
 		return $a==$spam && strlen($spam)==6;
 	}
 
+	/**
+	 * Format email address safely
+	 *
+	 * @param mail Email address
+	 * @param text Display text
+	 * @param force_safe Force safe encoding
+	 * @return string Formatted email or link
+	 */
 	function make_mail($mail,$text="",$force_safe=0)
 	{
 		global $config_values;
@@ -37,11 +53,25 @@
 		}
 	}
 
+	/**
+	 * Check for spam in email
+	 *
+	 * @param s Content to check
+	 * @return int Spam score
+	 */
 	function mail_spam($s)
 	{
 		return preg_replace("/(\n+|\r+|%0A|%0D)/i", '', $s);
 	}
 
+	/**
+	 * Send email message
+	 *
+	 * @param to Recipient email
+	 * @param subject Email subject
+	 * @param body Email body
+	 * @return int Success flag
+	 */
 	function my_mail($to,$subject,$body)
 	{
 		global $config_values;

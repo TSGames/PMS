@@ -1,6 +1,12 @@
 <?php
 // Module: functions_image.php
 
+	/**
+	 * Get file or directory size
+	 *
+	 * @param what File/directory path
+	 * @return int Size in bytes
+	 */
 	function get_filesize($what)
 	{
 		$dir=@opendir($what);
@@ -23,6 +29,12 @@
 		}
 	}
 
+	/**
+	 * Delete directory contents recursively
+	 *
+	 * @param dir Directory path
+	 * @return int Number of files deleted
+	 */
 	function delete_all($dir)
 	{
 		$a=@opendir($dir);
@@ -38,6 +50,14 @@
 		return @rmdir($dir);
 	}
 
+	/**
+	 * Recursively copy directory
+	 *
+	 * @param from Source directory
+	 * @param to Destination directory
+	 * @param results Results array reference
+	 * @return void
+	 */
 	function copy_recrusive($from,$to,&$results)
 	{
 		@mkdir($to);
@@ -70,6 +90,17 @@
 		}
 	}
 
+	/**
+	 * Generate image tag with alt text
+	 *
+	 * @param str Image filename
+	 * @param border Border width
+	 * @param alt Alt text
+	 * @param folder Image folder
+	 * @param class CSS class
+	 * @param title Title attribute
+	 * @return string HTML img tag with attributes
+	 */
 	function make_imgalt($str,$border,$alt,$folder="",$class="",$title="")
 	{
 		global $image_path;
@@ -88,11 +119,24 @@
 		return "<img src=\"".$folder.$str."\"".$border.$size.$title." alt=\"".$alt."\"".$class.">";
 	}
 
+	/**
+	 * Generate simple image tag
+	 *
+	 * @param str Image filename
+	 * @param border Border width
+	 * @return string HTML img tag
+	 */
 	function make_img($str,$border)
 	{
 		return make_imgalt($str,$border,"");
 	}
 
+	/**
+	 * Format file size for display
+	 *
+	 * @param byte Size in bytes
+	 * @return string Formatted size (B, KB, MB, GB)
+	 */
 	function size($byte)
 	{
 		$a[0]="Byte";
@@ -103,6 +147,17 @@
 		return round($byte,2)." ".$a[$i];
 	}
 
+	/**
+	 * Display content-related image
+	 *
+	 * @param what Content type
+	 * @param id Content ID
+	 * @param typ Image type
+	 * @param size Image size
+	 * @param width Width
+	 * @param height Height
+	 * @return string HTML image
+	 */
 	function make_contentimg($what,$id,$typ,$size=0,$width=-1,$height=-1) // 0 = thumb, 1 = default
 	{
 		if(!$id)
@@ -138,6 +193,15 @@
 		return $str;
 	}
 
+	/**
+	 * Delete content image
+	 *
+	 * @param what Content type
+	 * @param id Content ID
+	 * @param typ Image type
+	 * @param all Delete all flag
+	 * @return int Success flag
+	 */
 	function del_contentimg($what,$id,$typ,$all=1)
 	{
 		global $image_path;
@@ -154,6 +218,15 @@
 			unlink($file3);
 	}
 
+	/**
+	 * Calculate image dimensions
+	 *
+	 * @param img Image filename
+	 * @param width Target width
+	 * @param height Target height
+	 * @param what Image type
+	 * @return array Width and height
+	 */
 	function get_size($img,$width,$height,$what)
 	{
 		if(!is_array($img))
@@ -195,6 +268,16 @@
 		}
 	}
 
+	/**
+	 * Create thumbnail or resized image
+	 *
+	 * @param img Source image
+	 * @param width1 Target width
+	 * @param height1 Target height
+	 * @param constrains Keep aspect ratio
+	 * @param filter Apply filter
+	 * @return string Generated image path
+	 */
 	function create_img($img,$width1,$height1,$constrains=1,$filter=0)
 	{
 		global $config_values;

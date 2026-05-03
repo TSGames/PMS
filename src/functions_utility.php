@@ -1,6 +1,14 @@
 <?php
 // Module: functions_utility.php
 
+/**
+ * Create editable dynamic string with hover effect
+ *
+ * @param str String content
+ * @param edit Edit mode flag
+ * @param id Content ID
+ * @return string Styled dynamic string
+ */
 function dynamic_string($str,$edit,$id){
 	if(!$edit) return $str;
 	
@@ -38,6 +46,12 @@ box-shadow: 2px 2px 6px rgba(0, 0, 0,0.5);
 <div class="edit_var_layer" onmouseover="this.className=\'edit_var_layer_hover\';" onmouseout="this.className=\'edit_var_layer\'" title="'.language("EDIT_VAR").'" onclick="document.location=\'admin.php?action=var&edit='.$id.'\';">'.$str.'</div>';
 }
 
+/**
+ * Get visitor statistics for last 24 hours
+ *
+ * @param filter Filter bots flag
+ * @return array Visitor statistics
+ */
 function get_24_stats($filter=0){
 	global $pms_db_connection;
 	$link=$pms_db_connection->query(make_sql("visitors_counter","","time DESC"));
@@ -51,6 +65,10 @@ function get_24_stats($filter=0){
 	return $stats;
 }
 
+/**
+ * Store current GET/POST data in session
+ * @return void
+ */
 function store_all()
 {
 	global $_GET;
@@ -62,6 +80,12 @@ function store_all()
 	
 }
 
+/**
+ * Restore stored GET/POST data from session
+ *
+ * @param do Operation: 0=check, -1=clear, 1=restore
+ * @return int|void Count of stored data or void
+ */
 function reload_all($do=0)
 {
 	global $_GET;
@@ -84,6 +108,13 @@ function reload_all($do=0)
 	unset($_SESSION["STORE_POST"]);
 }
 
+/**
+ * Convert action type to display string
+ *
+ * @param typ Action type
+ * @param con Action context
+ * @return string Action description
+ */
 function convert_action($typ,$con)
 {
 	global $action_name;
@@ -105,6 +136,12 @@ function convert_action($typ,$con)
 		return 'PMS Administration (<a href="admin.php?action='.$action_list[$con].'">'.$action_name[$con].'</a>)';
 }
 
+/**
+ * Check if subcategory should jump to item
+ *
+ * @param check Subcategory ID
+ * @return void Sets global subcat_jump flag
+ */
 function check_subcatjump($check)
 {
 	global $login;
@@ -120,11 +157,22 @@ function check_subcatjump($check)
 	}
 }
 
+/**
+ * Generate HTML header for error pages
+ * @return string HTML header markup
+ */
 function header_def()
 {
 	return '<html><head><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" /><link rel="stylesheet" type="text/css" href="admin.css"><title>PMS - Seitenladefehler</title></head><body><table width="100%" height="100%"><tr><td><div align="center"><h1>';
 }
 
+	/**
+	 * Copy item from reference database
+	 *
+	 * @param what Item type
+	 * @param id Item ID
+	 * @return int Success flag
+	 */
 	function copy_reference($what,$id)
 	{
 		global $pms_db_reference;
@@ -138,6 +186,10 @@ function header_def()
 		return 0;
 	}
 
+	/**
+	 * Load hidden form field values from POST
+	 * @return void Sets global variables
+	 */
 	function load_hidden()
 	{
 		global $cat;
@@ -155,6 +207,10 @@ function header_def()
 		$id=$_POST['id'];
 	}
 
+	/**
+	 * Generate hidden form fields for positions
+	 * @return string HTML hidden input fields
+	 */
 	function hidden_positions()
 	{
 		global $cat;
@@ -171,6 +227,10 @@ function header_def()
 <input type=\"hidden\" name=\"id\" value=\"".$id."\">";
 	}
 
+	/**
+	 * Get list of available backup files
+	 * @return array Backup directory names
+	 */
 	function get_backups()
 	{
 		global $backup_folder;
@@ -195,6 +255,14 @@ function header_def()
 		return $back;
 	}
 
+	/**
+	 * Recover item from backup
+	 *
+	 * @param id Item ID
+	 * @param mode Recovery mode
+	 * @param ids IDs to skip
+	 * @return array|int Recovery options or 0
+	 */
 	function recover_item($id="",$mode=0,$ids="")
 	{
 		global $pms_db_prefix;
@@ -231,6 +299,10 @@ function header_def()
 		return $found;
 	}
 
+	/**
+	 * Export database backup
+	 * @return array Export result statistics
+	 */
 	function do_export()
 	{
 		ini_set("max_execution_time","3600");
@@ -334,6 +406,12 @@ function header_def()
 		return $result;
 	}
 
+	/**
+	 * Generate random alphanumeric string
+	 *
+	 * @param length String length
+	 * @return string Random string
+	 */
 	function random_type($length){
 		for($i=0;$i<$length;$i++){
 			$x=rand(0,9);
@@ -343,6 +421,14 @@ function header_def()
 		return $str;
 	}
 
+	/**
+	 * Generate RSS feed URL
+	 *
+	 * @param auto Auto-detect category
+	 * @param c Category ID
+	 * @param s Subcategory ID
+	 * @return string RSS feed URL
+	 */
 	function get_rss($auto=1,$c=0,$s=0)
 	{
 		if($auto)
@@ -364,6 +450,12 @@ function header_def()
 		return 'rss.php';
 	}
 
+	/**
+	 * Remove slashes and fix HTML entities
+	 *
+	 * @param str String to process
+	 * @return string Processed string
+	 */
 	function my_stripslashes($str)
 	{
 		$str=stripslashes($str);
@@ -371,6 +463,10 @@ function header_def()
 		return $str;
 	}
 
+	/**
+	 * Clear user session data and login cookie
+	 * @return void
+	 */
 	function delete_sessions()
 	{
 		global $cookie_domain;
@@ -384,6 +480,12 @@ function header_def()
 		$_COOKIE["login_pw"]="";
 	}
 
+	/**
+	 * Calculate and format time difference
+	 *
+	 * @param time Past timestamp
+	 * @return string Formatted time difference
+	 */
 	function time_diff($time)
 	{
 		$diff=time()-$time;
@@ -399,6 +501,12 @@ function header_def()
 		return $str;
 	}
 
+	/**
+	 * Get browser information from user agent
+	 *
+	 * @param a User agent string
+	 * @return string Browser name and version
+	 */
 	function browser($a)
 	{
 		return $a;
@@ -409,12 +517,24 @@ function header_def()
 		}
 	}
 
+	/**
+	 * Generate config section spacing HTML
+	 *
+	 * @param str Section title
+	 * @return string HTML spacing markup
+	 */
 	function config_space($str="")
 	{
 		if($str=="") return "</table><br></td></tr>";
 		return "<tr><td colspan=\"2\"><span style=\"color:#A0A0A0;font-weight:bold;\">".$str."</span></td></tr><tr><td colspan=\"2\"><table width=\"100%\" style=\"border:1px solid #A0A0A0;\">";
 	}
 
+	/**
+	 * Calculate age from birthdate timestamp
+	 *
+	 * @param age Birthdate timestamp
+	 * @return int Age in years
+	 */
 	function make_age($age)
 	{
 		//$a=intval(date(Y,time()-$age+86400));
@@ -424,6 +544,15 @@ function header_def()
 		return $a;
 	}
 
+	/**
+	 * Format timestamp for display
+	 *
+	 * @param time Unix timestamp
+	 * @param long Long format flag
+	 * @param am Show AM/PM flag
+	 * @param bypass Bypass relative format
+	 * @return string Formatted date and time
+	 */
 	function make_date($time,$long,$am=0,$bypass=0)
 	{
 		
@@ -469,6 +598,10 @@ function header_def()
 		return $str;
 	}
 
+	/**
+	 * Get error page item ID
+	 * @return int Error page item ID
+	 */
 	function get_errorpage()
 	{
 		global $pms_db_prefix;
@@ -491,6 +624,12 @@ function header_def()
 		return $item;
 	}
 
+	/**
+	 * Generate checked attribute for checkboxes
+	 *
+	 * @param str Check value
+	 * @return string " checked" or empty
+	 */
 	function make_check($str)
 	{
 		if(!$str)
@@ -500,6 +639,16 @@ function header_def()
 		return " checked";
 	}
 
+		/**
+		 * Display star rating
+		 *
+		 * @param item Item ID
+		 * @param what Item type
+		 * @param num Number of ratings
+		 * @param rating Rating value
+		 * @param force Force display
+		 * @return string HTML star rating
+		 */
 		function make_rating($item,$what="item",$num=0,$rating=0,$force=0)
 		{
 			global $pms_db_prefix;
@@ -564,6 +713,12 @@ function header_def()
 			return $str;
 		}
 
+				/**
+				 * Get weekday name from timestamp
+				 *
+				 * @param time Unix timestamp
+				 * @return string Localized weekday name
+				 */
 				function get_weekday($time)
 				{
 					

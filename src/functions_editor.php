@@ -1,11 +1,22 @@
 <?php
 // Module: functions_editor.php
 
+	/**
+	 * Get template placeholder markers
+	 * @return string Template markers
+	 */
 	function get_template()
 	{
 		return array("#content","#title","#menu","#user_panel","#poll","#footer","#counter","#birthday","#topuser","#mostdiscussed","#search","#position_row","#latest_comments","#comments_list","#newsletter");
 	}
 
+	/**
+	 * Generate TinyMCE configuration
+	 *
+	 * @param match Editor element selector
+	 * @param height Editor height
+	 * @return string TinyMCE configuration
+	 */
 	function get_tinymceinit($match,$height)
 	{
 		return 'tinymce.init({
@@ -42,6 +53,14 @@
 });';
 	}
 
+	/**
+	 * Initialize TinyMCE editor
+	 *
+	 * @param match Element selector
+	 * @param init Initialize flag
+	 * @param height Editor height
+	 * @return string HTML editor code
+	 */
 	function get_tinymce($match="content",$init=1,$height=300)
 	{
 		$str='
@@ -56,6 +75,10 @@
 		return $str;
 	}
 
+	/**
+	 * Initialize Monaco code editor
+	 * @return string Monaco editor HTML/JavaScript
+	 */
 	function get_monaco(){
 		return <<<JS
 		
@@ -107,6 +130,16 @@
 		
 	}
 
+	/**
+	 * Generate edit mode output
+	 *
+	 * @param string Content string
+	 * @param name Field name
+	 * @param class CSS class
+	 * @param edit_mode Edit mode flag
+	 * @param mode Output mode
+	 * @return string Edit output HTML
+	 */
 	function edit_out($string,$name,$class,$edit_mode,$mode=0)
 	{
 		if(!$edit_mode) return $string;

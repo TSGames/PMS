@@ -1,6 +1,12 @@
 <?php
 // Module: functions_content.php
 
+	/**
+	 * Sanitize user-submitted content
+	 *
+	 * @param content Raw content to clean
+	 * @return string Cleaned content
+	 */
 	function cleanup_content($content)
 	{
 		$content=explode('<img id="##pms_replace_image_temp"',$content);
@@ -20,12 +26,25 @@
 		return $c_new;
 	}
 
+	/**
+	 * Strip HTML tags from string
+	 *
+	 * @param str String with HTML
+	 * @return string Plain text without HTML
+	 */
 	function remove_html($str)
 	{
 		return str_replace(array('&lt;','&gt;','&nbsp;','<br>'),array('<','>',' ','
 '),$str);
 	}
 
+	/**
+	 * Replace dynamic placeholders with content
+	 *
+	 * @param str Content string
+	 * @param smiley Replace smileys flag
+	 * @return string Content with placeholders replaced
+	 */
 	function make_dynamic($str,$smiley=1)
 	{
 		global $special_tags;
@@ -62,6 +81,12 @@
 		return $str;
 	}
 
+	/**
+	 * Legacy dynamic content replacement
+	 *
+	 * @param str Content string
+	 * @return string Processed content
+	 */
 	function make_dynamicold($str)
 	{
 		global $special_tags;
@@ -91,6 +116,12 @@
 		return $str;
 	}
 
+	/**
+	 * Format comment text
+	 *
+	 * @param str Comment text
+	 * @return string Formatted comment
+	 */
 	function small_comment($str)
 	{
 		global $config_values;
@@ -114,6 +145,12 @@
 		return SubStr($str_new,0,-1)."...";
 	}
 
+	/**
+	 * Clean comment content
+	 *
+	 * @param str Comment text
+	 * @return string Cleaned comment
+	 */
 	function clear_comment($str)
 	{
 		$search=array('<','>','&lt;br&gt;');
@@ -121,6 +158,12 @@
 		return str_replace($search,$replace,$str);
 	}
 
+	/**
+	 * Get comment text from array
+	 *
+	 * @param a Comment array
+	 * @return string Comment text
+	 */
 	function get_comment_str($a)
 	{
 		
@@ -133,6 +176,12 @@
 		return $b;
 	}
 
+	/**
+	 * Retrieve comments for item
+	 *
+	 * @param id Item ID
+	 * @return array Array of comments
+	 */
 	function get_comments($id)
 	{
 		global $config_values;
@@ -146,6 +195,14 @@
 		return "";
 	}
 
+	/**
+	 * Generate small content preview
+	 *
+	 * @param what Content type
+	 * @param id Content ID
+	 * @param img Include image flag
+	 * @return string HTML content preview
+	 */
 	function make_contentsmall($what,$id,$img=1)
 	{
 		global $pms_db_prefix;
@@ -219,6 +276,12 @@
 		return $str;
 	}
 
+		/**
+		 * Replace text smileys with emoji/images
+		 *
+		 * @param str Text with smileys
+		 * @return string Text with smileys replaced
+		 */
 		function smileys($str)
 		{
 			if(!from_db("config",1,"smileys")) return $str;
@@ -270,6 +333,13 @@
 					return $str;
 				}
 
+				/**
+				 * Build limit conditions for search
+				 *
+				 * @param who Search target
+				 * @param exp Search expression
+				 * @return string SQL LIMIT clause
+				 */
 				function make_limits_search($who,$exp)
 				{
 					global $cat;
@@ -346,6 +416,12 @@
 					}
 				}
 
+				/**
+				 * Get most discussed content
+				 *
+				 * @param id Content ID
+				 * @return array Most discussed items
+				 */
 				function content_mostdiscussed($id)
 				{
 					$str="<table><tr><td><center>".make_link(from_db("item",$id,"name"),"","","",$id)."</td>
@@ -359,6 +435,14 @@
 					return $str."</center></td></tr></table>";
 				}
 
+				/**
+				 * Build pagination limits
+				 *
+				 * @param who Content type
+				 * @param who2 Secondary type
+				 * @param id Content ID
+				 * @return string Pagination limit
+				 */
 				function make_limits($who,$who2,$id)
 				{
 					$av="available = 1 AND ";
@@ -373,6 +457,15 @@
 					return make_limits_search($who,$av.$who2." = '$id'");
 				}
 
+				/**
+				 * Replace download references in content
+				 *
+				 * @param str Content string
+				 * @param id Content ID
+				 * @param file File reference
+				 * @param link Link reference
+				 * @return string Content with downloads replaced
+				 */
 				function replace_download($str,$id,$file,$link)
 				{
 					
@@ -382,6 +475,14 @@
 					return str_replace($search,$replace,$str);
 				}
 
+				/**
+				 * Replace dynamic content markers
+				 *
+				 * @param content Content string
+				 * @param dyn Dynamic flag
+				 * @param return Return instead of echo
+				 * @return string|void Processed content or echo
+				 */
 				function replace_dynamic($content,$dyn=0,$return=0)
 				{
 					global $item_allowed_edit;
@@ -415,6 +516,12 @@
 					return $content;
 				}
 
+				/**
+				 * Validate and format content
+				 *
+				 * @param content Content to validate
+				 * @return string Validated content
+				 */
 				function do_check($content)
 				{
 					$do[0]="item";

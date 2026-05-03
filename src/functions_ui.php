@@ -1,11 +1,24 @@
 <?php
 // Module: functions_ui.php
 
+	/**
+	 * Display warning message box
+	 *
+	 * @param str Warning message
+	 * @return string HTML warning box
+	 */
 	function warning_box($str)
 	{
 		return '<table class="warning"><tr><td>'.$str.'</td></tr></table>';
 	}
 
+	/**
+	 * Generate selection list dropdown
+	 *
+	 * @param cur Current selection
+	 * @param name List name/ID
+	 * @return string HTML select dropdown
+	 */
 	function get_lists($cur,$name="list")
 	{
 		global $template_lists_folder;
@@ -34,6 +47,18 @@
 		return "";
 	}
 
+	/**
+	 * Generate reference selection dropdown
+	 *
+	 * @param head Heading
+	 * @param info Information
+	 * @param what Reference type
+	 * @param name Field name
+	 * @param sort Sort field
+	 * @param action Action parameter
+	 * @param what2 Secondary reference type
+	 * @return string HTML select dropdown
+	 */
 	function select_reference($head,$info,$what,$name="name",$sort="sort",$action="",$what2="")
 	{
 		global $pms_db_reference;
@@ -65,11 +90,23 @@
 		return $str;
 	}
 
+	/**
+	 * Generate back navigation button
+	 * @return string HTML back button
+	 */
 	function back_button()
 	{
 		return "[<a href=\"javascript:history.back()\">Zurï¿½ck</a>]";
 	}
 
+	/**
+	 * Generate HTML form opening tag
+	 *
+	 * @param on_submit Form submit action
+	 * @param method HTTP method (post/get)
+	 * @param add Additional HTML attributes
+	 * @return string HTML form opening tag
+	 */
 	function form($on_submit="",$method="post",$add="")
 	{
 		if($add) $add="?".$add;
@@ -77,6 +114,10 @@
 		return '<form action="'.$_SERVER["PHP_SELF"].$add.'"'.$on_submit.' name="pms_form" method="'.$method.'" enctype="multipart/form-data" accept-charset="utf-8">';
 	}
 
+	/**
+	 * Display OK or error message
+	 * @return string HTML message display
+	 */
 	function ok_error()
 	{
 		global $ok;
@@ -92,6 +133,13 @@
 		echo '<table class="'.$class.'"><tr><td>'.$str.'</td></tr></table><br>';
 	}
 
+	/**
+	 * Convert array to HTML table
+	 *
+	 * @param a Array data
+	 * @param b Column headers
+	 * @return string HTML table
+	 */
 	function array_table($a,$b)
 	{
 		for($i=0;$i<($a ? count($a) : 0);$i++)
@@ -113,12 +161,25 @@
 		return $str;
 	}
 
+	/**
+	 * Display term definition
+	 *
+	 * @param str Definition text
+	 * @return string HTML definition display
+	 */
 	function def($str)
 	{
 		return str_replace("
 ","<br>",$str);
 	}
 
+	/**
+	 * Generate styled table header
+	 *
+	 * @param str Header text
+	 * @param style CSS style
+	 * @return string Styled HTML table header
+	 */
 	function table_header_style($str,$style)
 	{
 		$str=explode("|",$str);
@@ -138,11 +199,24 @@
 		return $a;
 	}
 
+	/**
+	 * Generate table header row
+	 *
+	 * @param str Header text
+	 * @return string HTML table header
+	 */
 	function table_header($str)
 	{
 		return table_header_style($str,"");
 	}
 
+	/**
+	 * Format text for use in URLs
+	 *
+	 * @param str Text to format
+	 * @param ignore Characters to ignore
+	 * @return string URL-safe formatted text
+	 */
 	function link_name($str,$ignore="")
 	{
 		$not=array();
@@ -174,6 +248,21 @@
 		return(trim($a,"_"));
 	}
 
+	/**
+	 * Generate marked navigation link with special handling
+	 *
+	 * @param name Link text
+	 * @param add Additional parameters
+	 * @param cat Category ID
+	 * @param subcat Subcategory ID
+	 * @param item Item ID
+	 * @param mark Mark parameter
+	 * @param class CSS class
+	 * @param id HTML ID
+	 * @param target Link target
+	 * @param close Close tag flag
+	 * @return string HTML anchor link with marks
+	 */
 	function make_link_mark($name,$add,$cat,$subcat,$item,$mark="",$class="",$id=0,$target="",$close=1)
 	{
 		global $config_values;
@@ -281,6 +370,19 @@
 		return $start.$a;
 	}
 
+	/**
+	 * Generate navigation link
+	 *
+	 * @param name Link text
+	 * @param add Additional parameters
+	 * @param cat Category ID
+	 * @param subcat Subcategory ID
+	 * @param item Item ID
+	 * @param class CSS class
+	 * @param id HTML ID
+	 * @param target Link target
+	 * @return string HTML anchor link
+	 */
 	function make_link($name,$add,$cat=0,$subcat=0,$item=0,$class="",$id=0,$target="")
 	{
 		return make_link_mark($name,$add,$cat,$subcat,$item,"",$class,$id,$target);
