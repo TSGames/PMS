@@ -2,6 +2,7 @@
 define("PMS_FRONTEND",0);
 define("PMS_BACKEND",1);
 require('functions.php');
+require('admin_helpers.php');
 
 $modul=$_GET["modul"];
 
