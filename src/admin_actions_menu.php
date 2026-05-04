@@ -1,6 +1,92 @@
 <?php
 // Module: admin_actions_menu.php
 // Handler for menu management action
+// Includes POST form submission processors
+
+// Process POST submissions for menu-related actions
+function process_menu_post_handlers()
+{
+	global $pms_db_connection, $pms_db_prefix, $_POST;
+	global $action, $post, $error, $ok, $edit, $new;
+
+	// Process menu refresh
+	if(array_key_exists("menu_refresh",$_POST))
+	{
+		$action="menu";
+		$post=1;
+	}
+
+	// Process menu form submission
+	if($post && $action=="menu")
+	{
+		$edit=$_POST['id'];
+		$cat=$_POST['cat'];
+		$subcat=$_POST['subcat'];
+		$item=$_POST['item'];
+		$name=$_POST['name'];
+		$sort=$_POST['sort'];
+		$usertyp=$_POST['usertyp'];
+		$typ=$_POST['typ'];
+		$plugin=$_POST['plugin'];
+		$extern=$_POST['extern'];
+		$visible=$_POST['visible'];
+		$popup=$_POST['popup'];
+		if($post==2)
+		{
+			$ok=1;
+			if($subcat)
+			{
+				$link=$pms_db_connection->query(make_sql("subcat","id = ".$subcat." AND cat = ".$cat,"sort,name"));
+				$ok=0;
+				if($link)
+				{
+					$row=$pms_db_connection->fetchObject($link);
+					if(!$row->id)
+					{
+						$ok=0;
+					}
+					else
+					{
+						$ok=1;
+					}
+				}
+			}
+			if($item && $ok==1)
+			{
+				$link=$pms_db_connection->query(make_sql("item","id = ".$item." AND subcat = ".$subcat,"sort,name"));
+				$ok=0;
+				if($link)
+				{
+					$row=$pms_db_connection->fetchObject($link);
+					if(!$row->id)
+					{
+						$ok=0;
+					}
+					else
+					{
+						$ok=1;
+					}
+				}
+			}
+			if($ok==1)
+			{
+				$do="INSERT INTO ".$pms_db_prefix."menu (name,sort,typ,cat,subcat,item,usertyp,plugin,extern,visible,popup) VALUES ('$name','$sort','$typ','$cat','$subcat','$item','$usertyp','$plugin','$extern','$visible','$popup');";
+				if($edit)
+				{
+					$do="UPDATE ".$pms_db_prefix."menu SET name = '$name', sort = '$sort', typ = '$typ', cat = '$cat', subcat = '$subcat', item = '$item', usertyp = '$usertyp', plugin = '$plugin', extern = '$extern', visible = '$visible', popup = '$popup' WHERE id = '$edit' LIMIT 1;";
+				}
+				if($pms_db_connection->query($do))
+					$ok="Menüeintrag erfolgreich gespeichert!";
+				else
+					$error="Fehler beim Speichern des Menü-Eintrags!";
+				ok_error();
+				$edit="";
+				$new="";
+				$post=0;
+			}
+		}
+	}
+}
 
 /**
  * Handle menu action
@@ -210,5 +296,7 @@ function handle_admin_menu()
 		echo array_table($menu,5);
 	}
 }
+
+process_menu_post_handlers();
 
 ?>

@@ -392,12 +392,7 @@ if($login==1)
 			}
 		}
 		if($_POST["item_restore"]) $action="item_restore";
-		
-		if(array_key_exists("menu_refresh",$_POST))
-		{
-			$action="menu";
-			$post=1;
-		}
+
 		if($_POST['events']=="OK")
 		{
 			$action="events";
@@ -660,80 +655,6 @@ if($login==1)
 			$error="Fehler beim Speichern der Kategorie!";
 			ok_error();
 			$edit="";
-		}
-		if(array_key_exists("menu",$_POST))
-		{
-			$action="menu";
-			$post=2;
-		}
-		if($post && $action=="menu")
-		{
-			$edit=$_POST['id'];
-			$cat=$_POST['cat'];
-			$subcat=$_POST['subcat'];
-			$item=$_POST['item'];
-			$name=$_POST['name'];
-			$sort=$_POST['sort'];
-			$usertyp=$_POST['usertyp'];
-			$typ=$_POST['typ'];
-			$plugin=$_POST['plugin'];
-			$extern=$_POST['extern'];
-			$visible=$_POST['visible'];
-			$popup=$_POST['popup'];
-			if($post==2)
-			{
-				$ok=1;
-				if($subcat)
-				{
-					$link=$pms_db_connection->query(make_sql("subcat","id = ".$subcat." AND cat = ".$cat,"sort,name"));
-					$ok=0;
-					if($link)
-					{
-						$row=$pms_db_connection->fetchObject($link);
-						if(!$row->id)
-						{
-							$ok=0;
-						}
-						else
-						{
-							$ok=1;
-						}
-					}
-				}
-				if($item && $ok==1)
-				{
-					$link=$pms_db_connection->query(make_sql("item","id = ".$item." AND subcat = ".$subcat,"sort,name"));
-					$ok=0;
-					if($link)
-					{
-						$row=$pms_db_connection->fetchObject($link);
-						if(!$row->id)
-						{
-							$ok=0;
-						}
-						else
-						{
-							$ok=1;
-						}
-					}
-				}
-				if($ok==1)
-				{
-					$do="INSERT INTO ".$pms_db_prefix."menu (name,sort,typ,cat,subcat,item,usertyp,plugin,extern,visible,popup) VALUES ('$name','$sort','$typ','$cat','$subcat','$item','$usertyp','$plugin','$extern','$visible','$popup');";
-					if($edit)
-					{
-						$do="UPDATE ".$pms_db_prefix."menu SET name = '$name', sort = '$sort', typ = '$typ', cat = '$cat', subcat = '$subcat', item = '$item', usertyp = '$usertyp', plugin = '$plugin', extern = '$extern', visible = '$visible', popup = '$popup' WHERE id = '$edit' LIMIT 1;";
-					}
-					if($pms_db_connection->query($do))
-					$ok="Menüeintrag erfolgreich gespeichert!";
-					else
-					$error="Fehler beim Speichern des Menü-Eintrags!";
-					ok_error();
-					$edit="";
-					$new="";
-					$post=0;
-				}
-			}
 		}
 		if(!$action && !$modul)
 		{
