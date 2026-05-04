@@ -70,7 +70,17 @@ function render_admin_entity_list($table, $columns, $action_name, $where_clause 
 
 	$link = $pms_db_connection->query(make_sql($table, $where_clause, implode(',', $columns) . ",id"));
 
-	if(!$link || !mysqli_num_rows($link))
+	if(!$link)
+		return '<p>Datenbankfehler.</p>';
+
+	$result_count = 0;
+	if(method_exists($link, 'num_rows'))
+		$result_count = $link->num_rows;
+	else if(function_exists('mysqli_num_rows'))
+		/** @psalm-suppress InvalidArgument */
+		$result_count = mysqli_num_rows($link);
+
+	if($result_count == 0)
 		return '<p>Keine Einträge gefunden.</p>';
 
 	$html = '<table><tr>';
