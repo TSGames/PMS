@@ -30,7 +30,7 @@
 	 * Strip HTML tags from string
 	 *
 	 * @param str String with HTML
-	 * @return string Plain text without HTML
+	 * @return string|array<array-key, string> Plain text without HTML
 	 */
 	function remove_html($str)
 	{
@@ -149,7 +149,7 @@
 	 * Clean comment content
 	 *
 	 * @param str Comment text
-	 * @return string Cleaned comment
+	 * @return string|array<array-key, string> Cleaned comment
 	 */
 	function clear_comment($str)
 	{
@@ -180,7 +180,7 @@
 	 * Retrieve comments for item
 	 *
 	 * @param id Item ID
-	 * @return array Array of comments
+	 * @return string|array Array of comments
 	 */
 	function get_comments($id)
 	{
@@ -189,7 +189,7 @@
 			{
 			$a=count_db_exp("comments","WHERE item = '$id'");
 			$b=get_comment_str($a);
-			
+
 			return make_link_mark($b,"comments=all","","",$id,"comments");
 		}
 		return "";
@@ -338,7 +338,7 @@
 				 *
 				 * @param who Search target
 				 * @param exp Search expression
-				 * @return string SQL LIMIT clause
+				 * @return string|null SQL LIMIT clause
 				 */
 				function make_limits_search($who,$exp)
 				{
@@ -420,7 +420,7 @@
 				 * Get most discussed content
 				 *
 				 * @param id Content ID
-				 * @return array Most discussed items
+				 * @return string Most discussed items
 				 */
 				function content_mostdiscussed($id)
 				{
@@ -464,7 +464,7 @@
 				 * @param id Content ID
 				 * @param file File reference
 				 * @param link Link reference
-				 * @return string Content with downloads replaced
+				 * @return string|array<array-key, string> Content with downloads replaced
 				 */
 				function replace_download($str,$id,$file,$link)
 				{

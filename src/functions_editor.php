@@ -3,7 +3,7 @@
 
 	/**
 	 * Get template placeholder markers
-	 * @return string Template markers
+	 * @return array<int, string> Template markers
 	 */
 	function get_template()
 	{
@@ -144,7 +144,7 @@
 	{
 		if(!$edit_mode) return $string;
 		if($mode==2) $string=cleanup_content($string);
-		//if($mode) $string=my_stripslashes($string);
+		$str="";
 		$add='rows="4" cols="50"';
 		if($mode==2) $add='rows="20" width="100%"';
 		if(!$mode) $str.='<input type="text" name="edit_'.$name.'" id="edit_'.$name.'" class="'.$class.'" value="'.str_replace('"',"&quot;",$string).'">';

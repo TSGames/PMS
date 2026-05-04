@@ -74,7 +74,7 @@ $language_folder="dialoges";
 
 $template_lists_folder="template_lists";
 
-if(!file_exists("/var/template/template.html") && (PMS_FRONTEND==1 || PMS_BACKEND==1))
+if(!file_exists("/var/template/template.html") && (@PMS_FRONTEND==1 || @PMS_BACKEND==1))
 	{
 	die(header_def().'Es wurde kein Template gefunden! (/var/template/template.html fehlt!)<br>Laden Sie ein Template hoch.</div></h1></td></tr></table>
 </body>
@@ -86,6 +86,8 @@ $template_content=@file_get_contents("/var/template/template.html");
 
 if(!$pms_db_connection->valid())
 	{
+	if(file_exists("/var/template/template.html"))
+	{
 	$a=trim(file_get_contents("/var/template/template.html"));
 	$error="<h1>Keine Verbindung zur Datenbank mï¿½glich!</h1>
 <h2>Administrative Informationen: ".$pms_db_connection->error()."</h2>";
@@ -94,6 +96,7 @@ if(!$pms_db_connection->valid())
 	$a=str_replace($b,"Datenbank-Fehler",$a);
 	$a=do_check(make_dynamic($a));
 	die($a);
+	}
 }
 //mysqli_connect("","root","");
 //session_start was here before, but since static files it was set to another position
