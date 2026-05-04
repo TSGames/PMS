@@ -9,6 +9,7 @@ require('admin_actions_monitoring.php');
 require('admin_actions_ui.php');
 require('admin_actions_menu.php');
 require('admin_actions_content.php');
+require('admin_action_dispatcher.php');
 
 $modul=$_GET["modul"];
 
@@ -1110,67 +1111,14 @@ if($login==1)
 				}
 			}
 		}
-		if(!$action && !$modul || $action=="home")
+		if(!$action && !$modul)
 		{
-			handle_admin_home();
+			$action = 'home';
 		}
-			if($action=="menu")
-			{
-				handle_admin_menu();
-			}
-			if($action=="user")
-			{
-				handle_admin_user();
-			}
-			if($action=="cat")
-			{
-				handle_admin_cat();
-			}
-			if($action=="subcat")
-			{
-				handle_admin_subcat();
-			}
-			if($action=="item_restore")
-			{
-				handle_admin_item_restore();
-			}
-			if($action=="item_recover" && from_db("item",$_GET["item"],"id"))
-			{
-				handle_admin_item_recover();
-			}
-			if($action=="item")
-			{
-				handle_admin_item();
-			}
-			
-			if($action=="var")
-			{
-				handle_admin_var();
-			}
-			if($action=="bans")
-			{
-				handle_admin_bans();
-			}
-			if($action=="config")
-			{
-				handle_admin_config();
-			}
-			if($action=="poll")
-			{
-				handle_admin_poll();
-			}
-			if($action=="events")
-			{
-				handle_admin_events();
-			}
-			if($action=="backup")
-			{
-				handle_admin_backup();
-			}
-			if($action=="activity")
-			{
-				handle_admin_activity();
-			}
+		if($action && !$modul)
+		{
+			dispatch_admin_action($action);
+		}
 			echo $modul_content;
 			echo "</center></td></tr></table>";
 		}
