@@ -222,6 +222,27 @@ $id_para=@$_GET["id"];
 $action=@$_POST["action"] ?: @$_GET["action"];
 $modul=@$_GET["modul"];
 
+if($action === 'xlsx_import_ajax' && @$_SESSION['userid'])
+{
+	header('Content-Type: application/json');
+	if(!isset($_FILES['xlsx_file']) || $_FILES['xlsx_file']['error'] !== UPLOAD_ERR_OK)
+		{ echo json_encode(['error' => 'Upload fehlgeschlagen']); exit; }
+	@mkdir('images/uploads/temp/', 0755, true);
+	$temp = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
+	if(move_uploaded_file($_FILES['xlsx_file']['tmp_name'], $temp))
+	{
+		$result = parse_xlsx_to_text($temp);
+		@unlink($temp);
+		cleanup_xlsx_temp_files(1);
+		if(is_array($result) && isset($result['error']))
+			echo json_encode(['error' => $result['error']]);
+		else
+			echo json_encode(['content' => $result ?: '']);
+	}
+	else echo json_encode(['error' => 'Datei konnte nicht gespeichert werden']);
+	exit;
+}
+
 if(from_db("user",@$_SESSION['userid'],"typ")<2)
 {
 	delete_sessions();
@@ -514,66 +535,9 @@ if($login==1)
 				$post=2;
 			}
 		}
-		// Handle XLSX import
-		if(array_key_exists("import_xlsx",$_POST) && isset($_FILES['xlsx_import']))
-		{
-			$xlsx_file = $_FILES['xlsx_import'];
-
-			if($xlsx_file['error'] === UPLOAD_ERR_OK)
+			if(array_key_exists("item_step2",$_POST))
 			{
-				// Ensure temp directory exists
-				@mkdir('images/uploads/temp/', 0755, true);
-
-				// Move uploaded file to temp directory
-				$temp_file = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
-				if(move_uploaded_file($xlsx_file['tmp_name'], $temp_file))
-				{
-					// Parse XLSX file
-					$xlsx_result = parse_xlsx_to_text($temp_file);
-
-					if(is_array($xlsx_result) && isset($xlsx_result['error']))
-					{
-						$error = "XLSX Import Fehler: " . $xlsx_result['error'];
-					}
-					else if(is_string($xlsx_result) && !empty($xlsx_result))
-					{
-						// Get existing content
-						$existing_content = isset($_POST['content']) ? $_POST['content'] : '';
-
-						// Combine: prepend XLSX data to existing content with separator
-						if($existing_content)
-						{
-							$_POST['content'] = $xlsx_result . "\n\n--- Bestehender Inhalt ---\n\n" . $existing_content;
-						}
-						else
-						{
-							$_POST['content'] = $xlsx_result;
-						}
-						$ok = "XLSX Inhalt erfolgreich importiert";
-					}
-					else
-					{
-						$error = "XLSX Datei ist leer oder konnte nicht gelesen werden";
-					}
-
-					// Clean up temp file
-					@unlink($temp_file);
-					cleanup_xlsx_temp_files(1);
-				}
-				else
-				{
-					$error = "Fehler beim Hochladen der XLSX Datei";
-				}
-			}
-			else
-			{
-				$error = "Fehler beim Datei-Upload";
-			}
-		}
-
-		if(array_key_exists("item_step2",$_POST))
-		{
-			if($_POST["item_step2"]=="Übernehmen")
+				if($_POST["item_step2"]=="Übernehmen")
 			{
 				$post=2;
 			}
@@ -2417,11 +2381,36 @@ if($login==1)
 						<tr><td colspan=\"2\"><center>
 						<fieldset style=\"margin-top:10px; padding:10px; border:1px solid #ccc; width:90%;\">
 							<legend>XLSX Datei importieren</legend>
-							<input type=\"file\" name=\"xlsx_import\" accept=\".xlsx\" />
-							<button type=\"submit\" name=\"import_xlsx\" value=\"1\" style=\"margin-left:10px;\">XLSX Inhalt importieren</button>
+							<input type=\"file\" id=\"xlsx_file_picker\" accept=\".xlsx\" style=\"display:none\">
+							<button type=\"button\" onclick=\"document.getElementById('xlsx_file_picker').click()\">XLSX Inhalt importieren</button>
+							<span id=\"xlsx_status\" style=\"margin-left:10px;font-size:.9em;\"></span>
 							<br/><small>Zeichentabelle wird als Rohtext mit Leerzeichen als Trennzeichen eingefügt</small>
 						</fieldset>
-						</center></td></tr>";
+						</center></td></tr>
+						<tr style=\"display:none\"><td><script>
+						document.getElementById('xlsx_file_picker').addEventListener('change', function() {
+							if (!this.files.length) return;
+							var status = document.getElementById('xlsx_status');
+							status.textContent = 'Wird importiert...';
+							var fd = new FormData();
+							fd.append('xlsx_file', this.files[0]);
+							fetch('admin.php?action=xlsx_import_ajax', {method:'POST', body:fd})
+								.then(function(r){return r.json();})
+								.then(function(data){
+									if(data.error){status.textContent='Fehler: '+data.error;return;}
+									if(typeof tinyMCE!=='undefined' && tinyMCE.activeEditor){
+										var existing=tinyMCE.activeEditor.getContent({format:'text'}).trim();
+										tinyMCE.activeEditor.setContent(data.content+(existing?'\\n\\n--- Bestehender Inhalt ---\\n\\n'+existing:''));
+									} else {
+										var ta=document.querySelector('textarea[name=content]');
+										if(ta) ta.value=data.content+(ta.value?'\\n\\n--- Bestehender Inhalt ---\\n\\n'+ta.value:'');
+									}
+									status.textContent='Importiert ✓';
+								})
+								.catch(function(){status.textContent='Netzwerkfehler';});
+							this.value='';
+						});
+						</script></td></tr>";
 						if($_SESSION['tinymce']==2) echo "<tr><td colspan=\"2\">
 						".'<input type="hidden" name="next" id="next" value="">
 						<input type="hidden" name="add_image" id="add_image" value="">
