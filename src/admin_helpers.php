@@ -23,7 +23,7 @@ function require_admin_permission($min_level = 2)
  *
  * @param string $table Table name
  * @param int $id Entity ID
- * @return object|false Database record or false
+ * @return string|null|false Database record or false
  */
 function load_admin_entity($table, $id)
 {
@@ -75,6 +75,7 @@ function render_admin_entity_list($table, $columns, $action_name, $where_clause 
 
 	$result_count = 0;
 	if(method_exists($link, 'num_rows'))
+		/** @psalm-suppress UndefinedPropertyFetch */
 		$result_count = $link->num_rows;
 	else if(function_exists('mysqli_num_rows'))
 		/** @psalm-suppress InvalidArgument */

@@ -64,7 +64,8 @@ function handle_admin_var()
 		echo '[<a href="admin.php?action='.$action.'&new=yes">Neue Regel</a>]<br><br>';
 		echo form()."<input type=\"checkbox\" name=\"poll_search\" value=\"1\"".$poll_search."> Zeige keine Such-Kriterien | <input type=\"checkbox\" name=\"poll_replace\" value=\"1\"".$poll_replace."> Zeige keine Ersetz-Kriterien <input type=\"submit\" name=\"poll_filter\" value=\"OK\"></form>";
 		echo '<table class="group">';
-		unset($search);unset($replace);
+		$search = '';
+		$replace = '';
 		if(!$_SESSION['poll_search'])
 		{
 			$search="Suche:150px|";
