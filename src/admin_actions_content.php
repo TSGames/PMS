@@ -1,6 +1,440 @@
 <?php
 // Module: admin_actions_content.php
-// Handlers for content management: categories, subcategories, item recovery/restore
+// Handlers for content management: categories, subcategories, items, recovery/restore
+// Includes POST form submission processors
+
+// Process POST submissions for content-related actions
+function process_content_post_handlers()
+{
+	global $pms_db_connection, $pms_db_prefix, $_SESSION, $_POST, $_GET, $_FILES;
+	global $edit, $action, $error, $ok, $post, $item_filter, $item_filter2, $delete;
+	global $subcat_filter, $add_image, $add_image2, $add_image2_img;
+	global $supported_img, $image_path;
+
+	// AJAX XLSX import endpoint
+	if($action === 'xlsx_import_ajax' && @$_SESSION['userid'])
+	{
+		header('Content-Type: application/json');
+		if(!isset($_FILES['xlsx_file']) || $_FILES['xlsx_file']['error'] !== UPLOAD_ERR_OK)
+			{ echo json_encode(['error' => 'Upload fehlgeschlagen']); exit; }
+		@mkdir('images/uploads/temp/', 0755, true);
+		$temp = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
+		if(move_uploaded_file($_FILES['xlsx_file']['tmp_name'], $temp))
+		{
+			$result = parse_xlsx_to_text($temp);
+			@unlink($temp);
+			cleanup_xlsx_temp_files(1);
+			if(is_array($result) && isset($result['error']))
+				echo json_encode(['error' => $result['error']]);
+			else
+				echo json_encode(['content' => $result ?: '']);
+		}
+		else echo json_encode(['error' => 'Datei konnte nicht gespeichert werden']);
+		exit;
+	}
+
+	// Process category delete
+	if(array_key_exists("cat_delete",$_POST))
+	{
+		$action="cat";
+		$delete=$_POST['id'];
+		$i=0;
+		$link=$pms_db_connection->query(make_sql("subcat","cat = '$delete'","id"));
+		while($link && $a=$pms_db_connection->fetchObject($link))
+		{
+			del_contentimg("subcat",$a->id,$a->image);
+		}
+		$link=$pms_db_connection->query(make_sql("item","cat = '$delete'","id"));
+		while($link && $a=$pms_db_connection->fetchObject($link))
+		{
+			del_contentimg("item",$a->id,$a->image);
+		}
+		$i+=$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."cat WHERE id = '$delete' LIMIT 1;") !== false;
+		$i+=$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."subcat WHERE cat = '$delete';") !== false;
+		$link=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix."item WHERE cat = '$delete';");
+		while($link && $a=$pms_db_connection->fetchObject($link))
+		{
+			$id=$a->id;
+			$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."comments WHERE item = '$id'");
+		}
+		$i+=$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."item WHERE cat = '$delete';");
+		if($i>0)
+			$ok="Kategorie erfolgreich entfernt!";
+		ok_error();
+		$delete="";
+	}
+
+	// Process category save
+	if($_POST["cat"]=="Speichern")
+	{
+		$action="cat";
+		$edit=$_POST['id'];
+		$name=$_POST['name'];
+		$sort=$_POST['sort'];
+		$available=$_POST['available'];
+		$list=$_POST['list'];
+		$do="INSERT INTO ".$pms_db_prefix."cat (name,sort,available,list) VALUES ('$name','$sort','$available','$list');";
+		if($edit)
+		{
+			$do="UPDATE ".$pms_db_prefix."cat SET name = '$name',sort = '$sort', available = '$available', list = '$list' WHERE id = '$edit' LIMIT 1;";
+		}
+		if($pms_db_connection->query($do))
+			$ok="Kategorie erfolgreich gespeichert!";
+		else
+			$error="Fehler beim Speichern der Kategorie!";
+		ok_error();
+		$edit="";
+	}
+
+	// Process subcategory delete
+	if(array_key_exists("subcat_delete",$_POST))
+	{
+		$action="subcat";
+		$delete=$_POST['id'];
+		$i=0;
+		$link=$pms_db_connection->query(make_sql("item","subcat = '$delete'","id"));
+		while($link && $a=$pms_db_connection->fetchObject($link))
+		{
+			del_contentimg("item",$a->id,$a->image);
+		}
+		del_contentimg("subcat",$delete,from_db("subcat",$delete,"image"));
+		$i+=$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."subcat WHERE id = '$delete' LIMIT 1;");
+		$link=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix."item WHERE subcat = '$delete';");
+		while($link && $a=$pms_db_connection->fetchObject($link))
+		{
+			$id=$a->id;
+			$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."comments WHERE item = '$id'");
+		}
+		$i+=$pms_db_connection->query("DELETE FROM ".$pms_db_prefix."item WHERE subcat = '$delete';");
+		if($i>0)
+			$ok="Unterkategorie erfolgreich entfernt!";
+		ok_error();
+		$delete="";
+	}
+
+	// Process subcategory save
+	if($_POST["subcat"]=="Speichern")
+	{
+		$action="subcat";
+		$edit=$_POST['id'];
+		$name=$_POST['name'];
+		$description=$_POST['description'];
+		$sort=$_POST['sort'];
+		$cat=$_POST['uppcat'];
+		$available=$_POST['available'];
+		$jump=$_POST['jump'];
+		$image=$_FILES["image"]["name"];
+		$_SESSION['subcat_filter']=$cat;
+		$list=$_POST['list'];
+		$subcat_filter=$cat;
+		if($image)
+			$end=substr($image,-3);
+		else if($_POST["image_add"])
+		{
+			if(!$_POST["image_delete"])
+				$image2=$_POST["image_add"];
+			$end=$_POST["image_add"];
+		}
+		if($edit && $_POST['image_delete'])
+		{
+			del_contentimg("subcat",$edit,$end);
+			$img="image = 0,";
+		}
+		$do="INSERT INTO ".$pms_db_prefix."subcat (name,description,sort,cat,available,jump,list) VALUES ('$name','$description','$sort','$cat','$available','$jump','$list');";
+		if($edit)
+		{
+			$do="UPDATE ".$pms_db_prefix."subcat SET name = '$name', description = '$description',".$img." sort = '$sort', cat = '$cat', available = '$available', jump = '$jump', list = '$list' WHERE id = '$edit' LIMIT 1;";
+			$link=$pms_db_connection->query(make_sql("item","subcat = '$edit'","id"));
+			while($link && $a=$pms_db_connection->fetchObject($link))
+			{
+				$pms_db_connection->query("UPDATE ".$pms_db_prefix."item set cat = '$cat' WHERE id = '$a->id' LIMIT 1");
+			}
+		}
+		if($pms_db_connection->query($do))
+		{
+			if($image || $image2)
+			{
+				if(!$image || in_array(strtolower($end),$supported_img))
+				{
+					if(!$edit)
+					{
+						$link=$pms_db_connection->query(make_sql("subcat","","id"));
+						while($link && $a=$pms_db_connection->fetchObject($link))
+						{
+							$edit=$a->id;
+						}
+					}
+					$target=$image_path."subcat/".$edit.".".$end;
+					if($image)
+					{
+						copy($_FILES["image"]["tmp_name"],$target);
+						create_img($target,64,64);
+					}
+					$pms_db_connection->query("UPDATE ".$pms_db_prefix."subcat SET image = '$end' WHERE id = '$edit' LIMIT 1;");
+				}
+			}
+			$ok="Unterkategorie erfolgreich gespeichert!";
+		}
+		else
+			$error="Fehler beim Speichern der Unterkategorie!<br>" . $pms_db_connection->error();
+		ok_error();
+		$edit="";
+	}
+
+	// Process item filter
+	if(array_key_exists("item_filter",$_POST))
+	{
+		$action="item";
+		$item_filter=$_POST["uppcat"];
+		$_SESSION["item_filter"]=$_POST["uppcat"];
+		$item_filter2=$_POST["uppcat2"];
+		$ok=0;
+		$link=$pms_db_connection->query(make_sql("subcat","id = '$item_filter2' AND cat = '$item_filter'","id"));
+		if($link)
+		{
+			$a=$pms_db_connection->fetchObject($link);
+			if($a->id)
+			{
+				$ok=1;
+			}
+		}
+		if($ok==0)
+		{
+			$item_filter2=0;
+		}
+		$_SESSION["item_filter2"]=$item_filter2;
+	}
+
+	// Process subcategory filter
+	if(array_key_exists("subcat_filter",$_POST))
+	{
+		$action="subcat";
+		$subcat_filter=$_POST["uppcat"];
+		$_SESSION["subcat_filter"]=$_POST["uppcat"];
+	}
+
+	// Process item step 1 (initial item form submission)
+	if(array_key_exists("item_step1",$_POST))
+	{
+		$action="item";
+		$edit=$_POST['id'];
+		$cat=$_POST['cat'];
+		$subcat=$_POST['subcat'];
+		$typ=$_POST['typ'];
+		$typ2=$_POST['typ2'];
+		$link=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix."subcat WHERE id = '$subcat' AND cat = '$cat' LIMIT 1");
+		$ok=0;
+		if($link && $typ!=3)
+		{
+			$a=$pms_db_connection->fetchObject($link);
+			if($a->id)
+			{
+				$ok=1;
+			}
+		}
+		if($typ==3 && $typ2)
+		{
+			$ok=1;
+		}
+		$post=1;
+		if($ok==1)
+		{
+			$post=2;
+		}
+	}
+
+	// Process item refresh action
+	if(array_key_exists("item_refresh",$_POST))
+	{
+		if($_POST['tinymce_vis'])
+		{
+			$_SESSION['tinymce']=$_POST['tinymce']+1;
+		}
+		$action="item";
+		$edit=$_POST['id'];
+		$post=1;
+	}
+
+	// Process item step 2 (main item form submission with content)
+	if(array_key_exists("item_step2",$_POST))
+	{
+		if($_POST["item_step2"]=="Übernehmen")
+		{
+			$post=2;
+		}
+		$action="item";
+		$edit=$_POST['id'];
+		$name=$pms_db_connection->escape($_POST['name']);
+		$description=$pms_db_connection->escape($_POST['description']);
+		$sort=$_POST['sort'];
+		$cat=$_POST['cat'];
+		$subcat=$_POST['subcat'];
+		$_SESSION['item_filter']=$cat;
+		$item_filter=$cat;
+		$_SESSION['item_filter2']=$subcat;
+		$item_filter2=$subcat;
+		if($typ==3)
+		{
+			$cat=0;
+			$subcat=0;
+		}
+		$content=$pms_db_connection->escape($_POST['content'], false);
+		$typ=$pms_db_connection->escape($_POST['typ']);
+		$typ2=$pms_db_connection->escape($_POST['typ2']);
+		$link=$pms_db_connection->escape($_POST['link']);
+		$user=$pms_db_connection->escape($_POST['user']);
+		$available=$pms_db_connection->escape($_POST['available']);
+		$visible=$pms_db_connection->escape($_POST['visible']);
+		$image=$pms_db_connection->escape($_FILES["image"]["name"]);
+		$showuser=$pms_db_connection->escape($_POST['showuser']);
+		$rate=$pms_db_connection->escape($_POST['rate']);
+		$comments=$pms_db_connection->escape($_POST['comments']);
+		$time=time();
+		if(!$_POST["create_at_use"])
+		{
+			$d=explode(".",$_POST["create_at_date"]);
+			$t=explode(":",$_POST["create_at_time"]);
+			$time_posted=@mktime($t[0],$t[1],0,$d[1],$d[0],$d[2]);
+			if($edit)$time_create_change=", time = '".$time_posted."'";
+			else $time=$time_posted;
+		}
+
+		if($image)
+			$end=substr($image,-3);
+		else if($_POST["image_add"])
+		{
+			if(!$_POST["image_delete"])
+				$image2=$_POST["image_add"];
+			$end=$_POST["image_add"];
+		}
+		if($edit && $_POST['image_delete'])
+		{
+			del_contentimg("item",$edit,$end);
+			$img="image = 0,";
+		}
+		if($typ==3)
+		{
+			$pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET special = 0 WHERE special = '$typ2';");
+		}
+		$do="INSERT INTO ".$pms_db_prefix."item (cat,subcat,name,typ,special,showuser,rate,comments,description,content,image,sort,user,time,link,available,visible) VALUES ('$cat','$subcat','$name','$typ','$typ2','$showuser','$rate','$comments','$description','$content','$image','$sort','$user','$time','$link','$available','$visible');";
+		if($edit)
+			$do="UPDATE ".$pms_db_prefix."item SET cat = '$cat', subcat = '$subcat', name = '$name', typ = '$typ', special = '$typ2',showuser = '$showuser', rate = '$rate', comments = '$comments', description = '$description', content = '$content',".$img." sort = '$sort', user = '$user', link = '$link', available = '$available', visible = '$visible', time_changed = '$time'".$time_create_change." WHERE id = '$edit' LIMIT 1;";
+		$save_ok=0;
+		if($pms_db_connection->query($do))
+		{
+			if(!$edit)
+			{
+				$edit=$pms_db_connection->lastInsertId();
+			}
+			if($image || $image2)
+			{
+				if(!$image || in_array(strtolower($end),$supported_img))
+				{
+					del_contentimg("item",$edit,from_db("item",$edit,"image"));
+					if($image)
+					{
+						$target=$image_path."item/".$edit.".".$end;
+						$target2=$image_path."item/".$edit."_large.".$end;
+						$target3=$image_path."item/".$edit."_full.".$end;
+						@copy($_FILES["image"]["tmp_name"],$target);
+						create_img($target,64,64);
+						if($typ!=1)
+						{
+							@copy($_FILES["image"]["tmp_name"],$target2);
+							create_img($target2,640,480);
+							if($_POST["full_image"]) @copy($_FILES["image"]["tmp_name"],$target3);
+						}
+					}
+					$pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET image = '$end' WHERE id = '$edit' LIMIT 1;");
+				}
+			}
+			$save_ok=1;
+			$ok="<div align=\"center\">Inhalt erfolgreich gespeichert!<br><a href=\"index.php?item=".$edit."\">Inhalt anzeigen</a></div>";
+		}
+		else {
+			$error="Fehler beim Speichern des Inhalts!";
+		}
+		if($save_ok && $_POST["next"]=="image") $add_image=$edit;
+		else if($_POST["next"]!="dragdrop") ok_error();
+		if($_POST["item_step2"]!="Übernehmen")
+		{
+			unset($edit);
+		}
+	}
+
+	// Process add_image (drag-drop image upload for items)
+	if($_POST["add_image"]!="")
+	{
+		$action="item";
+		$id=$_POST["item"];
+		if(!$id){
+			$id=$pms_db_connection->lastInsertId();
+		}
+		$path="images/uploads/";
+		if($_POST["drag_name"]){
+			$_FILES["image"]["name"]=$_POST["drag_name"];
+			$img_data=rawurldecode($_POST["drag_data"]);
+		}
+		if($_FILES["image"]["name"])
+		{
+			$fname=link_name($_FILES["image"]["name"],"."); // clear all strange characters
+			$fname2=explode(".",$fname);
+			$end=strtolower($fname2[count($fname2)-1]);
+			unset($fname2[count($fname2)-1]);
+			$fname_first=implode(".",$fname2);
+			if(!in_array($end,$supported_img))
+			{
+				$add_image=$id;
+				$error="Nicht unterstütztes Dateiformat";
+			}
+			else
+			{
+				for($i=0;;$i++)
+				{
+					if($i) $check=$fname_first.$i.".".$end;
+					else $check=$fname;
+					if(!file_exists($path.$check))
+					{
+						@mkdir($path);
+						if($img_data){
+							$f=fopen($path.$check,"wb+");
+							if($f){
+								fwrite($f,$img_data);
+								fclose($f);
+								$ok=true;
+							}
+							else
+								$ok=false;
+						}
+						else{
+							$ok=copy($_FILES["image"]["tmp_name"],$path.$check);
+						}
+						if(!$ok)
+						{
+							$error="Fehler beim Anlegen der Datei";
+							$add_image=$id;
+						}
+						break;
+					}
+				}
+				if(!$error)
+				{
+					$add_image2=$id;
+					$add_image2_img=$check;
+				}
+			}
+		}
+		else
+		{
+			$error="Keine Datei ausgewählt";
+			$add_image=$id;
+		}
+		if($error) ok_error();
+	}
+}
+
+// Call POST processors on module load
+process_content_post_handlers();
 
 /**
  * Handle cat (category) action

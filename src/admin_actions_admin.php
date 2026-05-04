@@ -1,6 +1,167 @@
 <?php
 // Module: admin_actions_admin.php
 // Handlers for bans, config, and user administration actions
+// Includes POST form submission processors
+
+// Process POST submissions for admin-related actions
+function process_admin_post_handlers()
+{
+	global $pms_db_connection, $pms_db_prefix, $_SESSION, $_POST, $_FILES;
+	global $edit, $action, $error, $ok, $post, $confirmation_dialogs;
+
+	// Process bans save
+	if($_POST['bans']=="Speichern")
+	{
+		$action="bans";
+		$edit=$_POST['id'];
+		$ip=$_POST['ip'];
+		$reason=$_POST['reason'];
+		$time=time()+str_replace(",",".",$_POST['time'])*60*60*24;
+		if(str_replace(",",".",$_POST['time'])<=0)
+		{
+			$time=0;
+		}
+		$do="INSERT INTO ".$pms_db_prefix."bans (ip,reason,time) VALUES ('$ip','$reason','$time');";
+		if($edit)
+		{
+			$do="UPDATE ".$pms_db_prefix."bans SET ip = '$ip', reason = '$reason', time = '$time' WHERE id = '$edit' LIMIT 1;";
+		}
+		if($pms_db_connection->query($do))
+			$ok="Ban erfolgreich gespeichert!";
+		else
+			$error="Fehler beim Speichern des Bans!";
+		ok_error();
+	}
+
+	// Process config save
+	if($_POST['config']=='Speichern' && from_db("user",$_SESSION['userid'],"typ")>=3)
+	{
+		$action="config";
+		$name=$_POST['name'];
+		$title=$_POST['title'];
+		$page=$_POST['page'];
+		$mail=$_POST['mail'];
+		$rate=$_POST['rate'];
+		$comments=$_POST['comments'];
+		$commentssmall=$_POST['commentssmall'];
+		$numcomments=$_POST['numcomments'];
+		$mincomments=$_POST['mincomments'];
+		$numtopuser=$_POST['numtopuser'];
+		$picquali=$_POST['picquali'];
+		$menubreak=$_POST['menubreak'];
+		$page_limit=$_POST['page_limit'];
+		$list_rows=$_POST['list_rows'];
+		$predownload=$_POST['predownload'];
+		$visitors_increment=$_POST['visitors_increment'];
+		$register_activated=$_POST['register_activated'];
+		$password_recovery_activated=$_POST['password_recovery_activated'];
+		$guestbook_activated=$_POST['guestbook_activated'];
+		$writtenby=$_POST['writtenby'];
+		$vertical=$_POST['vertical'];
+		$menu_width=$_POST['menu_width'];
+		$menu_height=$_POST['menu_height'];
+		$editor=$_POST['editor'];
+		$smileys=$_POST['smileys'];
+		$safemail=$_POST['safemail'];
+		$topusers=$_POST['topusers'];
+		$visitors_lifetime=$_POST["visitors_lifetime"];
+		$speciallinks=$_POST["speciallinks"];
+		$latest_comments_days=$_POST["latest_comments_days"];
+		$latest_comments_chars=$_POST["latest_comments_chars"];
+		$language=$_POST["language"];
+		$allow_compress=$_POST["allow_compress"];
+		$menu_mode=$_POST['menu_mode'];
+		$search_list=$_POST['search_list'];
+		$visitors_password=$pms_db_connection->escape($_POST['visitors_password']);
+		if($visitors_lifetime<0)
+		{
+			$visitors_lifetime=0;
+		}
+		if($picquali<10)
+		{
+			$picquali=10;
+		}
+		if($picquali>100)
+		{
+			$picquali=100;
+		}
+		if($page_limit<1)
+		{
+			$page_limit=1;
+		}
+		if($numcomments<0)
+		{
+			$numcomments=0;
+		}
+		if($mincomments<0)
+		{
+			$mincomments=0;
+		}
+		if($numtopuser<0)
+		{
+			$numtopuser=0;
+		}
+		if($menu_width<0)
+		{
+			$menu_width=0;
+		}
+		if($menu_height<0)
+		{
+			$menu_height=0;
+		}
+		foreach($confirmation_dialogs as $f)
+		{
+			$pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET ".$f[1]." = '0' WHERE typ >= '2'");
+			if($_POST[$f[0]]) {
+				for($i=0;$i<count($_POST[$f[0]]);$i++)
+				{
+					$pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET ".$f[1]." = '1' WHERE id = '".$_POST[$f[0]][$i]."'");
+				}
+			}
+		}
+		if($pms_db_connection->query("UPDATE ".$pms_db_prefix."config SET name = '$name', title = '$title', page = '$page', mail = '$mail', rate = '$rate', comments = '$comments', commentssmall = '$commentssmall', numcomments = '$numcomments', mincomments = '$mincomments', numtopuser = '$numtopuser', predownload = '$predownload', writtenby = '$writtenby', picquali = '$picquali', menubreak = '$menubreak', vertical = '$vertical', menu_width = '$menu_width', menu_height = '$menu_height', page_limit = '$page_limit', list_rows = '$list_rows', visitors_increment = '$visitors_increment', visitors_lifetime = '$visitors_lifetime', register_activated = '$register_activated', password_recovery_activated = '$password_recovery_activated', guestbook_activated = '$guestbook_activated', editor = '$editor', safemail = '$safemail', topusers = '$topusers', speciallinks = '$speciallinks', latest_comments_days= '$latest_comments_days', latest_comments_chars = '$latest_comments_chars', language = '$language', allow_compress = '$allow_compress', menu_mode = '$menu_mode', search_list = '$search_list', visitors_password = '$visitors_password', smileys = '$smileys';"))
+			$ok="Einstellungen erfolgreich gespeichert!";
+		else
+			$error="Fehler beim Speichern!";
+		ok_error();
+	}
+
+	// Process user save
+	if($_POST["user"]=="Speichern" && from_db("user",$_POST['id'],"typ")<=from_db("user",$_SESSION['userid'],"typ"))
+	{
+		$post=1;
+		$edit=$_POST['id']*1;
+		$action="user";
+		$name=$_POST['name'];
+		$password=$_POST['password'];
+		$passwordr=$_POST['passwordr'];
+		$mail=$_POST['mail'];
+		$typ=$_POST['typ'];
+		if($edit==$_SESSION["userid"] && $typ<from_db("user",$_SESSION['userid'],"typ")) $typ=from_db("user",$_SESSION['userid'],"typ");
+		if($typ>from_db("user",$_SESSION['userid'],"typ")) $typ=from_db("user",$_SESSION['userid'],"typ");
+		$active=$_POST['active'];
+		if($edit==$_SESSION["userid"] && !$active)
+		{
+			$error="Sie können nicht Ihren aktuellen Account sperren.";
+			$post=0;
+			$edit=0;
+		}
+		else
+		{
+			$a=make_user($edit,$name,$password,$passwordr,$mail,$_POST['website'],$typ,$_FILES["image"]["name"],$_FILES["image"]["tmp_name"],$_POST['image_delete'],$_POST['bday'],$_POST['top'],$active,0,$_POST['signatur'],$_POST['showmail']);
+			if(is_array($a))
+			{
+				if($a[1])$ok=$a[0];
+				else $error=$a[0];
+				$post=0;
+				$edit=0;
+			}
+			else
+				$error=$a;
+		}
+		ok_error();
+	}
+}
 
 /**
  * Handle bans (IP ban management) action
@@ -406,5 +567,7 @@ function handle_admin_user()
 		<br>'.$num_user.' Benutzer registriert.';
 	}
 }
+
+process_admin_post_handlers();
 
 ?>
