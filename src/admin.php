@@ -252,54 +252,46 @@ echo ob_get_clean();
 if($login==1)
 {
 	unset($a);
-	echo '<label id="info_1" style="z-index:2;background-color:#efefef;padding: 5px;box-shadow:3px 3px 5px #00000088;position:absolute;display:none;">a</label>
-	<label id="info_2" style="opacity: .5;z-index:1;color:#606060;background-color:#606060;position:absolute;display:none;">a</label>';
-	echo "
-	<table width=\"100%\" height=\"100%\" cellspacing=\"0\" cellpadding=\"0\" class=\"main-table\"><tr><td class=\"admin_menu\" width=\"250px\">
-	<div id=\"menu_id\" class=\"menu_div\">
-	<table class=\"menu\" cellspacing=\"0\" width=\"250px\">";
-	echo "</td></tr>
-	<tr><td class=\"menu_welcome\">Hallo, ".from_db("user",$_SESSION['userid'],"name")." (<a href=\"admin.php?action=logout\">Logout</a>)";
-	echo '<tr><td>Menü</td></tr>
-	<tr><td>
-	<table cellspacing="0" cellpadding="0">';
-	
+	echo '<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>';
+	echo '<div class="admin-layout">';
+	echo '<aside class="admin-sidebar" id="admin-sidebar">';
+	echo '<div class="sidebar-header">'.htmlspecialchars($config_values->name).'</div>';
+	echo '<div class="sidebar-user">Hallo, '.from_db("user",$_SESSION['userid'],"name").' (<a href="admin.php?action=logout">Logout</a>)</div>';
+	echo '<nav class="sidebar-nav">';
+	echo '<div class="nav-section-label">Navigation</div>';
+	echo '<ul class="nav-list">';
 	for($i=0;$i<count($action_name);$i++)
 	{
-		$add="";
+		$icon="";
 		$file=$image_path."admin/".$action_list[$i].".png";
-		if(file_exists($file)) $add='<img src="'.$file.'" width="16px" height="16px">';
+		if(file_exists($file)) $icon='<img src="'.$file.'" width="16" height="16" alt="">';
 		$href='admin.php?action='.$action_list[$i];
-		unset($target);
+		$target="";
 		if($action_list[$i]=="page"){
 			$href="index.php";
 			$target=' target="_blank"';
 		}
-		echo '<tr><td class="menu_icon">'.$add.'</td><td><a onmouseover="show_info(\''.$action_info[$i].'\')" onmouseout="hide_info()" href="'.$href.'"'.$target.'>'.$action_name[$i].'</a></td></tr>
-		';
+		$active=($action==$action_list[$i]) ? ' active' : '';
+		echo '<li class="nav-item'.$active.'"><a href="'.$href.'"'.$target.' title="'.htmlspecialchars($action_info[$i]).'"><span class="nav-icon">'.$icon.'</span><span class="nav-label">'.htmlspecialchars($action_name[$i]).'</span></a></li>';
 	}
-	echo "</table></td></tr>";
+	echo '</ul>';
 	if(count($modul_name))
 	{
-		echo '
-		<tr><td>Module</td></tr>
-		<tr><td>
-		<table cellspacing="0" cellpadding="0">
-		';
-		$i=0;
+		echo '<div class="nav-divider"></div>';
+		echo '<div class="nav-section-label">Module</div>';
+		echo '<ul class="nav-list">';
 		foreach($modul_name as $a)
 		{
-			$add="";
+			$icon="";
 			$file=$image_path."admin/".$a[1].".png";
-			if(file_exists($file)) $add='<img src="'.$file.'" width="16px" height="16px">';
-			echo '<tr><td class="menu_icon">'.$add.'</td><td><a href="admin.php?modul='.$a[1].'">'.$a[0].'</a></td></tr>
-			';
+			if(file_exists($file)) $icon='<img src="'.$file.'" width="16" height="16" alt="">';
+			echo '<li class="nav-item"><a href="admin.php?modul='.htmlspecialchars($a[1]).'"><span class="nav-icon">'.$icon.'</span><span class="nav-label">'.htmlspecialchars($a[0]).'</span></a></li>';
 		}
-		echo "</table></td></tr>";
+		echo '</ul>';
 	}
-	echo "</table>
-	</td><td class=\"admin_content\"><div align=\"center\">
-	";
+	echo '</nav>';
+	echo '</aside>';
+	echo '<main class="admin-main"><div class="admin-content-inner">';
 	$update_info="update.info";
 	if($_SESSION["config_id"]) $update_info="update_".$_SESSION["config_id"].".info";
 	if(!file_exists($update_info))
@@ -3420,38 +3412,13 @@ if($login==1)
 		{
 			echo "</center></td></tr></table>";
 		}
-		echo "</div></td></tr></table>";
+		echo "</div></main></div>";
 	}
 	?>
 	<script type="text/javascript">
-	var menu_height=400;
-	function scroll_menu()
-	{
-		var a1,a2,a3;
-		var ie=0;
-		if (navigator.appName == 'Microsoft Internet Explorer') {
-			ie=1;
-			a1=document.body.scrollTop;
-			a2=document.body.clientWidth;
-			a3=document.body.clientHeight;
-		}
-		else
-		{
-			a1=window.pageYOffset;
-			a2=window.innerWidth;
-			a3=window.innerHeight;
-		}
-		var top_h=-5;
-		if(a3>menu_height)
-		top_h=a1-5;
-		
-		document.getElementById("menu_id").style.top=top_h;
-		
-		if(document.getElementById("help_id"))
-			document.getElementById("help_id").style.width=a2-34;
-	}
-	scroll_menu();
-	window.setInterval("scroll_menu()", 1);
+	document.getElementById('sidebar-toggle').addEventListener('click', function() {
+		document.getElementById('admin-sidebar').classList.toggle('open');
+	});
 	</script>
 	</body>
 	</html>
