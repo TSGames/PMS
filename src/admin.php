@@ -376,21 +376,6 @@ if($login==1)
 	}
 	if(!$found)
 	{
-		if($_POST['poll_filter']=="OK")
-		{
-			$action="var";
-			// Workaround because a PHP Bug warning
-			$_SESSION['poll_search']=0;
-			$_SESSION['poll_replace']=0;
-			if($_POST['poll_search'])
-			{
-				$_SESSION['poll_search']=1;
-			}
-			if($_POST['poll_replace'])
-			{
-				$_SESSION['poll_replace']=1;
-			}
-		}
 		if($_POST["item_restore"]) $action="item_restore";
 
 		if($_POST['events']=="OK")
@@ -398,62 +383,7 @@ if($login==1)
 			$action="events";
 			$_SESSION['last_events']=$_POST['last_events'];
 		}
-		if($_POST['poll']=="Speichern")
-		{
-			$action="poll";
-			$edit=$_POST['id'];
-			$question=$_POST['question'];
-			$sort=$_POST['sort'];
-			$available=$_POST['available'];
-			
-			$do="INSERT INTO ".$pms_db_prefix."poll (question,sort,available";
-			for($i=1;$i<=10;$i++)
-			{
-				$do=$do.",answer".$i;
-			}
-			$do=$do.") VALUES ('$question','$sort','$available'";
-			for($i=1;$i<=10;$i++)
-			{
-				$do=$do.",'".$_POST['answer'.$i]."'";
-			}
-			$do=$do.")";
-			if($edit)
-			{
-				$do="UPDATE ".$pms_db_prefix."poll SET question = '$question', sort = '$sort', available = '$available'";
-				for($i=1;$i<=10;$i++)
-				{
-					$do=$do.", answer".$i." = '".$_POST['answer'.$i]."'";
-				}
-				$do=$do." WHERE id = '$edit'";
-			}
-			$do=$do.";";
-			if($pms_db_connection->query($do))
-			$ok="Umfrage erfolgreich gespeichert!";
-			else
-			$error="Fehler beim Speichern der Umfrage!";
-			ok_error();
-			$edit="";
-		}
 		
-		if($_POST['var']=="Speichern")
-		{
-			$action="var";
-			$edit=$_POST['id'];
-			$search=$_POST['search'];
-			$replace=$pms_db_connection->escape($_POST['replace']); // Addslashes doesn't work correct
-			$makebr=$_POST['makebr'];
-			$do="INSERT INTO ".$pms_db_prefix."dynamic (searcher,replacer,makebr) VALUES ('$search','$replace','$makebr');";
-			if($edit)
-			{
-				$do="UPDATE ".$pms_db_prefix."dynamic SET searcher = '$search', replacer = '$replace', makebr = '$makebr' WHERE id = '$edit' LIMIT 1;";
-			}
-			if($pms_db_connection->query($do))
-			$ok="Regel erfolgreich gespeichert!";
-			else
-			$error="Fehler beim Speichern der Regel!";
-			ok_error();
-			$edit="";
-		}
 		if(array_key_exists("backup",$_POST) && from_db("user",$_SESSION['userid'],"typ")>2)
 		{
 			$action="backup";

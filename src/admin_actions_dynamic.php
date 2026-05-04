@@ -1,6 +1,90 @@
 <?php
 // Module: admin_actions_dynamic.php
 // Handlers for var (search/replace rules) and poll (surveys) actions
+// Includes POST form submission processors
+
+// Process POST submissions for dynamic-related actions
+function process_dynamic_post_handlers()
+{
+	global $pms_db_connection, $pms_db_prefix, $_POST, $_SESSION;
+	global $action, $edit, $error, $ok;
+
+	// Process poll filter session storage
+	if($_POST['poll_filter']=="OK")
+	{
+		$action="var";
+		// Workaround because a PHP Bug warning
+		$_SESSION['poll_search']=0;
+		$_SESSION['poll_replace']=0;
+		if($_POST['poll_search'])
+		{
+			$_SESSION['poll_search']=1;
+		}
+		if($_POST['poll_replace'])
+		{
+			$_SESSION['poll_replace']=1;
+		}
+	}
+
+	// Process poll save
+	if($_POST['poll']=="Speichern")
+	{
+		$action="poll";
+		$edit=$_POST['id'];
+		$question=$_POST['question'];
+		$sort=$_POST['sort'];
+		$available=$_POST['available'];
+
+		$do="INSERT INTO ".$pms_db_prefix."poll (question,sort,available";
+		for($i=1;$i<=10;$i++)
+		{
+			$do=$do.",answer".$i;
+		}
+		$do=$do.") VALUES ('$question','$sort','$available'";
+		for($i=1;$i<=10;$i++)
+		{
+			$do=$do.",'".$_POST['answer'.$i]."'";
+		}
+		$do=$do.")";
+		if($edit)
+		{
+			$do="UPDATE ".$pms_db_prefix."poll SET question = '$question', sort = '$sort', available = '$available'";
+			for($i=1;$i<=10;$i++)
+			{
+				$do=$do.", answer".$i." = '".$_POST['answer'.$i]."'";
+			}
+			$do=$do." WHERE id = '$edit'";
+		}
+		$do=$do.";";
+		if($pms_db_connection->query($do))
+			$ok="Umfrage erfolgreich gespeichert!";
+		else
+			$error="Fehler beim Speichern der Umfrage!";
+		ok_error();
+		$edit="";
+	}
+
+	// Process var save
+	if($_POST['var']=="Speichern")
+	{
+		$action="var";
+		$edit=$_POST['id'];
+		$search=$_POST['search'];
+		$replace=$pms_db_connection->escape($_POST['replace']);
+		$makebr=$_POST['makebr'];
+		$do="INSERT INTO ".$pms_db_prefix."dynamic (searcher,replacer,makebr) VALUES ('$search','$replace','$makebr');";
+		if($edit)
+		{
+			$do="UPDATE ".$pms_db_prefix."dynamic SET searcher = '$search', replacer = '$replace', makebr = '$makebr' WHERE id = '$edit' LIMIT 1;";
+		}
+		if($pms_db_connection->query($do))
+			$ok="Regel erfolgreich gespeichert!";
+		else
+			$error="Fehler beim Speichern der Regel!";
+		ok_error();
+		$edit="";
+	}
+}
 
 /**
  * Handle var (dynamic search/replace rules) action
@@ -187,5 +271,7 @@ function handle_admin_poll()
 		echo array_table($menu,5);
 	}
 }
+
+process_dynamic_post_handlers();
 
 ?>
