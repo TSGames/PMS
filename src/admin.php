@@ -219,7 +219,7 @@ $item_filter2=@$_SESSION["item_filter2"];
 $sort_do=@$_GET["sort"];
 $sort_para=@$_GET["pos"];
 $id_para=@$_GET["id"];
-$action=@$_GET["action"];
+$action=@$_POST["action"] ?: @$_GET["action"];
 $modul=@$_GET["modul"];
 
 if(from_db("user",@$_SESSION['userid'],"typ")<2)
@@ -2317,6 +2317,7 @@ if($login==1)
 						</script>';
 						
 						echo form("disable_buttons()").heading("Inhalt ".$add)."
+						<input type=\"hidden\" name=\"action\" value=\"item\">
 						<input type=\"hidden\" name=\"id\" value=\"".$edit."\">
 						<input type=\"hidden\" name=\"cat\" value=\"".$cat."\">
 						<input type=\"hidden\" name=\"subcat\" value=\"".$subcat."\">
