@@ -378,29 +378,7 @@ if($login==1)
 	{
 		if($_POST["item_restore"]) $action="item_restore";
 
-		if($_POST['events']=="OK")
-		{
-			$action="events";
-			$_SESSION['last_events']=$_POST['last_events'];
-		}
 		
-		if(array_key_exists("backup",$_POST) && from_db("user",$_SESSION['userid'],"typ")>2)
-		{
-			$action="backup";
-			$result=do_export();
-			if($result[0]==$result[1])
-			$ok="Der Export aller Dateien war erfolgreich.";
-			elseif($result==0)
-			$error="Der Export konnte nicht durchgeführt werden. Überprüfen Sie die Ordnerberechtigungen, oder wenden Sie sich an den Support!";
-			else
-			$error="Der Export konnte nicht vollständig durchgeführt werden. Möglicherweise wird auf einige Dateien momentan zugegriffen. Versuchen Sie es später erneut!";
-			ok_error();
-		}
-		if($_POST["send_bot_filter"])
-		{
-			$_SESSION['filter_bot']=$_POST['filter_bot'];
-			$action="activity";
-		}
 		if(array_key_exists("item_refresh",$_POST))
 		{
 			if($_POST['tinymce_vis'])

@@ -1,6 +1,42 @@
 <?php
 // Module: admin_actions_monitoring.php
 // Handlers for backup, events, activity monitoring actions
+// Includes POST form submission processors
+
+// Process POST submissions for monitoring-related actions
+function process_monitoring_post_handlers()
+{
+	global $pms_db_connection, $pms_db_prefix, $_POST, $_SESSION;
+	global $action, $error, $ok;
+
+	// Process events filter session storage
+	if($_POST['events']=="OK")
+	{
+		$action="events";
+		$_SESSION['last_events']=$_POST['last_events'];
+	}
+
+	// Process backup export
+	if(array_key_exists("backup",$_POST) && from_db("user",$_SESSION['userid'],"typ")>2)
+	{
+		$action="backup";
+		$result=do_export();
+		if($result[0]==$result[1])
+			$ok="Der Export aller Dateien war erfolgreich.";
+		elseif($result==0)
+			$error="Der Export konnte nicht durchgeführt werden. Überprüfen Sie die Ordnerberechtigungen, oder wenden Sie sich an den Support!";
+		else
+			$error="Der Export konnte nicht vollständig durchgeführt werden. Möglicherweise wird auf einige Dateien momentan zugegriffen. Versuchen Sie es später erneut!";
+		ok_error();
+	}
+
+	// Process activity bot filter session storage
+	if($_POST["send_bot_filter"])
+	{
+		$_SESSION['filter_bot']=$_POST['filter_bot'];
+		$action="activity";
+	}
+}
 
 /**
  * Handle events action
@@ -316,5 +352,7 @@ function handle_admin_activity()
 	}
 	echo "</table>";
 }
+
+process_monitoring_post_handlers();
 
 ?>
