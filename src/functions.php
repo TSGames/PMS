@@ -74,7 +74,8 @@ $language_folder="dialoges";
 
 $template_lists_folder="template_lists";
 
-if(!file_exists("/var/template/template.html") && (@PMS_FRONTEND==1 || @PMS_BACKEND==1))
+/** @psalm-suppress ParadoxicalCondition */
+if((@PMS_FRONTEND==1 || @PMS_BACKEND==1) && !file_exists("/var/template/template.html"))
 	{
 	die(header_def().'Es wurde kein Template gefunden! (/var/template/template.html fehlt!)<br>Laden Sie ein Template hoch.</div></h1></td></tr></table>
 </body>

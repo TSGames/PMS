@@ -64,6 +64,7 @@
 		global $pms_db_reference;
 		global $pms_db_prefix;
 		global $pms_db_connection;
+		$str="";
 		if(!$action) $action=$what;
 		$link=$pms_db_connection->query("SELECT id,".$name." FROM ".$pms_db_reference.$what." ORDER BY ".$sort.",".$name);
 		$link2=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix.$what." ORDER BY ".$sort.",".$name);
@@ -116,7 +117,7 @@
 
 	/**
 	 * Display OK or error message
-	 * @return string HTML message display
+	 * @return string|null HTML message display
 	 */
 	function ok_error()
 	{
@@ -165,7 +166,7 @@
 	 * Display term definition
 	 *
 	 * @param str Definition text
-	 * @return string HTML definition display
+	 * @return string|array<array-key, string> HTML definition display
 	 */
 	function def($str)
 	{

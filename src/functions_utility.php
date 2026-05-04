@@ -113,7 +113,7 @@ function reload_all($do=0)
  *
  * @param typ Action type
  * @param con Action context
- * @return string Action description
+ * @return string|null Action description
  */
 function convert_action($typ,$con)
 {
@@ -181,7 +181,7 @@ function header_def()
 		$a=$pms_db_connection->query("INSERT INTO ".$pms_db_prefix.$what." SELECT * FROM ".$pms_db_reference.$what." WHERE id = '$id'");
 		if($a) return 1;
 		global $error;
-		$error="Fehler beim Duplizieren<br>Technische Information: ".mysqli_error();
+		$error="Fehler beim Duplizieren<br>Technische Information: ".$pms_db_connection->error();
 		ok_error();
 		return 0;
 	}
@@ -390,7 +390,7 @@ function header_def()
 		fwrite($file,utf8_encode($exp));
 		fclose($file);
 		@mkdir($backup_folder.$time."/images");
-		unset($a);
+		$a=array();
 		$a[0]="images/subcat";
 		$a[1]="images/item";
 		$a[2]="images/user";
@@ -433,7 +433,10 @@ function header_def()
 	{
 		if($auto)
 			{
-			global $cat;global $subcat;
+			/** @psalm-suppress InvalidGlobal */
+			global $cat;
+			/** @psalm-suppress InvalidGlobal */
+			global $subcat;
 			$c=$cat;
 			$s=$subcat;
 		}
@@ -533,7 +536,7 @@ function header_def()
 	 * Calculate age from birthdate timestamp
 	 *
 	 * @param age Birthdate timestamp
-	 * @return int Age in years
+	 * @return int|float Age in years
 	 */
 	function make_age($age)
 	{
@@ -717,7 +720,7 @@ function header_def()
 				 * Get weekday name from timestamp
 				 *
 				 * @param time Unix timestamp
-				 * @return string Localized weekday name
+				 * @return string|null Localized weekday name
 				 */
 				function get_weekday($time)
 				{

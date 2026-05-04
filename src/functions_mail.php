@@ -7,7 +7,7 @@
 	 * @param a First content
 	 * @param session Session ID
 	 * @param count Check count
-	 * @return int Comparison result
+	 * @return 0|bool Comparison result
 	 */
 	function comp_spam($a,$session,$count)
 	{
@@ -57,7 +57,7 @@
 	 * Check for spam in email
 	 *
 	 * @param s Content to check
-	 * @return int Spam score
+	 * @return string|array<array-key, string>|null Cleaned content
 	 */
 	function mail_spam($s)
 	{
@@ -70,7 +70,7 @@
 	 * @param to Recipient email
 	 * @param subject Email subject
 	 * @param body Email body
-	 * @return int Success flag
+	 * @return bool Success flag
 	 */
 	function my_mail($to,$subject,$body)
 	{

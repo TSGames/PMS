@@ -5,7 +5,7 @@
 	 * Get file or directory size
 	 *
 	 * @param what File/directory path
-	 * @return int Size in bytes
+	 * @return int|false Size in bytes or false on failure
 	 */
 	function get_filesize($what)
 	{
@@ -33,7 +33,7 @@
 	 * Delete directory contents recursively
 	 *
 	 * @param dir Directory path
-	 * @return int Number of files deleted
+	 * @return bool Success status
 	 */
 	function delete_all($dir)
 	{
@@ -200,7 +200,7 @@
 	 * @param id Content ID
 	 * @param typ Image type
 	 * @param all Delete all flag
-	 * @return int Success flag
+	 * @return void
 	 */
 	function del_contentimg($what,$id,$typ,$all=1)
 	{
@@ -276,7 +276,7 @@
 	 * @param height1 Target height
 	 * @param constrains Keep aspect ratio
 	 * @param filter Apply filter
-	 * @return string Generated image path
+	 * @return int 0 if no resize needed, 1 on success
 	 */
 	function create_img($img,$width1,$height1,$constrains=1,$filter=0)
 	{

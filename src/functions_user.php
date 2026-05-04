@@ -133,6 +133,7 @@
 				{
 				if($typ<1 && from_db("user",$id,"typ")>=1) // reset mails
 				{
+					/** @psalm-suppress InvalidGlobal */
 					global $confirmation_dialogs;
 					foreach($confirmation_dialogs as $f)
 						$add.=", ".$f[1]." = '0'";
@@ -145,6 +146,7 @@
 				if($image)
 					{
 					$end=substr($image,-3);
+					/** @psalm-suppress InvalidGlobal */
 					global $supported_img;
 					if(in_array(strtolower($end),$supported_img))
 						{
@@ -156,7 +158,9 @@
 								$id=$a->id;
 							}
 						}
+						/** @psalm-suppress InvalidGlobal */
 						global $image_path;
+						/** @psalm-suppress InvalidGlobal */
 						global $pms_db_prefix;
 						$target=$image_path."user/".$id.".".$end;
 						@copy($image2,$target);
@@ -202,7 +206,7 @@
 	 * Format ban duration for display
 	 *
 	 * @param time Unix timestamp of ban
-	 * @return string Formatted ban time information
+	 * @return float|string Formatted ban time information
 	 */
 	function ban_time($time)
 	{
@@ -223,7 +227,7 @@
 	 * @param password Password (plain text)
 	 * @param min_rights Minimum required user level
 	 * @param do_md5 Whether password is MD5 encoded
-	 * @return int User ID on success, 0 on failure
+	 * @return int|array User data on success, status code on failure
 	 */
 	function do_login($name,$password,$min_rights,$do_md5=1)
 	{
@@ -252,7 +256,9 @@
 			$_SESSION['pmsglobal']=1;
 			$_SESSION['userid']=$a->id;
 			$_SESSION['usertyp']=$a->typ;
+			/** @psalm-suppress InvalidGlobal */
 			global $website_key;
+			/** @psalm-suppress InvalidGlobal */
 			global $login;
 			$_SESSION['loginip']=$_SERVER["REMOTE_ADDR"];
 			$_SESSION['website_key']=$website_key;
@@ -376,6 +382,7 @@
 						{
 						$str.="<tr><td>".language("USER_VIEW_BIRTH")."</td><td>".date(language("DATE_FORMAT"),$a->bday)." (".make_age($a->bday).")</td></tr>";
 					}
+					/** @psalm-suppress InvalidGlobal */
 					global $user_typ;
 					$str.="
 <tr><td>".language("USER_VIEW_TYP")."</td><td>".$user_typ[$a->typ]."</td></tr>";

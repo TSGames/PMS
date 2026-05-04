@@ -86,11 +86,13 @@ function parse_xlsx_to_text($file_path, $sheet_index = 0)
 		$rels = simplexml_load_string($rels_xml);
 		$sheet_file = null;
 
-		foreach ($rels->Relationship as $rel) {
+		if ($rels) {
+			foreach ($rels->Relationship as $rel) {
 			if ((string)$rel['Id'] === $sheet_id) {
 				$sheet_file = 'xl/' . (string)$rel['Target'];
 				break;
 			}
+		}
 		}
 
 		if (!$sheet_file || !$zip->locateName($sheet_file)) {
@@ -108,7 +110,8 @@ function parse_xlsx_to_text($file_path, $sheet_index = 0)
 		$strings_file = $zip->getFromName('xl/sharedStrings.xml');
 		if ($strings_file) {
 			$strings_xml = simplexml_load_string($strings_file);
-			foreach ($strings_xml->si as $si) {
+			if ($strings_xml) {
+				foreach ($strings_xml->si as $si) {
 				$text = '';
 				if (isset($si->t)) {
 					$text = (string)$si->t;
@@ -120,9 +123,14 @@ function parse_xlsx_to_text($file_path, $sheet_index = 0)
 				$shared_strings[] = $text;
 			}
 		}
+		}
 
 		// Parse sheet XML to extract cell data
 		$sheet = simplexml_load_string($sheet_xml);
+		if (!$sheet) {
+			$zip->close();
+			return '';
+		}
 		$rows = $sheet->sheetData->row;
 
 		if (!$rows) {
@@ -188,6 +196,11 @@ function get_xlsx_sheets($file_path)
 
 		$workbook_xml = $zip->getFromName('xl/workbook.xml');
 		$workbook = simplexml_load_string($workbook_xml);
+
+		if (!$workbook) {
+			$zip->close();
+			return ['error' => 'Cannot parse workbook'];
+		}
 
 		$sheets = [];
 		foreach ($workbook->sheets->sheet as $sheet) {

@@ -441,7 +441,7 @@
 				 * @param who Content type
 				 * @param who2 Secondary type
 				 * @param id Content ID
-				 * @return string Pagination limit
+				 * @return string|null Pagination limit
 				 */
 				function make_limits($who,$who2,$id)
 				{
