@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - master
+      - '**'
 
 jobs:
 
@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -25,31 +25,43 @@ jobs:
       - name: Run Psalm
         run: vendor/bin/psalm
 
-
   build:
     runs-on: ubuntu-latest
+    needs: psalm
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }} 
-          password: ${{ secrets.DOCKER_PASSWORD }}  
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Schritt 4: Build das Docker-Image
-      - name: Build Docker image
+      - name: Generate Docker metadata
+        id: meta
         run: |
-          docker build -t tsgames/pms:${{ github.sha }} -t tsgames/pms:latest -t tsgames/pms:${{ github.ref_name }} .
+          BRANCH_NAME="${{ github.ref_name }}"
+          COMMIT_SHA="${{ github.sha }}"
 
-      # Schritt 5: Push das Docker-Image
-      - name: Push Docker image
-        run: |
-          docker push tsgames/pms:${{ github.sha }}
-          docker push tsgames/pms:latest
-          docker push tsgames/pms:${{ github.ref_name }}
+          # Determine tags based on branch
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "master" ]]; then
+            echo "tags=tsgames/pms:latest,tsgames/pms:${COMMIT_SHA:0:7},tsgames/pms:${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "tags=tsgames/pms:${BRANCH_NAME},tsgames/pms:${COMMIT_SHA:0:7}" >> $GITHUB_OUTPUT
+          fi
+
+          echo "commit_sha=${COMMIT_SHA:0:7}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=tsgames/pms:buildcache
+          cache-to: type=registry,ref=tsgames/pms:buildcache,mode=max
