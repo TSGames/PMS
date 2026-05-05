@@ -344,4 +344,123 @@
 		return 1;
 	}
 
+	/**
+	 * Crop image to specified rectangle
+	 * @param string $file_path Path to image file
+	 * @param int $x Left offset
+	 * @param int $y Top offset
+	 * @param int $width Crop width
+	 * @param int $height Crop height
+	 * @return array {success: bool, width: int, height: int, error: string}
+	 */
+	function crop_image($file_path, $x, $y, $width, $height)
+	{
+		global $config_values;
+
+		// Validate file exists
+		if (!file_exists($file_path)) {
+			return ['success' => false, 'error' => 'Bilddatei nicht gefunden'];
+		}
+
+		// Get original image dimensions
+		$size = @getimagesize($file_path);
+		if (!$size) {
+			return ['success' => false, 'error' => 'Bilddatei konnte nicht gelesen werden'];
+		}
+
+		// Validate crop area doesn't exceed original
+		if ($x + $width > $size[0] || $y + $height > $size[1]) {
+			return ['success' => false, 'error' => 'Zuschnittfläche überschreitet Bildgrenzen'];
+		}
+
+		if ($x < 0 || $y < 0) {
+			return ['success' => false, 'error' => 'Ungültige Zuschnittkoordinaten'];
+		}
+
+		if ($width < 10 || $height < 10) {
+			return ['success' => false, 'error' => 'Zuschnittfläche zu klein'];
+		}
+
+		$type = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+
+		// Load original image based on type
+		$src = null;
+		if ($type === 'jpg' || $type === 'jpeg') {
+			$src = @imagecreatefromjpeg($file_path);
+		} elseif ($type === 'png') {
+			$src = @imagecreatefrompng($file_path);
+			// Preserve transparency for PNG
+			imagealphablending($src, false);
+			imagesavealpha($src, true);
+		} elseif ($type === 'gif') {
+			$src = @imagecreatefromgif($file_path);
+		}
+
+		if (!$src) {
+			return ['success' => false, 'error' => 'Bild konnte nicht geladen werden'];
+		}
+
+		// Use PHP 5.5+ imagecrop if available, otherwise use imagecopyresampled
+		if (function_exists('imagecrop')) {
+			// PHP 5.5+: imagecrop() is cleaner
+			$cropped = @imagecrop($src, ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height]);
+
+			if (!$cropped) {
+				imagedestroy($src);
+				return ['success' => false, 'error' => 'Zuschneiden fehlgeschlagen'];
+			}
+		} else {
+			// Fallback for older PHP: use imagecopyresampled
+			$cropped = imagecreatetruecolor($width, $height);
+
+			if ($type === 'png') {
+				imagealphablending($cropped, false);
+				imagesavealpha($cropped, true);
+			}
+
+			$result = @imagecopyresampled(
+				$cropped, $src,
+				0, 0, $x, $y,
+				$width, $height, $width, $height
+			);
+
+			if (!$result) {
+				imagedestroy($src);
+				imagedestroy($cropped);
+				return ['success' => false, 'error' => 'Zuschneiden fehlgeschlagen'];
+			}
+		}
+
+		// Save cropped image with quality settings
+		@ini_set("memory_limit", "500M");
+		$quality = isset($config_values->picquali) ? intval($config_values->picquali) : 85;
+
+		// Ensure quality is in valid range
+		if ($quality < 10) $quality = 10;
+		if ($quality > 100) $quality = 100;
+
+		$save_success = false;
+		if ($type === 'jpg' || $type === 'jpeg') {
+			$save_success = @imagejpeg($cropped, $file_path, $quality);
+		} elseif ($type === 'png') {
+			// PNG compression level (0-9, -1 = default)
+			$save_success = @imagepng($cropped, $file_path, -1);
+		} elseif ($type === 'gif') {
+			$save_success = @imagegif($cropped, $file_path);
+		}
+
+		imagedestroy($src);
+		imagedestroy($cropped);
+
+		if (!$save_success) {
+			return ['success' => false, 'error' => 'Zugeschnittenes Bild konnte nicht gespeichert werden'];
+		}
+
+		return [
+			'success' => true,
+			'width' => $width,
+			'height' => $height
+		];
+	}
+
 ?>

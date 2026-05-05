@@ -33,6 +33,50 @@ function process_content_post_handlers()
 		exit;
 	}
 
+	// AJAX Image crop endpoint
+	if($action === 'crop_image_ajax' && @$_SESSION['userid'])
+	{
+		header('Content-Type: application/json');
+
+		// Validate input
+		$image_file = isset($_POST['image_file']) ? basename($_POST['image_file']) : '';
+		$crop_x = isset($_POST['crop_x']) ? intval($_POST['crop_x']) : 0;
+		$crop_y = isset($_POST['crop_y']) ? intval($_POST['crop_y']) : 0;
+		$crop_w = isset($_POST['crop_w']) ? intval($_POST['crop_w']) : 0;
+		$crop_h = isset($_POST['crop_h']) ? intval($_POST['crop_h']) : 0;
+
+		// Validate required fields
+		if (!$image_file || $crop_w < 10 || $crop_h < 10) {
+			echo json_encode(['success' => false, 'error' => 'Ungültige Eingabeparameter']);
+			exit;
+		}
+
+		// Verify file is in uploads directory (security check)
+		$file_path = 'images/uploads/' . $image_file;
+		if (!file_exists($file_path) || strpos(realpath($file_path), realpath('images/uploads/')) !== 0) {
+			echo json_encode(['success' => false, 'error' => 'Bilddatei nicht gefunden oder ungültig']);
+			exit;
+		}
+
+		// Perform server-side crop
+		$result = crop_image($file_path, $crop_x, $crop_y, $crop_w, $crop_h);
+
+		if ($result['success']) {
+			echo json_encode([
+				'success' => true,
+				'width' => $result['width'],
+				'height' => $result['height'],
+				'message' => 'Bild erfolgreich zugeschnitten'
+			]);
+		} else {
+			echo json_encode([
+				'success' => false,
+				'error' => $result['error']
+			]);
+		}
+		exit;
+	}
+
 	// Process category delete
 	if(array_key_exists("cat_delete",$_POST))
 	{

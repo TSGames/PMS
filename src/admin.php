@@ -84,6 +84,7 @@ echo '<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" type="text/css" href="admin.css">
+<link rel="stylesheet" type="text/css" href="crop_modal.css">
 <link rel="SHORTCUT ICON" href="admin.ico">
 
 <title>PMS Administration (BackEnd) - '.from_db("config",1,"name").'</title>';
@@ -146,6 +147,7 @@ if($_SESSION['tinymce']==2 || $modul=="newsletter")
 }
 ?>
 <script type="text/javascript" src="drag.js"></script>
+<script type="text/javascript" src="crop_modal.js"></script>
 </head>
 <body>
 <table width="100%" height="100%" cellspacing="0" cellpadding="0">
