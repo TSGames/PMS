@@ -1,4 +1,9 @@
 <?php
+if (!defined('PMS_ADMIN_ENTRY')) {
+	header('HTTP/1.0 403 Forbidden');
+	exit('Direct access not allowed');
+}
+
 // Module: admin_actions_monitoring.php
 // Handlers for backup, events, activity monitoring actions
 // Includes POST form submission processors

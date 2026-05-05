@@ -1,6 +1,7 @@
 <?php
 define("PMS_FRONTEND",0);
 define("PMS_BACKEND",1);
+define("PMS_ADMIN_ENTRY",1);
 require('functions.php');
 require('admin_helpers.php');
 require('admin_actions_dynamic.php');

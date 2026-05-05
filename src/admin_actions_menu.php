@@ -1,4 +1,9 @@
 <?php
+if (!defined('PMS_ADMIN_ENTRY')) {
+	header('HTTP/1.0 403 Forbidden');
+	exit('Direct access not allowed');
+}
+
 // Module: admin_actions_menu.php
 // Handler for menu management action
 // Includes POST form submission processors

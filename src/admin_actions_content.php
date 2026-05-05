@@ -1,4 +1,9 @@
 <?php
+if (!defined('PMS_ADMIN_ENTRY')) {
+	header('HTTP/1.0 403 Forbidden');
+	exit('Direct access not allowed');
+}
+
 // Module: admin_actions_content.php
 // Handlers for content management: categories, subcategories, items, recovery/restore
 // Includes POST form submission processors
