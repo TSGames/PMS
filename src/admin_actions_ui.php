@@ -1,4 +1,5 @@
 <?php
+/** @psalm-suppress ParadoxicalCondition */
 if (!defined('PMS_ADMIN_ENTRY')) {
 	header('HTTP/1.0 403 Forbidden');
 	exit('Direct access not allowed');

@@ -351,7 +351,7 @@
 	 * @param int $y Top offset
 	 * @param int $width Crop width
 	 * @param int $height Crop height
-	 * @return array {success: bool, width: int, height: int, error: string}
+	 * @return array{success: bool, width?: int, height?: int, error?: string}
 	 */
 	function crop_image($file_path, $x, $y, $width, $height)
 	{
