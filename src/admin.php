@@ -4,6 +4,7 @@ define("PMS_BACKEND",1);
 define("PMS_ADMIN_ENTRY",1);
 require('functions.php');
 require('admin_helpers.php');
+require('admin_templates.php');
 require('admin_actions_dynamic.php');
 require('admin_actions_admin.php');
 require('admin_actions_monitoring.php');
@@ -149,6 +150,10 @@ if($_SESSION['tinymce']==2 || $modul=="newsletter")
 ?>
 <script type="text/javascript" src="drag.js"></script>
 <script type="text/javascript" src="crop_modal.js"></script>
+<script type="text/javascript" src="js/admin-forms.js"></script>
+<script type="text/javascript" src="js/admin-tables.js"></script>
+<script type="text/javascript" src="js/admin-dialogs.js"></script>
+<script type="text/javascript" src="js/admin-image.js"></script>
 </head>
 <body>
 <table width="100%" height="100%" cellspacing="0" cellpadding="0">
