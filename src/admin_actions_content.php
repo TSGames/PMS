@@ -1191,21 +1191,6 @@ function handle_admin_item()
 				$add="bearbeiten";
 			}
 
-			echo '
-			<script type="text/javascript">
-			function disable_buttons()
-			{
-				document.getElementById("item_button1").style.display="none";
-				document.getElementById("item_button2").style.display="none";
-				if(document.getElementById("add_image")) document.getElementById("add_image").style.visibility="hidden";
-				document.getElementById("item_save").style.display="";
-			}
-			function refresh_create()
-			{
-				document.getElementById("create_at_date").disabled=document.getElementById("create_at_use").checked;
-				document.getElementById("create_at_time").disabled=document.getElementById("create_at_use").checked;
-			}
-			</script>';
 
 			echo form("disable_buttons()").heading("Inhalt ".$add)."
 			<input type=\"hidden\" name=\"action\" value=\"item\">

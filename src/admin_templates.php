@@ -13,7 +13,7 @@ if (!defined('PMS_ADMIN_ENTRY')) {
  * Render table header with column definitions
  *
  * @param string $headers Pipe-delimited: "Name:200px|Status:80px|Actions:100px"
- * @return string HTML table header
+ * @return string|false HTML table header or false on error
  */
 function render_table_header($headers) {
 	ob_start();
@@ -38,7 +38,7 @@ function render_table_footer() {
  * @param string $submit_label Submit button label (default: "Speichern")
  * @param string $form_id Optional form identifier for JS
  * @param mixed $id_value Optional hidden ID value
- * @return string HTML form
+ * @return string|false HTML form or false on error
  */
 function render_form_edit($title, $form_content, $submit_label = 'Speichern', $form_id = null, $id_value = null) {
 	ob_start();
@@ -103,7 +103,7 @@ function render_form_select($label, $name, $options = [], $selected = null) {
  * @param int $item_id Item ID to delete
  * @param string $submit_button_name Name attribute for submit button
  * @param string $submit_button_label Label text for submit button (default: "Löschen")
- * @return string HTML confirmation dialog
+ * @return string|false HTML confirmation dialog or false on error
  */
 function render_dialog_confirm($message = null, $item_label = 'Eintrag', $action = '', $item_id = 0, $submit_button_name = 'delete', $submit_button_label = 'Löschen') {
 	ob_start();

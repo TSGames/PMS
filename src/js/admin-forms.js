@@ -107,3 +107,31 @@ function set_field_state(fieldNames, enable) {
 		});
 	});
 }
+
+/**
+ * Refresh dependent form fields based on checkbox state
+ * Used for conditional field enabling/disabling
+ */
+function refresh_create() {
+	var createAtUse = document.getElementById('create_at_use');
+	var createAtDate = document.getElementById('create_at_date');
+	var createAtTime = document.getElementById('create_at_time');
+
+	if(createAtUse && createAtDate && createAtTime) {
+		var isDisabled = createAtUse.checked;
+		createAtDate.disabled = isDisabled;
+		createAtTime.disabled = isDisabled;
+	}
+}
+
+/**
+ * Toggle element visibility (show/hide)
+ * @param {string} elementId Element ID
+ */
+function toogle_pic(elementId) {
+	elementId = elementId || 'pic_extended';
+	var elem = document.getElementById(elementId);
+	if(elem) {
+		elem.style.display = (elem.style.display === 'none') ? '' : 'none';
+	}
+}

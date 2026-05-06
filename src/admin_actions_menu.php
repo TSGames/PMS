@@ -230,14 +230,7 @@ function handle_admin_menu()
 		<tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"visible\" value=\"1\"".$vis."> Eintrag ist sichtbar</center></td></tr>
 		<tr><td colspan=\"2\"><center><input type=\"submit\" name=\"menu\" value=\"Speichern\"></center></td></tr>
 		</table>";
-		echo '
-		<script type="text/javascript">
-		function check_radio(id)
-		{
-			document.pms_form.typ[id].checked=true;
-		}
-		</script>
-		</form>';
+		echo '</form>';
 	}
 	else
 	{
