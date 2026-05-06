@@ -231,7 +231,7 @@
 	{
 		if(!is_array($img))
 			{
-			if(!$size=@getimagesize($img))
+			if(!$img || !$size=@getimagesize($img))
 				{
 				return 0;
 			}
