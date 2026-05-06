@@ -132,6 +132,8 @@
 			$str=$error;
 		}
 		echo '<table class="'.$class.'"><tr><td>'.$str.'</td></tr></table><br>';
+		$ok="";
+		$error="";
 	}
 
 	/**

@@ -2,6 +2,22 @@
 // Module: functions_xlsx.php - XLSX file parsing and conversion to text
 
 /**
+ * Check if PHP zip extension is available
+ *
+ * @return array Error if not available, or ['success' => true]
+ */
+function check_zip_extension()
+{
+	if (!extension_loaded('zip')) {
+		return ['error' => 'PHP zip extension is not installed. Contact your hosting provider.'];
+	}
+	if (!class_exists('ZipArchive')) {
+		return ['error' => 'ZipArchive class is not available. Contact your hosting provider.'];
+	}
+	return ['success' => true];
+}
+
+/**
  * Validate XLSX file format and size
  *
  * @param file_path Path to uploaded file
@@ -10,6 +26,12 @@
  */
 function validate_xlsx_file($file_path, $max_size = 5242880)
 {
+	// Check if zip extension is available
+	$zip_check = check_zip_extension();
+	if (isset($zip_check['error'])) {
+		return $zip_check;
+	}
+
 	// Check file exists
 	if (!file_exists($file_path)) {
 		return ['error' => 'File not found'];
@@ -17,7 +39,7 @@ function validate_xlsx_file($file_path, $max_size = 5242880)
 
 	// Check file size
 	if (filesize($file_path) > $max_size) {
-		return ['error' => 'File too large. Maximum size: ' . size(round($max_size / 1024 / 1024)) . 'MB'];
+		return ['error' => 'File too large. Maximum size: ' . round($max_size / 1024 / 1024) . 'MB'];
 	}
 
 	// Check if valid ZIP (XLSX is ZIP format)
@@ -154,12 +176,31 @@ function parse_xlsx_to_text($file_path, $sheet_index = 0)
 							$cell_value = $shared_strings[$index];
 						}
 					}
+					// If it's a date (numeric value that looks like a date serial)
+					else if ((string)$cell['t'] !== 's' && is_numeric($cell_value)) {
+						$num = (float)$cell_value;
+						// Excel dates are serial numbers starting from 1900-01-01
+						// Values typically range from 1 to 50000+ for modern dates
+						if ($num > 0 && $num < 100000) {
+							// Check if it has a date format
+							$style = (string)$cell['s'];
+							if ($style) {
+								// Convert Excel serial to PHP timestamp
+								// Excel epoch is 1900-01-01, but has a leap year bug on Feb 29, 1900
+								$days = (int)$num;
+								if ($days > 60) $days--; // Account for the Feb 29, 1900 bug
+								$date = new DateTime('1900-01-01');
+								$date->modify('+' . ($days - 1) . ' days');
+								$cell_value = $date->format('d.m.y');
+							}
+						}
+					}
 				}
 
 				$cells_in_row[] = $cell_value;
 			}
 
-			// Join cells with whitespace separator
+			// Join cells with space separator
 			if (!empty($cells_in_row)) {
 				// Remove trailing empty cells
 				while (!empty($cells_in_row) && end($cells_in_row) === '') {

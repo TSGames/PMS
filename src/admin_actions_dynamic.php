@@ -67,7 +67,8 @@ function process_dynamic_post_handlers()
 		else
 			$error="Fehler beim Speichern der Umfrage!";
 		ok_error();
-		$edit="";
+		unset($edit);
+		unset($new);
 	}
 
 	// Process var save
@@ -88,7 +89,8 @@ function process_dynamic_post_handlers()
 		else
 			$error="Fehler beim Speichern der Regel!";
 		ok_error();
-		$edit="";
+		unset($edit);
+		unset($new);
 	}
 }
 
@@ -277,7 +279,5 @@ function handle_admin_poll()
 		echo array_table($menu,5);
 	}
 }
-
-process_dynamic_post_handlers();
 
 ?>

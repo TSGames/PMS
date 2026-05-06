@@ -359,6 +359,4 @@ function handle_admin_activity()
 	echo "</table>";
 }
 
-process_monitoring_post_handlers();
-
 ?>

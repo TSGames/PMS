@@ -7,9 +7,10 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libzip-dev \
     git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
+    && docker-php-ext-install gd zip \
     && a2enmod rewrite \
     && sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
@@ -28,7 +29,7 @@ COPY mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 COPY template/ /var/template_init/
 COPY composer.json composer.lock /var/composer/
 RUN cd /var/composer && composer install --no-dev --optimize-autoloader \
-    && cp -r ./vendor/tinymce/* /var/www/html/
+    && cp -r ./vendor/tinymce/tinymce /var/www/html/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

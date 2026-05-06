@@ -296,6 +296,4 @@ function handle_admin_menu()
 	}
 }
 
-process_menu_post_handlers();
-
 ?>

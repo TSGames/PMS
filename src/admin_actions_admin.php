@@ -37,6 +37,8 @@ function process_admin_post_handlers()
 		else
 			$error="Fehler beim Speichern des Bans!";
 		ok_error();
+		unset($edit);
+		unset($new);
 	}
 
 	// Process config save
@@ -573,7 +575,5 @@ function handle_admin_user()
 		<br>'.$num_user.' Benutzer registriert.';
 	}
 }
-
-process_admin_post_handlers();
 
 ?>

@@ -17,27 +17,6 @@ function process_content_post_handlers()
 	global $subcat_filter, $add_image, $add_image2, $add_image2_img;
 	global $supported_img, $image_path;
 
-	// AJAX XLSX import endpoint
-	if($action === 'xlsx_import_ajax' && @$_SESSION['userid'])
-	{
-		header('Content-Type: application/json');
-		if(!isset($_FILES['xlsx_file']) || $_FILES['xlsx_file']['error'] !== UPLOAD_ERR_OK)
-			{ echo json_encode(['error' => 'Upload fehlgeschlagen']); exit; }
-		@mkdir('images/uploads/temp/', 0755, true);
-		$temp = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
-		if(move_uploaded_file($_FILES['xlsx_file']['tmp_name'], $temp))
-		{
-			$result = parse_xlsx_to_text($temp);
-			@unlink($temp);
-			cleanup_xlsx_temp_files(1);
-			if(is_array($result) && isset($result['error']))
-				echo json_encode(['error' => $result['error']]);
-			else
-				echo json_encode(['content' => $result ?: '']);
-		}
-		else echo json_encode(['error' => 'Datei konnte nicht gespeichert werden']);
-		exit;
-	}
 
 	// AJAX Image crop endpoint
 	if($action === 'crop_image_ajax' && @$_SESSION['userid'])
@@ -406,9 +385,11 @@ function process_content_post_handlers()
 		}
 		if($save_ok && $_POST["next"]=="image") $add_image=$edit;
 		else if($_POST["next"]!="dragdrop") ok_error();
-		if($_POST["item_step2"]!="Übernehmen")
+		// Close form and return to list if "Übernehmen & Schließen" button was clicked
+		if($_POST["item_step2"] === "Übernehmen & Schließen")
 		{
 			unset($edit);
+			unset($post);
 		}
 	}
 
@@ -482,9 +463,6 @@ function process_content_post_handlers()
 		if($error) ok_error();
 	}
 }
-
-// Call POST processors on module load
-process_content_post_handlers();
 
 /**
  * Handle cat (category) action
@@ -1319,7 +1297,7 @@ function handle_admin_item()
 						}
 						status.textContent='Importiert ✓';
 					})
-					.catch(function(){status.textContent='Netzwerkfehler';});
+					.catch(function(err){try{console.error(err);}catch(e){} status.textContent='Fehler beim Import: '+(err&&err.message?err.message:'Unbekannter Fehler');});
 				this.value='';
 			});
 			</script></td></tr>";
