@@ -224,7 +224,7 @@ function handle_admin_bans()
 				ok_error();
 			}
 			echo heading("Bans verwalten");
-			echo '[<a href="admin.php?action='.$action.'&new=yes">Neuer Ban</a>]<br><br>';
+			echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neuer Ban</a></div>';
 			echo '<table class="group">';
 			echo table_header("ID:30px|IP:100px|Begründung:200px|Verbleibende Dauer<br>(in Tagen):140px|Bearbeiten:80px|Löschen:65px");
 			$link = $pms_db_connection->query(make_sql("bans", "", "id"));
@@ -536,7 +536,7 @@ function handle_admin_user()
 			}
 		}
 		echo heading("Benutzerverwaltung");
-		echo '[<a href="admin.php?action='.$action.'&new=yes">Neuer Benutzer</a>]<br><br>';
+		echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neuer Benutzer</a></div>';
 		echo '<div class="table-responsive">';
 		echo '<table class="group items">';
 		echo table_header("ID:30px|Name:100px|E-Mail:150px|Typ:120px|Letzter Login:90px|Registriert:80px|Registrations-IP:100px|Punkte:40px|Aktiviert:60px|Bearbeiten:80px|Löschen:65px");

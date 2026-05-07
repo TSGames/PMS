@@ -621,7 +621,7 @@ function handle_admin_cat()
 				$pms_db_connection->query("UPDATE ".$pms_db_prefix."cat SET sort='$sort_para' WHERE id = '$id_para' LIMIT 1;");
 			}
 			echo heading("Kategorien");
-			echo '[<a href="admin.php?action='.$action.'&new=yes">Neue Kategorie</a>]<br><br>';
+			echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neue Kategorie</a></div>';
 			echo '<div class="table-responsive">';
 			echo '<table class="group items">';
 			echo table_header("ID:30px|Name:100px|Sortierung:90px|Verfügbar:60px|Bearbeiten:80px|Löschen:65px");
@@ -785,8 +785,8 @@ function handle_admin_subcat()
 				$pms_db_connection->query("UPDATE ".$pms_db_prefix."subcat SET sort='$sort_para' WHERE id = '$id_para' LIMIT 1;");
 			}
 			echo heading("Unterkategorien");
-			echo '[<a href="admin.php?action='.$action.'&new=yes">Neue Unterkategorie</a>]<br><br>';
-			echo form()."Zeige nur Unterkategorien der Kategorie <select name=\"uppcat\"><option value=\"0\">[Alle]</option>";
+			echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neue Unterkategorie</a></div>';
+			echo '<div class="action-section">'.form()."Zeige nur Unterkategorien der Kategorie <select name=\"uppcat\"><option value=\"0\">[Alle]</option>";
 			$link=$pms_db_connection->query(make_sql("cat","","sort,name"));
 			if($subcat_filter && !from_db("cat",$subcat_filter,"id"))
 			{
@@ -801,7 +801,7 @@ function handle_admin_subcat()
 				}
 				echo "<option value=\"".$a->id."\"".$sel.">".$a->name."</option>";
 			}
-			echo '</select> <input type="submit" name="subcat_filter" value="OK"><br><br></form>';
+			echo '</select> <input type="submit" name="subcat_filter" value="OK"></form></div>';
 			echo '<div class="table-responsive">';
 			echo '<table class="group items">';
 			echo table_header("ID:30px|Name:100px|In Kategorie:100px|Sortierung:90px|Verfügbar:60px|Bearbeiten:80px|Löschen:65px");
@@ -1494,7 +1494,7 @@ function handle_admin_item()
 		<tr><td colspan="2"><div align="center" id="image_upload" style="display:none;font-weight:bold;height:26px;vertical-align:bottom;">Bitte Warten, Bild wird Hochgeladen...</div>
 		<div align="center" id="button1"><input type="submit" name="add_image" value="Bild Hinzufügen">
 		<br><br>
-		[<a href="admin.php?action=add_image&item='.$add_image.'&abort=yes">Abbrechen</a>]
+		<a href="admin.php?action=add_image&item='.$add_image.'&abort=yes" class="button button-secondary">Abbrechen</a>
 		</div>
 		<td></tr></table>
 		</td></tr></table><br>oder<br><br>
@@ -1608,14 +1608,15 @@ function handle_admin_item()
 			ok_error();
 		}
 		echo heading("Inhalte");
-		echo '<a href="admin.php?action='.$action.'&new=yes" class="btn btn-primary">Inhalt hinzufügen</a>&nbsp;&nbsp;';
+		echo '<div class="action-section">';
+		echo '<a href="admin.php?action='.$action.'&new=yes" class="button">Inhalt hinzufügen</a>&nbsp;&nbsp;';
 		$baks = get_backups();
 		if($baks) {
 			$num_backups=count($baks);
 		}
-		if($num_backups) echo '<a href="admin.php?action=item_restore" class="btn btn-primary">Gelöschten Inhalt Wiederherstellen</a>';else echo '<span class="btn btn-disabled">Gelöschen Inhalt Wiederherstellen</span>';
-		echo '<br><br>';
-		echo form()."Zeige nur Inhalte der Kategorie <select name=\"uppcat\"><option value=\"0\">[Alle]</option>";
+		if($num_backups) echo '<a href="admin.php?action=item_restore" class="button">Gelöschten Inhalt Wiederherstellen</a>';else echo '<span class="button disabled" style="cursor: not-allowed; opacity: 0.6;">Gelöschen Inhalt Wiederherstellen</span>';
+		echo '</div>';
+		echo '<div class="action-section">'.form()."Zeige nur Inhalte der Kategorie <select name=\"uppcat\"><option value=\"0\">[Alle]</option>";
 		$link=$pms_db_connection->query(make_sql("cat","","sort,name"));
 		while($link && $a=$pms_db_connection->fetchObject($link))
 		{
@@ -1642,7 +1643,7 @@ function handle_admin_item()
 			}
 			echo '</select>';
 		}
-		echo ' <input type="submit" name="item_filter" value="OK"><br><br></form>
+		echo ' <input type="submit" name="item_filter" value="OK"></form></div>
 		<div class="table-responsive"><table class="group items">';
 		echo table_header("ID:30px|Name:100px|Typ:80px|In Kategorie:100px|In Unterkategorie:100px|Sortierung:90px|Erstellt am:80px|Verfügbar:60px|Kopie erstellen:90px|Bearbeiten:80px|Löschen:65px");
 		$filter="";

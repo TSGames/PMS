@@ -674,6 +674,12 @@ input[type="submit"].large {
     min-width: 140px;
 }
 
+/* ── Centered action buttons ──────────────────── */
+.action-section {
+    text-align: center;
+    margin: 1rem 0;
+}
+
 /* ── Sidebar footer / theme toggle ───────────── */
 .sidebar-footer {
     padding: 0.75rem 0.5rem;

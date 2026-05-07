@@ -151,8 +151,8 @@ function handle_admin_var()
 		$poll_search=make_check($_SESSION['poll_search']);
 		$poll_replace=make_check($_SESSION['poll_replace']);
 		echo heading("Regeln verwalten");
-		echo '[<a href="admin.php?action='.$action.'&new=yes">Neue Regel</a>]<br><br>';
-		echo form()."<input type=\"checkbox\" name=\"poll_search\" value=\"1\"".$poll_search."> Zeige keine Such-Kriterien | <input type=\"checkbox\" name=\"poll_replace\" value=\"1\"".$poll_replace."> Zeige keine Ersetz-Kriterien <input type=\"submit\" name=\"poll_filter\" value=\"OK\"></form>";
+		echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neue Regel</a></div>';
+		echo '<div class="action-section">'.form()."<input type=\"checkbox\" name=\"poll_search\" value=\"1\"".$poll_search."> Zeige keine Such-Kriterien | <input type=\"checkbox\" name=\"poll_replace\" value=\"1\"".$poll_replace."> Zeige keine Ersetz-Kriterien <input type=\"submit\" name=\"poll_filter\" value=\"OK\"></form></div>";
 		echo '<table class="group">';
 		$search = '';
 		$replace = '';
@@ -245,7 +245,7 @@ function handle_admin_poll()
 			$pms_db_connection->query("UPDATE ".$pms_db_prefix."poll SET sort='$sort_para' WHERE id = '$id_para' LIMIT 1;");
 		}
 		echo heading("Umfragen");
-		echo '[<a href="admin.php?action='.$action.'&new=yes">Neue Umfrage</a>]<br><br>';
+		echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neue Umfrage</a></div>';
 		echo '<table class="group">';
 		echo table_header("ID:30px|Frage:150px|Sortierung:90px|Verfügbar:60px|Bearbeiten:80px|Löschen:65px");
 		$link=$pms_db_connection->query(make_sql("poll","","sort,question"));

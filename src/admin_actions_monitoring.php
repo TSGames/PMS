@@ -333,8 +333,7 @@ function handle_admin_activity()
 	<br>
 	Innerhalb der letzten 24 Stunden war".$add[0]." ".$num." Zugriff".$add[1]."<br>
 	<br>
-	[<a href=\"admin.php?action=activity\">Aktualisieren</a>]
-	<br><br>
+	<div class=\"action-section\"><a href=\"admin.php?action=activity\" class=\"button\">Aktualisieren</a></div>
 	".form()."<input type=\"checkbox\" name=\"filter_bot\" value=\"1\"".$check."> Suchmaschinen filtern <input type=\"submit\" name=\"send_bot_filter\" value=\"Speichern\"></form>
 	<br>
 	<table class=\"group\">".table_header("IP:100px|Browser:300px|Benutzer:100px|Letzte Aktivität:120px|Typ der letzten Aktion:150px");

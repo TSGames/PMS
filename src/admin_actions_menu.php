@@ -235,7 +235,7 @@ function handle_admin_menu()
 	else
 	{
 		echo heading("Menüverwaltung");
-		echo '[<a href="admin.php?action='.$action.'&new=yes">Neuer Menüeintrag</a>]<br><br>';
+		echo '<div style="text-align: center; margin: 1rem 0;"><a href="admin.php?action='.$action.'&new=yes" class="button">Neuer Menüeintrag</a></div>';
 		if($sort_do && $id_para)
 		{
 			$pms_db_connection->query("UPDATE ".$pms_db_prefix."menu SET sort = '$sort_para' WHERE id = '$id_para' LIMIT 1;");
