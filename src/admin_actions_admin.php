@@ -38,7 +38,6 @@ function process_admin_post_handlers()
 			$error="Fehler beim Speichern des Bans!";
 		ok_error();
 		unset($edit);
-		unset($new);
 	}
 
 	// Process config save
