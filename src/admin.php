@@ -21,17 +21,21 @@ if(isset($_GET["action"]) && $_GET["action"] === 'xlsx_import_ajax')
 		{ echo json_encode(['error' => 'Not authenticated']); exit; }
 	if(!isset($_FILES['xlsx_file']) || $_FILES['xlsx_file']['error'] !== UPLOAD_ERR_OK)
 		{ echo json_encode(['error' => 'Upload fehlgeschlagen']); exit; }
+	if(!function_exists('parse_xlsx_to_text'))
+		{ echo json_encode(['error' => 'XLSX function not available']); exit; }
 	@mkdir('images/uploads/temp/', 0755, true);
 	$temp = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
 	if(move_uploaded_file($_FILES['xlsx_file']['tmp_name'], $temp))
 	{
+		if(!file_exists($temp))
+			{ echo json_encode(['error' => 'Temp file not created']); exit; }
 		$result = parse_xlsx_to_text($temp);
 		@unlink($temp);
 		cleanup_xlsx_temp_files(1);
 		if(is_array($result) && isset($result['error']))
 			echo json_encode(['error' => $result['error']]);
 		else
-			echo json_encode(['content' => $result ?: '']);
+			echo json_encode(['content' => (string)$result]);
 	}
 	else echo json_encode(['error' => 'Datei konnte nicht gespeichert werden']);
 	exit;
@@ -111,7 +115,8 @@ echo '<!DOCTYPE html>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link rel="stylesheet" type="text/css" href="admin.css">
 <link rel="stylesheet" type="text/css" href="crop_modal.css">
-<link rel="SHORTCUT ICON" href="admin.ico">
+<link rel="icon" type="image/svg+xml" href="admin-favicon.svg">
+<link rel="icon" type="image/x-icon" href="admin.ico">
 
 <title>PMS Administration (BackEnd) - '.from_db("config",1,"name").'</title>';
 if(!$_SESSION['tinymce'])
@@ -249,13 +254,8 @@ if(@$_SESSION['reload_check']>=2)
 if(@$_SESSION['reload_check'])$_SESSION['reload_check']++;
 
 $action=@$_POST["action"] ?: @$_GET["action"];
-process_content_post_handlers();
-process_dynamic_post_handlers();
-process_monitoring_post_handlers();
-process_menu_post_handlers();
-process_admin_post_handlers();
 
-// Get Global Values!
+// Get Global Values from GET/session as defaults (POST handlers can override these)
 $delete=@$_GET["delete"];
 $edit=@$_GET["edit"];
 $new=@$_GET["new"];
@@ -266,6 +266,12 @@ $sort_do=@$_GET["sort"];
 $sort_para=@$_GET["pos"];
 $id_para=@$_GET["id"];
 $modul=@$_GET["modul"];
+
+process_content_post_handlers();
+process_dynamic_post_handlers();
+process_monitoring_post_handlers();
+process_menu_post_handlers();
+process_admin_post_handlers();
 
 if(from_db("user",@$_SESSION['userid'],"typ")<2)
 {
@@ -297,10 +303,10 @@ echo ob_get_clean();
 if($login==1)
 {
 	unset($a);
-	echo '<button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>';
+	echo '<button class="sidebar-toggle" id="sidebar-toggle" aria-label="Navigation öffnen" title="Navigation öffnen">&#9776;</button>';
 	echo '<div class="admin-layout">';
 	echo '<aside class="admin-sidebar" id="admin-sidebar">';
-	echo '<div class="sidebar-header">'.htmlspecialchars($config_values->name).'</div>';
+	echo '<div class="sidebar-header">'.htmlspecialchars($config_values->name).'<button class="sidebar-close" id="sidebar-close" aria-label="Navigation schließen" title="Navigation schließen">✕</button></div>';
 	echo '<div class="sidebar-user">Hallo, '.from_db("user",$_SESSION['userid'],"name").' (<a href="admin.php?action=logout">Logout</a>)</div>';
 	echo '<nav class="sidebar-nav">';
 	echo '<div class="nav-section-label">Navigation</div>';
@@ -460,6 +466,7 @@ if($login==1)
 			}
 			$_SESSION["item_filter2"]=$item_filter2;
 		}
+		handle_admin_add_image();
 		if(!$action && !$modul)
 		{
 			$action = 'home';
@@ -479,8 +486,40 @@ if($login==1)
 	}
 	?>
 	<script type="text/javascript">
-	document.getElementById('sidebar-toggle').addEventListener('click', function() {
-		document.getElementById('admin-sidebar').classList.toggle('open');
+	const sidebarToggle = document.getElementById('sidebar-toggle');
+	const sidebarClose = document.getElementById('sidebar-close');
+	const adminSidebar = document.getElementById('admin-sidebar');
+
+	function closeSidebar() {
+		adminSidebar.classList.remove('open');
+		document.body.classList.remove('sidebar-open');
+	}
+
+	function openSidebar() {
+		adminSidebar.classList.add('open');
+		document.body.classList.add('sidebar-open');
+	}
+
+	sidebarToggle.addEventListener('click', function(e) {
+		e.stopPropagation();
+		if (adminSidebar.classList.contains('open')) {
+			closeSidebar();
+		} else {
+			openSidebar();
+		}
+	});
+
+	sidebarClose.addEventListener('click', function(e) {
+		e.stopPropagation();
+		closeSidebar();
+	});
+
+	document.addEventListener('click', function(e) {
+		if (adminSidebar.classList.contains('open')) {
+			if (!adminSidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+				closeSidebar();
+			}
+		}
 	});
 	</script>
 	</body>

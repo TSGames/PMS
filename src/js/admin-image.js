@@ -149,3 +149,46 @@ function constrain_image_dimensions(width, height, maxWidth, maxHeight) {
 
 	return {width: width, height: height};
 }
+
+/**
+ * Initialize file input listeners for crop modal
+ */
+document.addEventListener('DOMContentLoaded', function() {
+	// Find all file inputs with name="image"
+	var fileInputs = document.querySelectorAll('input[type="file"][name="image"]');
+
+	fileInputs.forEach(function(input) {
+		input.addEventListener('change', function(e) {
+			var files = this.files;
+			if (!files || files.length === 0) return;
+
+			var file = files[0];
+			var form = this.closest('form');
+			var itemInput = form ? form.querySelector('input[name="item"]') : null;
+			var itemId = itemInput ? itemInput.value : '';
+			var reader = new FileReader();
+
+			reader.onload = function(evt) {
+				if (evt.target.readyState === FileReader.DONE) {
+					var img = new Image();
+					img.onload = function() {
+						// Check if crop modal function exists
+						if (window.showCropModal && typeof showCropModal === 'function') {
+							showCropModal(img, file.name, file, itemId);
+						}
+					};
+					img.onerror = function() {
+						alert('Fehler beim Laden des Bildes');
+					};
+					img.src = evt.target.result;
+				}
+			};
+
+			reader.onerror = function() {
+				alert('Fehler beim Lesen der Datei');
+			};
+
+			reader.readAsDataURL(file);
+		});
+	});
+});

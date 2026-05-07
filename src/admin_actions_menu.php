@@ -248,7 +248,8 @@ function handle_admin_menu()
 			$error="Eintrag konnte nicht entfernt werden";
 			ok_error();
 		}
-		echo '<table class="group">';
+		echo '<div class="table-responsive">';
+		echo '<table class="group items">';
 		echo table_header("Name:200px|Sortierung:90px|Link auf:70px|Sichtbar:60px|Bearbeiten:80px|Löschen:65px");
 		$link=$pms_db_connection->query(make_sql("menu","","sort,name"));
 		for($i=0;$link && $a=$pms_db_connection->fetchObject($link);$i++)
@@ -292,7 +293,8 @@ function handle_admin_menu()
 			$last=$a->sort;
 			$last_id=$a->id;
 		}
-		echo array_table($menu,5);
+		echo array_table($menu,5,array('Name','Sortierung','Link auf','Sichtbar','Bearbeiten','Löschen'));
+		echo '</div>';
 	}
 }
 

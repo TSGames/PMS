@@ -16,12 +16,21 @@ function process_content_post_handlers()
 	global $edit, $action, $error, $ok, $post, $item_filter, $item_filter2, $delete;
 	global $subcat_filter, $add_image, $add_image2, $add_image2_img;
 	global $supported_img, $image_path;
+	global $cat, $subcat, $typ, $typ2;
 
 
 	// AJAX Image crop endpoint
-	if($action === 'crop_image_ajax' && @$_SESSION['userid'])
+	if((isset($_POST['action']) && $_POST['action'] === 'crop_image_ajax') || $action === 'crop_image_ajax')
 	{
-		header('Content-Type: application/json');
+		// Send JSON header first, before any other output
+		header('Content-Type: application/json; charset=utf-8');
+		ob_clean();
+
+		// Check authentication
+		if (!@$_SESSION['userid']) {
+			echo json_encode(['success' => false, 'error' => 'Authentifizierung erforderlich']);
+			exit;
+		}
 
 		// Validate input
 		$image_file = isset($_POST['image_file']) ? basename($_POST['image_file']) : '';
@@ -36,10 +45,39 @@ function process_content_post_handlers()
 			exit;
 		}
 
-		// Verify file is in uploads directory (security check)
+		// Handle image data upload if provided
 		$file_path = 'images/uploads/' . $image_file;
-		if (!file_exists($file_path) || strpos(realpath($file_path), realpath('images/uploads/')) !== 0) {
-			echo json_encode(['success' => false, 'error' => 'Bilddatei nicht gefunden oder ungültig']);
+		if (isset($_FILES['image_data']) && $_FILES['image_data']['error'] === UPLOAD_ERR_OK) {
+			@mkdir('images/uploads', 0755, true);
+
+			// Clean filename
+			$fname = link_name($_FILES['image_data']['name'], ".");
+			$fname_parts = explode(".", $fname);
+			$end = strtolower(array_pop($fname_parts));
+			$fname_base = implode(".", $fname_parts);
+
+			// Generate unique filename
+			$check = $fname;
+			for ($i = 0; file_exists("images/uploads/" . $check); $i++) {
+				$check = ($i ? $fname_base . $i : $fname_base) . "." . $end;
+			}
+
+			$file_path = 'images/uploads/' . $check;
+			if (!copy($_FILES['image_data']['tmp_name'], $file_path)) {
+				echo json_encode(['success' => false, 'error' => 'Fehler beim Hochladen der Datei']);
+				exit;
+			}
+			$image_file = $check;
+		} else if (!file_exists($file_path)) {
+			echo json_encode(['success' => false, 'error' => 'Bilddatei nicht gefunden']);
+			exit;
+		}
+
+		// Verify file is in uploads directory (security check)
+		$real_path = realpath($file_path);
+		$uploads_path = realpath('images/uploads/');
+		if (!$real_path || !$uploads_path || strpos($real_path, $uploads_path) !== 0) {
+			echo json_encode(['success' => false, 'error' => 'Ungültiger Dateipfad']);
 			exit;
 		}
 
@@ -47,10 +85,20 @@ function process_content_post_handlers()
 		$result = crop_image($file_path, $crop_x, $crop_y, $crop_w, $crop_h);
 
 		if ($result['success']) {
+			// Resize to target dimensions if provided
+			$resize_w = isset($_POST['resize_width'])  ? intval($_POST['resize_width'])  : 0;
+			$resize_h = isset($_POST['resize_height']) ? intval($_POST['resize_height']) : 0;
+			if ($resize_w > 0 && $resize_h > 0) {
+				create_img($file_path, $resize_w, $resize_h, 0);
+				$size = @getimagesize($file_path);
+				$result['width']  = $size ? $size[0] : $resize_w;
+				$result['height'] = $size ? $size[1] : $resize_h;
+			}
 			echo json_encode([
 				'success' => true,
 				'width' => $result['width'],
 				'height' => $result['height'],
+				'filename' => $image_file,
 				'message' => 'Bild erfolgreich zugeschnitten'
 			]);
 		} else {
@@ -388,8 +436,8 @@ function process_content_post_handlers()
 		// Close form and return to list if "Übernehmen & Schließen" button was clicked
 		if($_POST["item_step2"] === "Übernehmen & Schließen")
 		{
-			unset($edit);
-			unset($post);
+			$edit = null;
+			$post = null;
 		}
 	}
 
@@ -402,6 +450,24 @@ function process_content_post_handlers()
 			$id=$pms_db_connection->lastInsertId();
 		}
 		$path="images/uploads/";
+
+		// Handle already-uploaded file (from crop modal)
+		if(isset($_POST["already_uploaded"]) && $_POST["already_uploaded"])
+		{
+			$check=basename($_POST["already_uploaded"]);
+			if(file_exists($path.$check))
+			{
+				$add_image2=$id;
+				$add_image2_img=$check;
+			}
+			else
+			{
+				$error="Bilddatei nicht gefunden";
+				$add_image=$id;
+				ok_error();
+			}
+		}
+		else {
 		if($_POST["drag_name"]){
 			$_FILES["image"]["name"]=$_POST["drag_name"];
 			$img_data=rawurldecode($_POST["drag_data"]);
@@ -461,6 +527,7 @@ function process_content_post_handlers()
 			$add_image=$id;
 		}
 		if($error) ok_error();
+		} // end else (not already_uploaded)
 	}
 }
 
@@ -555,7 +622,8 @@ function handle_admin_cat()
 			}
 			echo heading("Kategorien");
 			echo '[<a href="admin.php?action='.$action.'&new=yes">Neue Kategorie</a>]<br><br>';
-			echo '<table class="group">';
+			echo '<div class="table-responsive">';
+			echo '<table class="group items">';
 			echo table_header("ID:30px|Name:100px|Sortierung:90px|Verfügbar:60px|Bearbeiten:80px|Löschen:65px");
 			$link=$pms_db_connection->query(make_sql("cat","","sort,name"));
 			for($i=0;$link && $a=$pms_db_connection->fetchObject($link);$i++)
@@ -583,7 +651,8 @@ function handle_admin_cat()
 				$last=$a->sort;
 				$last_id=$a->id;
 			}
-			echo array_table($menu,5);
+			echo array_table($menu,5,array('ID','Name','Sortierung','Verfügbar','Bearbeiten','Löschen'));
+			echo '</div>';
 		}
 	}
 }
@@ -732,7 +801,9 @@ function handle_admin_subcat()
 				}
 				echo "<option value=\"".$a->id."\"".$sel.">".$a->name."</option>";
 			}
-			echo '</select> <input type="submit" name="subcat_filter" value="OK"><br><br></form><table class="group">';
+			echo '</select> <input type="submit" name="subcat_filter" value="OK"><br><br></form>';
+			echo '<div class="table-responsive">';
+			echo '<table class="group items">';
 			echo table_header("ID:30px|Name:100px|In Kategorie:100px|Sortierung:90px|Verfügbar:60px|Bearbeiten:80px|Löschen:65px");
 			$filter="";
 			if($subcat_filter)
@@ -766,7 +837,8 @@ function handle_admin_subcat()
 				$last=$a->sort;
 				$last_id=$a->id;
 			}
-			echo array_table($menu,6);
+			echo array_table($menu,6,array('ID','Name','In Kategorie','Sortierung','Verfügbar','Bearbeiten','Löschen'));
+			echo '</div>';
 		}
 	}
 }
@@ -782,8 +854,19 @@ function handle_admin_item_restore()
 	{
 		$action="item";
 		$found=recover_item($_POST["item_select"],0);
-		if($pms_db_connection->query(str_replace("\\r\\n", "\r\n", $found[$_POST["date_select"]][1]))) $ok="Inhalt erfolgreich Wiederhergestellt"; else $error="Fehler beim Wiederherstellen des Inhalts";
-		ok_error();
+		$item_id = intval($_POST["item_select"]);
+		$restore_idx = intval($_POST["date_select"]);
+		$item_name = isset($found[0][3]) ? $found[0][3] : "Unbekannt";
+		$restore_date = isset($found[$restore_idx][0]) ? $found[$restore_idx][0] : "Unbekannt";
+
+		if($pms_db_connection->query(str_replace("\\r\\n", "\r\n", $found[$restore_idx][1]))) {
+			$ok="Inhalt erfolgreich Wiederhergestellt (ID: ".$item_id.", Name: ".$item_name.")";
+			ok_error();
+			echo '<meta http-equiv="refresh" content="2;url=admin.php?action=item">';
+		} else {
+			$error="Fehler beim Wiederherstellen des Inhalts (ID: ".$item_id.", Name: ".$item_name.", Datum: ".$restore_date.") - Datenbankfehler beim Ausführen der Restore-Query";
+			ok_error();
+		}
 	}
 	else
 	{
@@ -920,8 +1003,8 @@ function handle_admin_item()
 	global $image_path, $supported_img;
 	global $edit_string_replace, $edit_string_use;
 	global $add_image, $add_image2, $add_image2_img;
+	global $cat, $subcat, $typ, $typ2;
 
-	$typ2 = '';
 	$files = [];
 
 	if($pms_db_use_reference)
@@ -940,9 +1023,14 @@ function handle_admin_item()
 	}
 	if($_GET["do_copy"])
 	{
-		$error="Fehler beim Kopieren des Inhalts";
-		$link=$pms_db_connection->query(make_sql("item","id = '".$_GET["do_copy"]."'","id"));
-		if($link && $a=$pms_db_connection->fetchObject($link))
+		$copy_id = intval($_GET["do_copy"]);
+		$copy_source_name = from_db("item",$copy_id,"name");
+		$error="Fehler beim Kopieren des Inhalts (ID: ".$copy_id.", Name: ".$copy_source_name.")";
+
+		$fetch_sql = make_sql("item","id = '".$copy_id."'","id");
+		$link=$pms_db_connection->query($fetch_sql);
+		$a = $pms_db_connection->fetchObject($link);
+		if($link && $a)
 		{
 			$str="";
 			foreach($a as $key=>$val)
@@ -951,20 +1039,29 @@ function handle_admin_item()
 				if($str) $str.=",";
 				$str.=$key;
 			}
-			if($pms_db_connection->query("INSERT INTO ".$pms_db_prefix."item (".$str.") SELECT ".$str." FROM ".$pms_db_prefix."item WHERE id = '".$_GET["do_copy"]."'"))
+			$insert_result = $pms_db_connection->query("INSERT INTO ".$pms_db_prefix."item (".$str.") SELECT ".$str." FROM ".$pms_db_prefix."item WHERE id = '".$copy_id."'");
+			if($insert_result)
 			{
 				$a = $pms_db_connection->lastInsertId();
 				if($link && $a)
 				{
 					$name=addslashes(from_db("item",$a,"name"))." - Kopie";
 					$pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET name = '".$name."' WHERE id = '".$a."'");
-					$typ=from_db("item",$_GET["do_copy"],"image");
-					@copy($image_path."item/".$_GET["do_copy"].".".$typ,$image_path."item/".$a.".".$typ);
-					@copy($image_path."item/".$_GET["do_copy"]."_large.".$typ,$image_path."item/".$a."_large.".$typ);
-					unset($error);
-					$ok="Inhalt erfolgreich kopiert";
+					$typ=from_db("item",$copy_id,"image");
+					@copy($image_path."item/".$copy_id.".".$typ,$image_path."item/".$a.".".$typ);
+					@copy($image_path."item/".$copy_id."_large.".$typ,$image_path."item/".$a."_large.".$typ);
+					$error="";
+					$ok="Inhalt erfolgreich kopiert (Original ID: ".$copy_id.", Kopie ID: ".$a.")";
 				}
 			}
+			else
+			{
+				$error.=" - INSERT fehlgeschlagen";
+			}
+		}
+		else
+		{
+			$error.=" - Quellobjekt nicht gefunden";
 		}
 		ok_error();
 	}
@@ -1277,31 +1374,37 @@ function handle_admin_item()
 				<br/><small>Zeichentabelle wird als Rohtext mit Leerzeichen als Trennzeichen eingefügt</small>
 			</fieldset>
 			</center></td></tr>
-			<tr style=\"display:none\"><td><script>
-			document.getElementById('xlsx_file_picker').addEventListener('change', function() {
-				if (!this.files.length) return;
-				var status = document.getElementById('xlsx_status');
-				status.textContent = 'Wird importiert...';
-				var fd = new FormData();
-				fd.append('xlsx_file', this.files[0]);
-				fetch('admin.php?action=xlsx_import_ajax', {method:'POST', body:fd})
-					.then(function(r){return r.json();})
-					.then(function(data){
-						if(data.error){status.textContent='Fehler: '+data.error;return;}
-						if(typeof tinyMCE!=='undefined' && tinyMCE.activeEditor){
-							var existing=tinyMCE.activeEditor.getContent({format:'text'}).trim();
-							tinyMCE.activeEditor.setContent(data.content+(existing?'\\n\\n--- Bestehender Inhalt ---\\n\\n'+existing:''));
-						} else {
-							var ta=document.querySelector('textarea[name=content]');
-							if(ta) ta.value=data.content+(ta.value?'\\n\\n--- Bestehender Inhalt ---\\n\\n'+ta.value:'');
-						}
-						status.textContent='Importiert ✓';
-					})
-					.catch(function(err){try{console.error(err);}catch(e){} status.textContent='Fehler beim Import: '+(err&&err.message?err.message:'Unbekannter Fehler');});
-				this.value='';
+			<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				var picker = document.getElementById('xlsx_file_picker');
+				if (picker) {
+					picker.addEventListener('change', function() {
+						if (!this.files.length) return;
+						var status = document.getElementById('xlsx_status');
+						status.textContent = 'Wird importiert...';
+						var fd = new FormData();
+						fd.append('xlsx_file', this.files[0]);
+						fetch('admin.php?action=xlsx_import_ajax', {method:'POST', body:fd})
+							.then(function(r){return r.json();})
+							.then(function(data){
+								if(data.error){status.textContent='Fehler: '+data.error;return;}
+								if(typeof tinyMCE!=='undefined' && tinyMCE.activeEditor){
+									var existing=tinyMCE.activeEditor.getContent().trim();
+									var htmlContent=data.content.replace(/\\n/g, '<br>');
+									tinyMCE.activeEditor.setContent(htmlContent+(existing?'<br><br>--- Bestehender Inhalt ---<br><br>'+existing:''));
+								} else {
+									var ta=document.querySelector('textarea[name=content]');
+									if(ta) ta.value=data.content+(ta.value?'\\n\\n--- Bestehender Inhalt ---\\n\\n'+ta.value:'');
+								}
+								status.textContent='Importiert ✓';
+							})
+							.catch(function(err){try{console.error(err);}catch(e){} status.textContent='Fehler beim Import: '+(err&&err.message?err.message:'Unbekannter Fehler');});
+						this.value='';
+					});
+				}
 			});
-			</script></td></tr>";
-			if($_SESSION['tinymce']==2) echo "<tr><td colspan=\"2\">
+			</script>";
+			if($_SESSION['tinymce']==2 && $edit) echo "<tr><td colspan=\"2\">
 			".'<input type="hidden" name="next" id="next" value="">
 			<input type="hidden" name="add_image" id="add_image" value="">
 			<input type="hidden" name="item" id="item" value="">
@@ -1323,9 +1426,16 @@ function handle_admin_item()
 			}
 			</script>
 			'."
-			<div class=\"drop_zone\" id=\"drop_zone\">Ziehen Sie eine Bild-Datei von Ihrem Explorer in dieses Feld,<br>um Sie auf der Seite einzufügen.</div>
-
-			<div align=\"center\" id=\"add_image\">[<a href=\"javascript:add_image('image')\">Bild einfügen</a>]</div>";
+			<center>
+			<fieldset style=\"margin-top:10px; padding:10px; border:1px solid #ccc; width:90%;\">
+				<legend>Bild einfügen</legend>
+				<input type=\"file\" id=\"image_file_picker\" accept=\".jpg,.jpeg,.png,.gif\" style=\"display:none\">
+				<button type=\"button\" onclick=\"document.getElementById('image_file_picker').click()\">Bild auswählen</button>
+				<span id=\"image_status\" style=\"margin-left:10px;font-size:.9em;\"></span>
+				<br/>
+				<div class=\"drop_zone\" id=\"drop_zone\">oder ziehen Sie eine Bild-Datei von Ihrem Explorer in dieses Feld</div>
+			</fieldset>
+			</center>";
 
 			echo "
 			<tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"available\" value=\"1\"".$available."> Inhalt verfügbar (Zugriff erlaubt, Administratoren haben immer Zugriff)</center></td></tr>";
@@ -1533,7 +1643,7 @@ function handle_admin_item()
 			echo '</select>';
 		}
 		echo ' <input type="submit" name="item_filter" value="OK"><br><br></form>
-		<table class="group items">';
+		<div class="table-responsive"><table class="group items">';
 		echo table_header("ID:30px|Name:100px|Typ:80px|In Kategorie:100px|In Unterkategorie:100px|Sortierung:90px|Erstellt am:80px|Verfügbar:60px|Kopie erstellen:90px|Bearbeiten:80px|Löschen:65px");
 		$filter="";
 		if($item_filter)
@@ -1576,7 +1686,8 @@ function handle_admin_item()
 			$last=$a->sort;
 			$last_id=$a->id;
 		}
-		echo array_table($menu,10);
+		echo array_table($menu,10,array('ID','Name','Typ','In Kategorie','In Unterkategorie','Sortierung','Erstellt am','Verfügbar','Kopie erstellen','Bearbeiten','Löschen'));
+		echo '</div>';
 	}
 }
 

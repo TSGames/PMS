@@ -281,7 +281,7 @@
 	function create_img($img,$width1,$height1,$constrains=1,$filter=0)
 	{
 		global $config_values;
-		$quali=$config_values->picquali;
+		$quali = (!empty($config_values->picquali) && $config_values->picquali > 0) ? intval($config_values->picquali) : 85;
 		$size=@getimagesize($img);
 		if($width1==-1) $width1=$size[0];
 		if($height1==-1) $height1=$size[1];
@@ -431,17 +431,12 @@
 			}
 		}
 
-		// Save cropped image with quality settings
+		// Save at high quality - this is an intermediate crop before resize, final quality applied by create_img
 		@ini_set("memory_limit", "500M");
-		$quality = isset($config_values->picquali) ? intval($config_values->picquali) : 85;
-
-		// Ensure quality is in valid range
-		if ($quality < 10) $quality = 10;
-		if ($quality > 100) $quality = 100;
 
 		$save_success = false;
 		if ($type === 'jpg' || $type === 'jpeg') {
-			$save_success = @imagejpeg($cropped, $file_path, $quality);
+			$save_success = @imagejpeg($cropped, $file_path, 95);
 		} elseif ($type === 'png') {
 			// PNG compression level (0-9, -1 = default)
 			$save_success = @imagepng($cropped, $file_path, -1);

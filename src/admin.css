@@ -116,13 +116,12 @@ textarea:focus, input[type="text"]:focus, input[type="email"]:focus, input[type=
 /* Drop Zone */
 .drop_zone {
     width: 100%;
-    max-width: 800px;
-    margin: 2rem auto;
-    min-width: 300px;
-    padding: 2rem;
+    max-width: 400px;
+    margin: 1rem auto;
+    padding: 1rem;
     border: 2px dashed #90a4ae;
     color: #546e7a;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 400;
     text-align: center;
     background: #f8fafc;
@@ -228,6 +227,35 @@ textarea:focus, input[type="text"]:focus, input[type="email"]:focus, input[type=
     font-weight: 600;
     color: #f1f5f9;
     letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-close {
+    display: none;
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.sidebar-close:hover {
+    color: #f1f5f9;
+    transform: scale(1.1);
+}
+
+.sidebar-close:focus {
+    outline: none;
+    color: #f1f5f9;
 }
 
 .sidebar-user {
@@ -537,14 +565,8 @@ input[type="submit"].large {
 }
 
 /* Responsive Design */
-@media screen and (max-width: 800px) {
-    html, body {
-        font-size: 14px;
-    }
-
-    h1 { font-size: 1.75rem; }
-    h2 { font-size: 1.35rem; }
-
+/* Burger menu at 1300px */
+@media screen and (max-width: 1300px) {
     /* Sidebar collapses off-screen, toggle button appears */
     .admin-sidebar {
         position: fixed;
@@ -560,34 +582,131 @@ input[type="submit"].large {
         box-shadow: 4px 0 20px rgba(0,0,0,0.3);
     }
 
-    .sidebar-toggle {
+    .admin-sidebar.open .sidebar-close {
         display: block;
+    }
+
+    body.sidebar-open .sidebar-toggle {
+        display: none;
+    }
+
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: fixed;
-        top: 0.6rem;
-        left: 0.6rem;
+        top: 1rem;
+        left: 1rem;
         z-index: 300;
+        width: 48px;
+        height: 48px;
         background: #1e293b;
         color: #fff;
         border: none;
-        border-radius: 6px;
-        padding: 0.4rem 0.65rem;
-        font-size: 1.2rem;
+        border-radius: 8px;
         cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-size: 1.5rem;
+        padding: 0;
         line-height: 1;
+    }
+
+    .sidebar-toggle:hover {
+        background: #334155;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .sidebar-toggle:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(30, 41, 59, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-toggle:active {
+        transform: scale(0.98);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
 
     .admin-main {
         padding: 3.5rem 1rem 1rem;
     }
+}
 
-    table.group tr {
+/* Responsive table design at 1000px */
+@media screen and (max-width: 1000px) {
+    html, body {
+        font-size: 14px;
+    }
+
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.35rem; }
+
+    /* Keep grid layout for non-items group tables */
+    table.group:not(.items) tr {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 8px;
     }
 
-    table.group tr > td:nth-child(2) { font-weight: bold; }
-    table.group td { word-break: break-all; width: 100%; }
+    table.group:not(.items) tr > td:nth-child(2) { font-weight: bold; }
+    table.group:not(.items) td { word-break: break-all; width: 100%; }
+
+    /* Responsive wrapper for horizontal scroll */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Card layout for .items table */
+    table.items {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table.items thead,
+    table.items tr:first-child {
+        display: none;
+    }
+
+    table.items tr {
+        display: block;
+        margin-bottom: 0.75rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.5rem;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    table.items td {
+        display: flex;
+        gap: 0.5rem;
+        padding: 4px 6px;
+        word-break: break-word;
+        width: auto;
+    }
+
+    table.items td::before {
+        content: attr(data-label) ":";
+        font-weight: 600;
+        color: #546e7a;
+        min-width: 130px;
+        flex-shrink: 0;
+    }
+
+    /* Action cells (last 2 columns) - inline, no label prefix */
+    table.items tr td:nth-last-child(1),
+    table.items tr td:nth-last-child(2) {
+        display: inline-flex;
+        width: auto;
+        margin: 2px;
+    }
+
+    table.items tr td:nth-last-child(1)::before,
+    table.items tr td:nth-last-child(2)::before {
+        display: none;
+    }
 
     .help_div { padding: 0.75rem; }
 

@@ -538,7 +538,8 @@ function handle_admin_user()
 		}
 		echo heading("Benutzerverwaltung");
 		echo '[<a href="admin.php?action='.$action.'&new=yes">Neuer Benutzer</a>]<br><br>';
-		echo '<table class="group">';
+		echo '<div class="table-responsive">';
+		echo '<table class="group items">';
 		echo table_header("ID:30px|Name:100px|E-Mail:150px|Typ:120px|Letzter Login:90px|Registriert:80px|Registrations-IP:100px|Punkte:40px|Aktiviert:60px|Bearbeiten:80px|Löschen:65px");
 		$link = $pms_db_connection->query(make_sql("user", "LEFT JOIN ".$pms_db_prefix."comments ON (".$pms_db_prefix."comments.user=".$pms_db_prefix."user.id)", $pms_db_prefix."user.id", $pms_db_prefix."user.*,count(".$pms_db_prefix."comments.id)*60+".$pms_db_prefix."user.points as points", $pms_db_prefix."user.id", 0));
 		$num_user = 0;
@@ -570,7 +571,8 @@ function handle_admin_user()
 			$num_user = $i;
 		}
 		$num_user++;
-		echo array_table($menu, 10);
+		echo array_table($menu, 10, array('ID','Name','E-Mail','Typ','Letzter Login','Registriert','Registrations-IP','Punkte','Aktiviert','Bearbeiten','Löschen'));
+		echo '</div>';
 		echo '
 		<br>'.$num_user.' Benutzer registriert.';
 	}

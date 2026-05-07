@@ -85,6 +85,7 @@ function handle_admin_add_image()
 {
 	global $pms_db_connection, $pms_db_prefix, $error, $ok, $add_image, $action, $edit, $post;
 	global $edit_string_replace, $edit_string_use;
+	global $cat, $subcat, $typ, $typ2;
 
 	if($action=="add_image" && $_GET["delete"])
 	{
@@ -100,7 +101,7 @@ function handle_admin_add_image()
 	{
 		$select=$action=="add_image";
 		$action="item";
-		$edit=$_POST["item"]*1;
+		$edit=(int)($_POST["item"] ?? 0);
 		$image=$_POST["image"];
 		$delete=array_key_exists("add_image2_abort",$_POST);
 
@@ -117,7 +118,7 @@ function handle_admin_add_image()
 			if($select)
 			{
 				$image=$_GET["image"];
-				$edit=$_GET["item"]*1;
+				$edit=(int)($_GET["item"] ?? 0);
 			}
 			$file="images/uploads/".$image;
 			if($delete)
@@ -145,7 +146,13 @@ function handle_admin_add_image()
 			else
 			{
 				unset($edit);
-				$error="Interner Verarbeitungsfehler";
+				$db_err = $pms_db_connection->error();
+				$error = "Interner Verarbeitungsfehler"
+					. " (item=" . intval($_POST["item"] ?? 0)
+					. ", image=" . htmlspecialchars(basename($image))
+					. ", file=" . (file_exists($file) ? "ok" : "fehlt")
+					. ($db_err ? ", db=" . htmlspecialchars($db_err) : "")
+					. ")";
 				ok_error();
 			}
 		}

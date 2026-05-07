@@ -102,6 +102,37 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Size preset buttons */
+.crop-size-presets {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #546e7a;
+}
+
+.crop-size-presets span {
+  margin-right: 0.25rem;
+  font-weight: 500;
+}
+
+.crop-size-presets button {
+  padding: 0.3rem 0.9rem;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  background: white;
+  color: #1976d2;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.crop-size-presets button:hover,
+.crop-size-presets button.active {
+  background: #1976d2;
+  color: white;
+}
+
 /* Info Box */
 .crop-info {
   display: flex;

@@ -143,7 +143,7 @@
 	 * @param b Column headers
 	 * @return string HTML table
 	 */
-	function array_table($a,$b)
+	function array_table($a,$b,$labels=array())
 	{
 		for($i=0;$i<($a ? count($a) : 0);$i++)
 			{
@@ -155,7 +155,8 @@
 			$str.="<tr".$color.">";
 			for($j=0;$j<=$b;$j++)
 				{
-				$str.="<td>".$a[$i][$j]."</td>";
+				$label = isset($labels[$j]) ? ' data-label="' . htmlspecialchars($labels[$j]) . '"' : '';
+				$str.="<td".$label.">".$a[$i][$j]."</td>";
 			}
 			$str.="</tr>
 ";
