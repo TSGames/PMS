@@ -113,6 +113,14 @@ echo '<!DOCTYPE html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<script>
+(function(){
+    var s=null;
+    try{s=localStorage.getItem("adminTheme");}catch(e){}
+    if(s==="dark")document.documentElement.classList.add("dark");
+    else if(s==="light")document.documentElement.classList.add("light");
+})();
+</script>
 <link rel="stylesheet" type="text/css" href="admin.css">
 <link rel="stylesheet" type="text/css" href="crop_modal.css">
 <link rel="icon" type="image/svg+xml" href="admin-favicon.svg">
@@ -183,6 +191,7 @@ if($_SESSION['tinymce']==2 || $modul=="newsletter")
 <script type="text/javascript" src="js/admin-tables.js"></script>
 <script type="text/javascript" src="js/admin-dialogs.js"></script>
 <script type="text/javascript" src="js/admin-image.js"></script>
+<script type="text/javascript" src="js/admin-theme.js"></script>
 </head>
 <body>
 <table width="100%" height="100%" cellspacing="0" cellpadding="0">
@@ -341,6 +350,12 @@ if($login==1)
 		echo '</ul>';
 	}
 	echo '</nav>';
+	echo '<div class="sidebar-footer">';
+	echo '<button class="theme-toggle" id="theme-toggle" aria-label="Farbschema wechseln" title="Farbschema wechseln">';
+	echo '<span class="theme-toggle-icon" id="theme-toggle-icon">&#9790;</span>';
+	echo '<span class="theme-toggle-label" id="theme-toggle-label">Dunkler Modus</span>';
+	echo '</button>';
+	echo '</div>';
 	echo '</aside>';
 	echo '<main class="admin-main"><div class="admin-content-inner">';
 	$update_info="update.info";

@@ -147,12 +147,7 @@
 	{
 		for($i=0;$i<($a ? count($a) : 0);$i++)
 			{
-			$color="";
-			if($i%2==0)
-				{
-				$color=" bgcolor=\"#FFFFFF\"";
-			}
-			$str.="<tr".$color.">";
+			$str.="<tr>";
 			for($j=0;$j<=$b;$j++)
 				{
 				$label = isset($labels[$j]) ? ' data-label="' . htmlspecialchars($labels[$j]) . '"' : '';

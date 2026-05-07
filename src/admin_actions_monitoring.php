@@ -150,12 +150,7 @@ function handle_admin_events()
 	for($i=0;$i<count($c);$i++)
 	{
 		$typ=$c[$i][0];
-		echo "<tr";
-		if($i%2==0)
-		{
-			echo " bgcolor=\"#FFFFFF\"";
-		}
-		echo "><td>".$typ."</td><td>".date("d.m.Y",$c[$i][1])."</td><td>".date("H:i",$c[$i][1])."</td><td>";
+		echo "<tr><td>".$typ."</td><td>".date("d.m.Y",$c[$i][1])."</td><td>".date("H:i",$c[$i][1])."</td><td>";
 		if($typ!="Inhalt" || !$c[$i][6])
 		{
 			echo $c[$i][2]." hat ";
@@ -285,9 +280,7 @@ function handle_admin_backup()
 				if($i>2 && !$save) $del="<a href=\"admin.php?action=".$action."&delete=".$b."\">Löschen</a>";
 				$date=explode("_",$b);
 				if(count($date)<5) $date="Nicht auslesbar";
-				echo "<tr";
-				if($i%2==0) echo " bgcolor=\"#FFFFFF\"";
-				echo "><td>".$b."</td>";
+				echo "<tr><td>".$b."</td>";
 				if(is_array($date)) echo "<td>".$date[2].".".$date[1].".".$date[0]."</td><td>".$date[3].":".$date[4]."</td>";
 				else echo "<td colspan=\"2\">".$date."</td>";
 				echo "<td>".round(get_filesize($backup_folder.$b)/1024/1024,2)."</td><td>".$del."</td><td>".$saved."</td></tr>
@@ -351,9 +344,7 @@ function handle_admin_activity()
 	{
 		$user="Keiner / Gast";
 		if($a->user) $user=make_link(from_db("user",$a->user,"name"),"action=user&id=".$a->user,0,0,0,"",0,"_blank");
-		unset($col);
-		if($i%2==0) $col=" bgcolor=\"#ffffff\"";
-		echo "<tr".$col."><td>".$a->id."</td><td>".browser($a->browser)."</td><td>".$user."</td><td>Vor ".time_diff($a->time)."</td><td>".convert_action($a->typ,$a->content)."</td></tr>";
+		echo "<tr><td>".$a->id."</td><td>".browser($a->browser)."</td><td>".$user."</td><td>Vor ".time_diff($a->time)."</td><td>".convert_action($a->typ,$a->content)."</td></tr>";
 		$i++;
 	}
 	echo "</table>";

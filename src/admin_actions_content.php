@@ -1608,13 +1608,13 @@ function handle_admin_item()
 			ok_error();
 		}
 		echo heading("Inhalte");
-		echo '[<a href="admin.php?action='.$action.'&new=yes">Inhalt hinzufügen</a>]<br>[';
+		echo '<a href="admin.php?action='.$action.'&new=yes" class="btn btn-primary">Inhalt hinzufügen</a>&nbsp;&nbsp;';
 		$baks = get_backups();
 		if($baks) {
 			$num_backups=count($baks);
 		}
-		if($num_backups) echo '<a href="admin.php?action=item_restore">Gelöschten Inhalt Wiederherstellen</a>';else echo '<span class="disabled">Gelöschen Inhalt Wiederherstellen</span>';
-		echo ']<br><br>';
+		if($num_backups) echo '<a href="admin.php?action=item_restore" class="btn btn-primary">Gelöschten Inhalt Wiederherstellen</a>';else echo '<span class="btn btn-disabled">Gelöschen Inhalt Wiederherstellen</span>';
+		echo '<br><br>';
 		echo form()."Zeige nur Inhalte der Kategorie <select name=\"uppcat\"><option value=\"0\">[Alle]</option>";
 		$link=$pms_db_connection->query(make_sql("cat","","sort,name"));
 		while($link && $a=$pms_db_connection->fetchObject($link))

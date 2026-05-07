@@ -40,15 +40,7 @@ function show_alert(message, title) {
 function show_info_message(message, duration) {
 	duration = duration || 3000;
 	var msgDiv = document.createElement('div');
-	msgDiv.style.position = 'fixed';
-	msgDiv.style.top = '20px';
-	msgDiv.style.right = '20px';
-	msgDiv.style.backgroundColor = '#4CAF50';
-	msgDiv.style.color = 'white';
-	msgDiv.style.padding = '15px';
-	msgDiv.style.borderRadius = '4px';
-	msgDiv.style.zIndex = '10000';
-	msgDiv.style.maxWidth = '300px';
+	msgDiv.className = 'admin-toast admin-toast--success';
 	msgDiv.textContent = message;
 
 	document.body.appendChild(msgDiv);
@@ -71,15 +63,7 @@ function show_info_message(message, duration) {
 function show_error_message(message, duration) {
 	duration = duration || 5000;
 	var msgDiv = document.createElement('div');
-	msgDiv.style.position = 'fixed';
-	msgDiv.style.top = '20px';
-	msgDiv.style.right = '20px';
-	msgDiv.style.backgroundColor = '#f44336';
-	msgDiv.style.color = 'white';
-	msgDiv.style.padding = '15px';
-	msgDiv.style.borderRadius = '4px';
-	msgDiv.style.zIndex = '10000';
-	msgDiv.style.maxWidth = '300px';
+	msgDiv.className = 'admin-toast admin-toast--error';
 	msgDiv.textContent = message;
 
 	document.body.appendChild(msgDiv);
