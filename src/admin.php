@@ -129,11 +129,11 @@ echo '<!DOCTYPE html>
 <title>PMS Administration (BackEnd) - '.from_db("config",1,"name").'</title>';
 if(!$_SESSION['tinymce'])
 {
-	$_SESSION['tinymce']=from_db("config",1,"editor")+1;
+	$_SESSION['tinymce']=(int)from_db("config",1,"editor")+1;
 }
 if(array_key_exists("item_step1",$_POST))
 {
-	$_SESSION['tinymce']=$_POST['tinymce']+1; // Check as soon as possible!
+	$_SESSION['tinymce']=(int)$_POST['tinymce']+1; // Check as soon as possible!
 }
 echo '
 <script type="text/javascript">
