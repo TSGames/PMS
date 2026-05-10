@@ -402,6 +402,12 @@ function process_content_post_handlers()
 			if(!$edit)
 			{
 				$edit=$pms_db_connection->lastInsertId();
+				if(!$edit)
+				{
+					$error="Fehler beim Erstellen des Inhalts";
+					ok_error();
+					return;
+				}
 			}
 			if($image || $image2)
 			{
@@ -448,6 +454,12 @@ function process_content_post_handlers()
 		$id=$_POST["item"];
 		if(!$id){
 			$id=$pms_db_connection->lastInsertId();
+			if(!$id)
+			{
+				$error="Ungültige Element-ID";
+				ok_error();
+				return;
+			}
 		}
 		$path="images/uploads/";
 
@@ -1030,7 +1042,7 @@ function handle_admin_item()
 		$fetch_sql = make_sql("item","id = '".$copy_id."'","id");
 		$link=$pms_db_connection->query($fetch_sql);
 		$a = $pms_db_connection->fetchObject($link);
-		if($link && $a)
+		if($a)
 		{
 			$str="";
 			foreach($a as $key=>$val)
@@ -1043,13 +1055,13 @@ function handle_admin_item()
 			if($insert_result)
 			{
 				$a = $pms_db_connection->lastInsertId();
-				if($link && $a)
+				if($a)
 				{
 					$name=addslashes(from_db("item",$a,"name"))." - Kopie";
 					$pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET name = '".$name."' WHERE id = '".$a."'");
-					$typ=from_db("item",$copy_id,"image");
-					@copy($image_path."item/".$copy_id.".".$typ,$image_path."item/".$a.".".$typ);
-					@copy($image_path."item/".$copy_id."_large.".$typ,$image_path."item/".$a."_large.".$typ);
+					$img_ext=from_db("item",$copy_id,"image");
+					@copy($image_path."item/".$copy_id.".".$img_ext,$image_path."item/".$a.".".$img_ext);
+					@copy($image_path."item/".$copy_id."_large.".$img_ext,$image_path."item/".$a."_large.".$img_ext);
 					$error="";
 					$ok="Inhalt erfolgreich kopiert (Original ID: ".$copy_id.", Kopie ID: ".$a.")";
 				}
@@ -1189,7 +1201,7 @@ function handle_admin_item()
 					unset($cat);
 				}
 			}
-			if($cat || $typ==3)
+			if(isset($cat) || $typ==3)
 			{
 				echo "
 				<tr><td colspan=\"2\"><div align=\"center\">";

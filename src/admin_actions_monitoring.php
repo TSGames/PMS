@@ -52,14 +52,15 @@ function handle_admin_events()
 	global $pms_db_connection, $pms_db_prefix, $gb_item, $special_typ;
 
 	echo form().heading("Ereignisse").'Es werden die Ereignisse der letzten <select name="last_events">';
-	for($i=1;$i<14;$i+=3)
+	$day_options = [1, 7, 14, 30];
+	foreach($day_options as $days)
 	{
 		$sel="";
-		if($i==$_SESSION['last_events'])
+		if($days==$_SESSION['last_events'])
 		{
 			$sel=" selected";
 		}
-		echo "<option".$sel.">".$i."</option>";
+		echo "<option".$sel.">".$days."</option>";
 	}
 	$sel="";
 	if($_SESSION['last_events']=='Alle')
