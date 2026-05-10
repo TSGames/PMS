@@ -134,7 +134,9 @@ function handle_admin_menu()
 			$visible=from_db("menu",$edit,"visible");
 			$popup=from_db("menu",$edit,"popup");
 		}
+		$radio[0] = $radio[1] = $radio[2] = $radio[3] = "";
 		$radio[$typ]=" checked";
+		$cats = "";
 		$link=$pms_db_connection->query(make_sql("cat","","sort,name"));
 		while($link && $row=$pms_db_connection->fetchObject($link))
 		{
@@ -146,6 +148,7 @@ function handle_admin_menu()
 			$cats=$cats."<option value=\"".$row->id."\"".$sel.">".$row->name."</option>
 			";
 		}
+		$subcats = "";
 		$link=$pms_db_connection->query(make_sql("subcat","cat = ".$cat,"sort,name"));
 		while($link && $row=$pms_db_connection->fetchObject($link))
 		{
@@ -157,6 +160,7 @@ function handle_admin_menu()
 			$subcats=$subcats."<option value=\"".$row->id."\"".$sel.">".$row->name."</option>
 			";
 		}
+		$items = "";
 		$link=$pms_db_connection->query(make_sql("item","cat = ".$cat." AND subcat = ".$subcat,"sort,name"));
 		while($link && $row=$pms_db_connection->fetchObject($link))
 		{
@@ -201,16 +205,16 @@ function handle_admin_menu()
 		</td></tr>
 		<tr><td colspan=\"2\">
 		<input type=\"radio\" name=\"typ\" value=\"0\"".$radio[0]."> Verlinkung zu Kategorie/Inhalt-Liste</td></tr>
-		<tr><td>Kategorie:</td><td><select onclick=\"check_radio(0)\" name=\"cat\">".$cats."</select> <input type=\"submit\" onclick=\"check_radio(0)\" name=\"menu_refresh\" value=\"Aktualisieren\"></td></tr>
-		<tr><td>Unterkategorie:</td><td><select onclick=\"check_radio(0)\" name=\"subcat\"><option value=\"0\">[Keine]</option>".$subcats."</select></td></tr>";
+		<tr><td>Kategorie:</td><td><select onclick=\"check_radio('typ', 0)\" name=\"cat\">".$cats."</select> <input type=\"submit\" onclick=\"check_radio('typ', 0)\" name=\"menu_refresh\" value=\"Aktualisieren\"></td></tr>
+		<tr><td>Unterkategorie:</td><td><select onclick=\"check_radio('typ', 0)\" name=\"subcat\"><option value=\"0\">[Keine]</option>".$subcats."</select></td></tr>";
 		if($subcat)
 		{
-			echo "<tr><td>Inhalt-Objekt:</td><td><select onclick=\"check_radio(0)\" name=\"item\"><option value=\"0\">[Keins]</option>".$items."</select></td></tr>";
+			echo "<tr><td>Inhalt-Objekt:</td><td><select onclick=\"check_radio('typ', 0)\" name=\"item\"><option value=\"0\">[Keins]</option>".$items."</select></td></tr>";
 		}
 		if($config_values->menu_mode) echo "<tr><td></td><td><input type=\"checkbox\" name=\"popup\" value=\"1\"".$popup."> Aufklappen ermöglichen</td></tr>";
 		echo "
 		<tr><td colspan=\"2\"><input type=\"radio\" name=\"typ\" value=\"1\"".$radio[1]."> Auf integriertes Plugin verweisen</td></tr>
-		<tr><td>Plugin:</td><td><select onclick=\"check_radio(1)\" name=\"plugin\">";
+		<tr><td>Plugin:</td><td><select onclick=\"check_radio('typ', 1)\" name=\"plugin\">";
 		for($i=0;$i<count($plugin_intern);$i++)
 		{
 			$sel="";
@@ -222,7 +226,7 @@ function handle_admin_menu()
 		}
 		echo "</select></td></tr>
 		<tr><td colspan=\"2\"><input type=\"radio\" name=\"typ\" value=\"2\"".$radio[2]."> Link-Code verwenden</td></tr>
-		<tr><td valign=\"center\">Link-Code:</td><td><textarea onclick=\"check_radio(2)\" name=\"extern\" rows=\"2\" cols=\"60\">";
+		<tr><td valign=\"center\">Link-Code:</td><td><textarea onclick=\"check_radio('typ', 2)\" name=\"extern\" rows=\"2\" cols=\"60\">";
 		echo my_stripslashes($extern);
 		echo "</textarea>
 		<div class=\"example\">Beispiel: a href=\"http://www.beispiel.de/\" target=\"_blank\"</div></td></tr>
