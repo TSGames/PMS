@@ -238,7 +238,7 @@
 				$rate=make_rating($id,$what);
 				if($rate)
 					{
-					$rate="<tr><td>".$rate;
+					$rate="<div class=\"pms-item-rate\">".$rate."</div>";
 				}
 			}
 			if($what=="item")
@@ -246,10 +246,6 @@
 				$link2="subcat";
 				$link3="id";
 				$rate=make_rating($id,"item",$a->numratings,$a->rating);
-				if($rate)
-					{
-					$rate="<tr><td>".$rate;
-				}
 				if($config_values->commentssmall && $config_values->comments)
 					{
 					$comments=make_link_mark(get_comment_str($a->comments_num),"comments=all","","",$id,"comments","num_comments");
@@ -259,15 +255,15 @@
 					}
 					elseif($comments)
 						{
-						$rate="<tr><td>(".$comments.")";
+						$rate=$comments;
 					}
 				}
+				if($rate)
+					{
+					$rate="<div class=\"pms-item-rate\">".$rate."</div>";
+				}
 			}
-			if($rate)
-				{
-				$rate.="</td></tr>";
-			}
-			$str="<table><tr>";
+			$str="<div class=\"pms-item\">";
 			if($img)
 				{
 				$li='';
@@ -278,15 +274,21 @@
 				elseif($what=='item')
 					{
 					$src=extract_content_img_src($a->content);
-					if($src) $li='<img class="small_image" src="'.htmlspecialchars($src).'" border="0" style="max-width:64px;max-height:64px;">';
+					if($src) $li='<img class="small_image" src="'.htmlspecialchars($src).'" border="0">';
 				}
 				if($li) $li=make_link($li,"",$a->$link1,$a->$link2,$a->$link3);
-				$str.="<td rowspan=\"3\" height=\"64px\" width=\"78px\" style=\"text-align:center;\">".$li."
-</td>";
+				$str.="<div class=\"pms-item-thumb\">".$li."</div>";
 			}
-			$str.="<td class=\"item_link\">".make_link($a->name,"",$a->$link1,$a->$link2,$a->$link3)
-."</td></tr>".$rate."<tr valign=\"top\"><td class=\"description\">
-".make_dynamic(def($a->description))."</td></tr></table>
+			$desc=def($a->description);
+			$desc_class="pms-item-meta description";
+			if(!$desc && $what=='item' && $a->content)
+				{
+				$desc=mb_substr(trim(strip_tags($a->content)),0,300);
+				$desc_class.=" pms-item-meta--content";
+			}
+			$str.="<div class=\"pms-item-info\"><div class=\"pms-item-title item_link\">".make_link($a->name,"",$a->$link1,$a->$link2,$a->$link3)
+."</div>".$rate."<div class=\"".$desc_class."\">
+".make_dynamic($desc)."</div></div></div>
 ";
 		}
 		return $str;

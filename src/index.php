@@ -1865,7 +1865,9 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         $search=get_template();
         $out=$template_content;
         if(!strstr($out,"#comments_list")) $out=str_replace("#content","#content#comments_list",$out);
-        $replace=array($content,$title,$menu,$user_str,$poll,$footer,$user_counter,$birthday,$top_user,$most_discussed,$search_plugin,$position_row,$latest_comments,$comment_str,$newsletter);
+        $pms_styles='<link rel="stylesheet" type="text/css" href="pms.css">';
+        if(!strstr($out,"#pms_styles")) $out=str_replace("</head>","#pms_styles</head>",$out);
+        $replace=array($content,$title,$menu,$user_str,$poll,$footer,$user_counter,$birthday,$top_user,$most_discussed,$search_plugin,$position_row,$latest_comments,$comment_str,$newsletter,$pms_styles);
         for($i=0;$i<2;$i++)
         $out=replace_dynamic(do_check(make_dynamic(trim($out))));
         
