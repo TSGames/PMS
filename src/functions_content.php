@@ -274,7 +274,7 @@
 				elseif($what=='item')
 					{
 					$src=extract_content_img_src($a->content);
-					if($src) $li='<img class="small_image" src="'.htmlspecialchars($src).'" border="0">';
+					if($src) $li='<img class="small_image" loading="lazy" src="'.htmlspecialchars($src).'" border="0">';
 				}
 				if($li) $li=make_link($li,"",$a->$link1,$a->$link2,$a->$link3);
 				$str.="<div class=\"pms-item-thumb\">".$li."</div>";
@@ -286,9 +286,12 @@
 				$desc=mb_substr(trim(strip_tags($a->content)),0,300);
 				$desc_class.=" pms-item-meta--content";
 			}
+			$date='';
+			if($what=='item')
+				$date='<div class="pms-item-date">'.make_date($a->time,0).'</div>';
 			$str.="<div class=\"pms-item-info\"><div class=\"pms-item-title item_link\">".make_link($a->name,"",$a->$link1,$a->$link2,$a->$link3)
 ."</div>".$rate."<div class=\"".$desc_class."\">
-".make_dynamic($desc)."</div></div></div>
+".make_dynamic($desc)."</div>".$date."</div></div>
 ";
 		}
 		return $str;
