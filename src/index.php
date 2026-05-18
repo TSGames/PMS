@@ -893,7 +893,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             for($i=0;$i<count($linkData);$i++)
             {
                 $b[$i]=$linkData[$i];
-                if($a->image) $img=1;
+                if($b[$i]->image || ($key1=='item' && extract_content_img_src($b[$i]->content))) $img=1;
             }
             if(is_array($b))
             {

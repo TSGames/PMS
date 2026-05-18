@@ -26,6 +26,13 @@
 		return $c_new;
 	}
 
+	function extract_content_img_src($content)
+	{
+		if(preg_match('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $content, $matches))
+			return $matches[1];
+		return '';
+	}
+
 	/**
 	 * Strip HTML tags from string
 	 *
@@ -263,7 +270,16 @@
 			$str="<table><tr>";
 			if($img)
 				{
-				$li=make_contentimg($what,$a->id,$a->image,0);
+				$li='';
+				if($a->image)
+					{
+					$li=make_contentimg($what,$a->id,$a->image,0);
+				}
+				elseif($what=='item')
+					{
+					$src=extract_content_img_src($a->content);
+					if($src) $li='<img class="small_image" src="'.htmlspecialchars($src).'" border="0" style="max-width:64px;max-height:64px;">';
+				}
 				if($li) $li=make_link($li,"",$a->$link1,$a->$link2,$a->$link3);
 				$str.="<td rowspan=\"3\" height=\"64px\" width=\"78px\" style=\"text-align:center;\">".$li."
 </td>";
