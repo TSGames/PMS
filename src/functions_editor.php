@@ -21,31 +21,30 @@
 	{
 		return 'tinymce.init({
     selector: "#'.$match.'",
-    width: 640,
+    width: "100%",
     height: "'.$height.'",
-    resize: "both",
+    resize: "vertical",
     language: "de",
     plugins: "advlist autolink lists link image charmap preview anchor \
               searchreplace visualblocks code fullscreen insertdatetime media \
               table help wordcount",
-    
     toolbar: "undo redo | bold italic underline strikethrough | \
               alignleft aligncenter alignright alignjustify | \
               styleselect formatselect fontselect fontsizeselect | \
               bullist numlist outdent indent blockquote | \
               link image media | forecolor backcolor | \
               removeformat code fullscreen",
-		
+    toolbar_mode: "sliding",
+    mobile: {
+        toolbar: "bold italic | bullist numlist | link | undo redo",
+        menubar: false
+    },
     content_css: "template_files/style.css",
     body_class: "content_table",
-		
-    // Externe Listen für Links/Medien/Templates (falls genutzt)
     template_external_list_url: "lists/template_list.js",
     external_link_list_url: "lists/link_list.js",
     external_image_list_url: "lists/image_list.js",
     media_external_list_url: "lists/media_list.js",
-		
-    // Platzhalter-Werte für Templates
     template_replace_values: {
         username: "Some User",
         staffid: "991234"
