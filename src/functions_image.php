@@ -174,7 +174,7 @@
 			if(file_exists($full)) $link_full=1;
 		}
 		$file=$file.".".$typ;
-		$str="<img class=\"small_image\"".$alt." src=\"".$image_path;
+		$str="<img class=\"small_image\" loading=\"lazy\"".$alt." src=\"".$image_path;
 		if(file_exists($image_path.$file))
 			{
 			$size=@getimagesize($image_path.$file);
