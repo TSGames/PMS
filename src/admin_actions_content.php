@@ -245,7 +245,7 @@ function process_content_post_handlers()
 					if($image)
 					{
 						copy($_FILES["image"]["tmp_name"],$target);
-						create_img($target,64,64);
+						create_img($target,256,256);
 					}
 					$pms_db_connection->query("UPDATE ".$pms_db_prefix."subcat SET image = '$end' WHERE id = '$edit' LIMIT 1;");
 				}
@@ -420,7 +420,7 @@ function process_content_post_handlers()
 						$target2=$image_path."item/".$edit."_large.".$end;
 						$target3=$image_path."item/".$edit."_full.".$end;
 						@copy($_FILES["image"]["tmp_name"],$target);
-						create_img($target,64,64);
+						create_img($target,256,256);
 						if($typ!=1)
 						{
 							@copy($_FILES["image"]["tmp_name"],$target2);
