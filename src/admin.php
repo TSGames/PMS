@@ -56,16 +56,18 @@ if (!Auth::isLoggedIn()) {
     exit;
 }
 
-// 3. Besucherzähler des Backends
-// counter.php ordnet den Aufruf über $action_list einer Backend-Seite zu
-$admin_center = 1;
-$action_list = \Pms\Backend\Http\Navigation::actionNames();
-include 'counter.php';
-
 Editor::syncSession();
 
 $modul = Request::string('modul');
 $action = Request::action($modul === '' ? 'home' : '');
+
+// 3. Besucherzähler des Backends
+// counter.php ordnet den Aufruf über $action_list einer Backend-Seite zu,
+// convert_action() beschriftet sie später über $action_name
+$admin_center = 1;
+$action_list = \Pms\Backend\Http\Navigation::actionNames();
+$action_name = \Pms\Backend\Http\Navigation::actionLabels();
+include 'counter.php';
 
 require 'backend/modules.php';  // $modul_name, $modul_content
 

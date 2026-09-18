@@ -90,7 +90,8 @@ final class ActivityController extends Controller
                 Html::e(browser($visitor->browser)),
                 $user,
                 'Vor ' . Html::e(time_diff($visitor->time)),
-                Html::e(convert_action($visitor->typ, $visitor->content)),
+                // convert_action liefert bereits fertiges HTML mit Verlinkung
+                (string)convert_action($visitor->typ, $visitor->content),
             ];
         }
 

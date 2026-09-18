@@ -46,6 +46,17 @@ final class Navigation
         return array_column(self::items(), 'action');
     }
 
+    /**
+     * Nur die Beschriftungen in Reihenfolge der Navigation.
+     * convert_action() benennt damit die besuchte Backend-Seite.
+     *
+     * @return list<string>
+     */
+    public static function actionLabels(): array
+    {
+        return array_column(self::items(), 'label');
+    }
+
     /** Aktionen, die nur Super-Administratoren offenstehen. */
     public static function requiresSuperAdmin(string $action): bool
     {

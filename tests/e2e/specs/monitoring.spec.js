@@ -32,6 +32,15 @@ test('Website-Status zeigt Besucherinformationen', async ({ page }) => {
   await expectNoPhpError(page);
 });
 
+test('Website-Status benennt die zuletzt besuchte Backend-Seite', async ({ page }) => {
+  await page.goto('admin.php?action=user');
+  await page.goto('admin.php?action=activity');
+
+  const row = page.locator('table.items tr', { hasText: 'admin' }).first();
+  await expect(row).toContainText('PMS Administration');
+  await expect(row.locator('a[href*="action="]').last()).toHaveText(/Benutzerverwaltung|Website-Status/);
+});
+
 test('Update-Modul ist erreichbar', async ({ page }) => {
   await page.goto('admin.php?modul=update');
   await expect(page.locator('body')).toContainText('Updates Suchen');
