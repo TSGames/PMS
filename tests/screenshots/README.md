@@ -1,7 +1,8 @@
 # Screenshots des Admin-Backends
 
 Aufgenommen mit `npm run screenshots` (siehe [tests/README.md](../README.md)).
-Sie dokumentieren den Stand der Oberfläche vor dem Refactoring des Admin-Backends.
+Sie zeigen den aktuellen Stand der Oberfläche. Der Stand vor dem Refactoring
+des Admin-Backends liegt im Commit, der das Testsystem eingeführt hat.
 
 | Variante | Auflösung | Farbschema |
 | --- | --- | --- |

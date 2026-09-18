@@ -1,78 +1,98 @@
-# Befunde aus dem Aufbau des Testsystems
+# Befunde aus dem Refactoring des Admin-Backends
 
-Beim Anlegen des Mock-Systems und der Tests (Stand vor dem Refactoring des
-Admin-Backends) sind die folgenden Defekte aufgefallen. Jeder Eintrag ist in
-`tests/e2e/specs/known-defects.spec.js` als erwarteter Fehlschlag
-(`test.fail()`) hinterlegt: Wird der Defekt behoben, meldet Playwright
-"Expected to fail, but passed" – dann wird `test.fail()` entfernt und der
-Eintrag hier abgehakt.
+Beim Aufbau des Mock-Systems und der Tests sind die folgenden Defekte
+aufgefallen. Alle sind inzwischen behoben; die Tests in
+`tests/e2e/specs/known-defects.spec.js` und `security.spec.js` halten fest,
+dass sie nicht zurückkehren.
 
-## Funktionale Defekte
+## Behobene Defekte
 
-### B1 – Benutzer anlegen bricht mit Fatal Error ab
-`admin_actions_admin.php:140` rechnet `$_POST['id'] * 1`. Das Formular
-"Benutzer erstellen" sendet ein leeres `id`-Feld; unter PHP 8 wirft
+### B9 – Ohne Anmeldung wurden Eingaben verarbeitet (kritisch)
+`admin.php` rief die POST-Handler auf, bevor irgendeine Rechteprüfung
+stattfand. Eine einzige Anfrage ohne jede Anmeldung genügte, um
+Sperrungen, Kategorien, Unterkategorien, Inhalte und sogar Benutzerkonten
+anzulegen oder zu ändern:
+
+```
+curl -d "id=0&ip=203.0.113.99&reason=x&time=5&bans=Speichern" .../admin.php
+```
+
+Der Ablauf prüft die Anmeldung jetzt vor jeder Verarbeitung; ohne gültige
+Sitzung erscheint nur noch die Anmeldemaske.
+Tests: `specs/security.spec.js`.
+
+### B1 – Benutzer anlegen brach mit Fatal Error ab
+`admin_actions_admin.php` rechnete `$_POST['id'] * 1`. Das Formular
+"Benutzer erstellen" sendete ein leeres Feld, und unter PHP 8 wirft
 `"" * 1` einen `TypeError`. Ergebnis: weiße Seite, kein Benutzer angelegt.
-Betrifft das produktive Image (php:8.4-apache).
+Eingaben laufen jetzt über `Request::int()`.
 
-### B2 – Ban ohne Dauer bricht mit Fatal Error ab
-Gleiches Muster in `admin_actions_admin.php:25`:
-`time() + str_replace(",", ".", $_POST['time']) * 60 * 60 * 24`.
-Bleibt das Feld "Dauer" leer (Standardfall für eine dauerhafte Sperre),
-wirft PHP 8 einen `TypeError`.
+### B2 – Ban ohne Dauer brach mit Fatal Error ab
+Gleiches Muster bei `time() + str_replace(...) * 60 * 60 * 24`. Eine
+dauerhafte Sperre (leeres Feld) war damit nicht anlegbar.
 
-### B3 – Menüeinträge lassen sich nicht speichern
-`process_menu_post_handlers()` speichert nur, wenn die globale Variable
-`$post` den Wert 2 hat. Gesetzt wird `$post = 2` ausschließlich in den
-Inhalts-Handlern (`admin_actions_content.php`) und beim Bild-Upload.
-Beim Absenden des Menü-Formulars bleibt `$post` leer, der Speicherzweig
-wird nie erreicht – weder Anlegen noch Ändern eines Menüeintrags wirkt.
+### B3 – Menüeinträge ließen sich nicht speichern
+Der Speicherzweig lief nur, wenn die globale Variable `$post` den Wert 2
+hatte. Gesetzt wurde sie ausschließlich von den Handlern der
+Inhaltsverwaltung – beim Menü-Formular also nie. Weder Anlegen noch Ändern
+eines Menüeintrags hatte eine Wirkung.
 
 ### B4 – Löschen ohne Rückfrage per GET
-`admin.php?action=user&delete=<id>` und `admin.php?action=item&delete=<id>`
-löschen den Datensatz sofort beim Aufruf des Links. Kategorien,
-Unterkategorien und Menüeinträge fragen dagegen nach. Neben der
-inkonsistenten Bedienung ist das eine CSRF-Lücke: Ein eingebettetes
-`<img src="…admin.php?action=item&delete=5">` genügt, um Inhalte eines
-angemeldeten Administrators zu löschen. Es gibt keinen CSRF-Token.
+`admin.php?action=user&delete=…` und `…action=item&delete=…` löschten den
+Datensatz sofort beim Aufruf des Links – ohne Rückfrage und ohne Token.
+Ein eingebettetes `<img src="…admin.php?action=item&delete=5">` genügte,
+um Inhalte eines angemeldeten Administrators zu löschen. Alle Bereiche
+fragen jetzt nach und prüfen ein Token.
 
-### B5 – JavaScript-Fehler auf der Login-Maske
-`admin.php` gibt den Skriptblock für die Seitenleiste unabhängig vom
-Login-Status aus. Ohne Seitenleiste läuft er auf
-`sidebarToggle.addEventListener` und bricht ab.
-
-### B6 – Variablen-Seite lädt den Editor von einem CDN
-Die Seite "Variablen" bindet den Monaco-Editor von
-`cdn.jsdelivr.net` ein. Ohne Internetzugang (interne Installation,
-Testumgebung) bleibt das Eingabefeld ohne Editor, in der Konsole steht
-`require is not defined`. Zusätzlich ein Datenschutz-Aspekt, weil jede
-Bearbeitung eine Anfrage an einen Dritt-Server auslöst.
+### B5 – JavaScript-Fehler auf der Anmeldemaske
+Der Skriptblock der Seitenleiste wurde unabhängig vom Anmeldestatus
+ausgegeben und brach ohne Seitenleiste ab. Er liegt jetzt in
+`js/admin-sidebar.js` und prüft, ob die Elemente vorhanden sind.
 
 ### B8 – SQL-Syntaxfehler im Menü-Formular
-`handle_admin_menu()` baut `make_sql("subcat", "cat = " . $cat, …)` auch
-dann, wenn `$cat` leer ist. Die Abfrage lautet dann
-`… WHERE cat =  ORDER BY sort,name;` und wird von SQLite abgelehnt
-(`near "ORDER": syntax error` im Log). Gleiches Muster für die Item-Abfrage
-(`near "AND"`). Die Seite rendert, die Auswahllisten bleiben aber leer.
+`make_sql("subcat", "cat = " . $cat, …)` erzeugte ohne gewählte Kategorie
+`… WHERE cat =  ORDER BY sort,name;`. SQLite lehnte die Abfrage ab, die
+Auswahllisten blieben leer.
 
-## Strukturelle Beobachtungen (Grundlage für das Refactoring)
+### B10 – Konfigurator speicherte die E-Mail-Benachrichtigungen nie
+Die Zuordnungstabelle `$confirmation_dialogs` wurde erst nach den
+POST-Handlern aufgebaut. Beim Speichern war sie leer, die Schleife lief
+ins Leere.
 
-1. **Globale Variablen als Steuerfluss.** `$post`, `$action`, `$edit`,
-   `$new`, `$ok`, `$error` werden quer über `admin.php` und fünf
-   Handler-Dateien gesetzt und gelesen (siehe B3). Reihenfolge und
-   Nebenwirkungen sind nicht nachvollziehbar.
-2. **Keine Trennung von Verarbeitung und Ausgabe.** Die Handler geben HTML
-   direkt per `echo` aus und führen dabei Datenbankänderungen durch.
-3. **SQL wird durchgängig per String-Verkettung gebaut.** Werte aus `$_POST`
-   landen teilweise ungeprüft im Statement (`bans`, `menu`, `config`).
-   Es gibt keine Prepared Statements.
-4. **Kein CSRF-Schutz**, Sitzungsprüfung nur über `REMOTE_ADDR`.
-5. **Passwörter als ungesalzenes MD5** (`do_login`, `make_user`).
-6. **Zweistufiges Inhaltsformular** (`item_step1`/`item_step2`) mit
-   Zustand in `$_SESSION['tinymce']`.
-7. **Gemischte Zeichenkodierung**: Die Quelldateien enthalten sowohl
-   UTF-8- als auch Latin-1-Umlaute, `admin.php` deklariert
-   `charset=iso-8859-1`, ausgeliefert wird UTF-8.
-8. **Tabellen laufen horizontal aus dem Bild** (z.B. Inhaltsliste: Spalte
-   "Löschen" ist bei 1440px nicht mehr sichtbar).
-9. **Tippfehler in der Oberfläche**: "Gelöschen Inhalt Wiederherstellen".
+### B11 – Ereignisseite brach ohne Ereignisse ab
+`usort()` lief auf einer nie befüllten Variablen, sobald im gewählten
+Zeitraum kein Ereignis lag – Fatal Error statt leerer Liste.
+
+### B12 – Zerstörte Umlaute im Quelltext
+In `functions.php`, `functions_ui.php` und `functions_utility.php` standen
+Ersatzzeichen statt Umlauten ("Gï¿½stebuch"). Betroffen war auch die
+Ersetzungstabelle in `link_name()`, die Umlaute in Dateinamen ersetzen
+soll und dafür ebenfalls nur Ersatzzeichen enthielt.
+
+### Weitere Kleinigkeiten
+* Die Benutzerliste erzeugte eine mehrdeutige Abfrage
+  (`ambiguous column name: id`).
+* Die Bildvorschau der Bildauswahl hing an einer Mausverfolgung, die es
+  seit einem früheren Umbau nicht mehr gab.
+* Tippfehler in der Oberfläche ("eingeloogt", "Gelöschen Inhalt").
+
+## Offene Punkte
+
+### B6 – Variablen-Seite lädt den Editor von einem CDN
+Die Seite "Variablen" bindet den Monaco-Editor von `cdn.jsdelivr.net` ein.
+Ohne Internetzugang bleibt das Eingabefeld ohne Editor; zusätzlich geht
+bei jeder Bearbeitung eine Anfrage an einen Dritt-Server. Das Skript liegt
+in `functions_editor.php` und gehört nicht zum Admin-Backend im engeren
+Sinn; es ist im Test als bekannter Fehler hinterlegt
+(`KNOWN_JS_ERRORS` in `tests/e2e/lib/admin.js`).
+
+### Passwörter als ungesalzenes MD5
+`do_login()` und `make_user()` speichern Passwörter als MD5-Hash ohne
+Salt. Eine Umstellung auf `password_hash()` betrifft auch die
+Benutzeranmeldung im Frontend und die Cookie-Anmeldung und wurde deshalb
+nicht in diesem Refactoring erledigt.
+
+### `TRUNCATE TABLE` in counter.php
+SQLite kennt kein `TRUNCATE`; die Tabelle `visitors` wird beim Tageswechsel
+deshalb nie geleert (Meldung `near "TRUNCATE": syntax error` im Log).
+Betrifft den Besucherzähler, nicht das Backend.

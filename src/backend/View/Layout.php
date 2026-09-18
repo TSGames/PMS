@@ -79,7 +79,6 @@ final class Layout
 <script type="text/javascript" src="crop_modal.js"></script>
 <script type="text/javascript" src="js/admin-forms.js"></script>
 <script type="text/javascript" src="js/admin-tables.js"></script>
-<script type="text/javascript" src="js/admin-dialogs.js"></script>
 <script type="text/javascript" src="js/admin-image.js"></script>
 <script type="text/javascript" src="js/admin-theme.js"></script>
 </head>

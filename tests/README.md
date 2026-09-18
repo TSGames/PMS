@@ -17,7 +17,7 @@ tests/
 │   ├── specs/       Testfälle
 │   ├── screenshots/ Screenshot-Aufnahme
 │   └── bin/         Hilfsskripte
-├── screenshots/     Aufgenommene Screenshots (Ausgangszustand)
+├── screenshots/     Aufgenommene Screenshots aller Bildschirme
 └── .runtime/        Laufzeitdaten, nicht versioniert
 ```
 
@@ -92,7 +92,17 @@ npm run screenshots
 
 Legt für jeden Bildschirm aus `lib/screens.js` Screenshots unter
 `tests/screenshots/<variante>/<id>.png` ab und erzeugt eine Übersicht in
-`tests/screenshots/README.md`.
+`tests/screenshots/README.md`. Der Aufbau des Backends selbst ist in
+[src/backend/README.md](../src/backend/README.md) beschrieben.
+
+## Statische Analyse
+
+Die Anwendung wird zusätzlich mit Psalm geprüft (wie in der CI):
+
+```bash
+composer install
+vendor/bin/psalm
+```
 
 ## Neue Bildschirme aufnehmen
 

@@ -8,8 +8,8 @@
  *   desktop-dark  1440x900, dunkles Farbschema
  *   mobile        390x844, helles Farbschema (nur für Seiten mit wide: true)
  *
- * Die Screenshots sind der visuelle Ausgangszustand vor dem Refactoring
- * des Admin-Backends.
+ * Die Screenshots dokumentieren den Stand der Oberfläche und werden nach
+ * jeder größeren Änderung neu aufgenommen.
  */
 
 const fs = require('fs');
