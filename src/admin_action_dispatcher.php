@@ -16,13 +16,9 @@ function dispatch_admin_action($action)
 	global $pms_db_connection;
 
 	$action_map = [
-		'home'          => 'handle_admin_home',
 		'item_restore'  => 'handle_admin_item_restore',
 		'item_recover'  => 'handle_admin_item_recover',
 		'item'          => 'handle_admin_item',
-		'events'        => 'handle_admin_events',
-		'backup'        => 'handle_admin_backup',
-		'activity'      => 'handle_admin_activity',
 	];
 
 	if (!$action) {

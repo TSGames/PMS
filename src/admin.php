@@ -19,7 +19,6 @@ require 'backend/bootstrap.php';
 // Bereiche, die noch nicht auf Controller umgestellt sind
 require 'admin_helpers.php';
 require 'admin_templates.php';
-require 'admin_actions_monitoring.php';
 require 'admin_actions_ui.php';
 require 'admin_actions_content.php';
 require 'admin_action_dispatcher.php';

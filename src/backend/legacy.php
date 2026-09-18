@@ -43,7 +43,6 @@ $select_reference = 0;
 
 // Eingaben verarbeiten
 process_content_post_handlers();
-process_monitoring_post_handlers();
 
 // Sonderfälle der Inhaltsverwaltung
 if (Request::submitted('item_restore')) {

@@ -14,6 +14,7 @@ final class Router
 {
     /** @var array<string, class-string<Controller>> */
     private const ROUTES = [
+        'home' => \Pms\Backend\Controller\HomeController::class,
         'bans' => \Pms\Backend\Controller\BansController::class,
         'var' => \Pms\Backend\Controller\VarController::class,
         'poll' => \Pms\Backend\Controller\PollController::class,
@@ -22,6 +23,9 @@ final class Router
         'menu' => \Pms\Backend\Controller\MenuController::class,
         'user' => \Pms\Backend\Controller\UserController::class,
         'config' => \Pms\Backend\Controller\ConfigController::class,
+        'events' => \Pms\Backend\Controller\EventsController::class,
+        'backup' => \Pms\Backend\Controller\BackupController::class,
+        'activity' => \Pms\Backend\Controller\ActivityController::class,
     ];
 
     public static function handles(string $action): bool
