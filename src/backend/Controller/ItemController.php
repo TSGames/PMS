@@ -506,7 +506,8 @@ final class ItemController extends Controller
             'user' => Request::int('user', Auth::userId()),
             'link' => Request::string('link'),
             'available' => Request::checkbox('available'),
-            'visible' => $type === self::TYPE_SPECIAL ? 1 : Request::checkbox('visible'),
+            // Spezialseiten erscheinen nicht in Listen; das Feld wird dort nicht angeboten
+            'visible' => Request::checkbox('visible'),
         ];
 
         // Ein eigenes Erstellungsdatum ersetzt die automatische Zeit
