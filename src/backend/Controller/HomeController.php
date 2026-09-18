@@ -10,11 +10,13 @@ use Pms\Backend\Support\Html;
  */
 final class HomeController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'home';
     }
 
+    #[\Override]
     public function handle(): string
     {
         $version = (string)($GLOBALS['pms_version'] ?? '');

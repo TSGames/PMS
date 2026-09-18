@@ -314,7 +314,7 @@ const SCREENS = [
     title: 'Gelöschten Inhalt wiederherstellen',
     role: 'admin',
     url: 'admin.php?action=item_restore',
-    heading: 'Gelöschten Inhalt Wiederherstellen',
+    heading: 'Gelöschten Inhalt wiederherstellen',
   },
   {
     id: 'item-versionen',
@@ -322,7 +322,7 @@ const SCREENS = [
     title: 'Inhalt aus Version wiederherstellen',
     role: 'admin',
     url: 'admin.php?action=item_recover&item=2',
-    heading: 'Inhalt Wiederherstellen',
+    heading: 'Inhalt wiederherstellen',
   },
 
   // ------------------------------------------------------------- Variablen

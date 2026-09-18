@@ -28,11 +28,13 @@ final class MenuController extends Controller
         self::TYPE_PLACEHOLDER => 'Platzhalter',
     ];
 
+    #[\Override]
     public function action(): string
     {
         return 'menu';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('menu')) {

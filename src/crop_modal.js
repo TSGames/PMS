@@ -502,6 +502,7 @@
     const outDim   = finalDimensions(orig.w, orig.h);
     const formData = new FormData();
     formData.append('action',        'crop_image_ajax');
+    formData.append('pms_token',     window.PMS_TOKEN || '');
     formData.append('image_file',    state.imageFile);
     formData.append('image_data',    state.blob, state.imageFile);
     formData.append('crop_x',        orig.x);

@@ -15,11 +15,13 @@ use Pms\Backend\Support\Sorting;
  */
 final class SubcatController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'subcat';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('subcat')) {

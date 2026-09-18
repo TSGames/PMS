@@ -12,11 +12,13 @@ use Pms\Backend\Support\Request;
  */
 final class VarController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'var';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('var')) {

@@ -4,7 +4,7 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { login, resetDatabase, expectNoPhpError, submit } = require('../lib/admin');
+const { login, resetDatabase, expectNoPhpError, submit, tableColumn } = require('../lib/admin');
 
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
@@ -92,22 +92,106 @@ test('Kopie eines Inhalts erstellen', async ({ page }) => {
   expect(rows.match(/Sommerfest 2024/g).length).toBeGreaterThanOrEqual(2);
 });
 
-test('Löschen entfernt den Inhalt (heute ohne Rückfrage, siehe B4b)', async ({ page }) => {
+test('Löschen fragt nach und entfernt den Inhalt', async ({ page }) => {
   await page.goto('admin.php?action=item&delete=4');
-  await expect(page.locator('body')).toContainText('erfolgreich entfernt');
+  await expect(page.locator('body')).toContainText('Jahreshauptversammlung');
 
-  await page.goto('admin.php?action=item');
+  await submit(page, 'input[name="confirm_delete"]');
+  await expect(page.locator('body')).toContainText('erfolgreich entfernt');
   await expect(page.locator('table.items')).not.toContainText('Jahreshauptversammlung');
 });
 
 test('Wiederherstellungsseite ist erreichbar', async ({ page }) => {
   await page.goto('admin.php?action=item_restore');
-  await expect(page.locator('body')).toContainText('Gelöschten Inhalt Wiederherstellen');
+  await expect(page.locator('body')).toContainText('Gelöschten Inhalt wiederherstellen');
   await expectNoPhpError(page);
 });
 
 test('Versionsverwaltung eines Inhalts ist erreichbar', async ({ page }) => {
   await page.goto('admin.php?action=item_recover&item=2');
-  await expect(page.locator('body')).toContainText('Inhalt Wiederherstellen');
+  await expect(page.locator('body')).toContainText('Inhalt wiederherstellen');
   await expectNoPhpError(page);
+});
+
+test('Vorauswahl bietet für Spezialseiten die Art des Inhalts an', async ({ page }) => {
+  await page.goto('admin.php?action=item&new=yes');
+  await page.selectOption('select[name="typ"]', { label: 'Spezialseite' });
+  await submit(page, 'input[name="item_refresh"]');
+
+  await expect(page.locator('body')).toContainText('Art des Spezialinhalts');
+  const options = await page.locator('select[name="typ2"] option').allTextContents();
+  expect(options).toContain('Startseite');
+  expect(options).toContain('Gästebuch');
+});
+
+test('Editor zeigt alle Felder eines Standardinhalts', async ({ page }) => {
+  await page.goto('admin.php?action=item&edit=4');
+  await page.uncheck('input[name="tinymce"]');
+  await submit(page, 'input[name="item_step1"]');
+
+  await expect(page.locator('input[name="name"]')).toBeVisible();
+  await expect(page.locator('textarea[name="description"]')).toBeVisible();
+  await expect(page.locator('input[name="sort"]')).toBeVisible();
+  await expect(page.locator('select[name="user"]')).toBeVisible();
+  await expect(page.locator('input[name="available"]')).toBeVisible();
+  await expect(page.locator('input[name="visible"]')).toBeVisible();
+  await expect(page.locator('input[name="showuser"]')).toBeVisible();
+  await expect(page.locator('input[name="rate"]')).toBeVisible();
+  await expect(page.locator('input[name="comments"]')).toBeVisible();
+  await expect(page.locator('input[name="create_at_use"]')).toBeChecked();
+});
+
+test('Editor eines Downloads zeigt das Link-Feld', async ({ page }) => {
+  await page.goto('admin.php?action=item&edit=5');
+  await page.uncheck('input[name="tinymce"]');
+  await submit(page, 'input[name="item_step1"]');
+
+  await expect(page.locator('input[name="link"]')).toHaveValue('uploads/aufnahmeantrag.pdf');
+});
+
+test('Editor einer Spezialseite blendet die Sichtbarkeit aus', async ({ page }) => {
+  await page.goto('admin.php?action=item&edit=1');
+  await page.uncheck('input[name="tinymce"]');
+  await submit(page, 'input[name="item_step1"]');
+
+  await expect(page.locator('input[name="available"]')).toBeVisible();
+  await expect(page.locator('input[name="visible"]')).toHaveCount(0);
+});
+
+test('Übernehmen und Schließen kehrt zur Liste zurück', async ({ page }) => {
+  await page.goto('admin.php?action=item&edit=4');
+  await page.uncheck('input[name="tinymce"]');
+  await submit(page, 'input[name="item_step1"]');
+
+  await page.fill('input[name="name"]', 'Jahreshauptversammlung 2025');
+  await submit(page, page.locator('input[value="Übernehmen & Schließen"]'));
+
+  await expect(page.locator('table.items')).toContainText('Jahreshauptversammlung 2025');
+});
+
+test('Liste lässt sich nach Unterkategorie filtern', async ({ page }) => {
+  await page.goto('admin.php?action=item');
+  await page.selectOption('select[name="uppcat"]', { label: 'Aktuelles' });
+  await submit(page, 'input[name="item_filter"]');
+  await page.selectOption('select[name="uppcat2"]', { label: 'Termine' });
+  await submit(page, 'input[name="item_filter"]');
+
+  await expect(page.locator('table.items')).toContainText('Jahreshauptversammlung');
+  await expect(page.locator('table.items')).not.toContainText('Sommerfest 2024');
+});
+
+test('Sortierung der Inhalte lässt sich ändern', async ({ page }) => {
+  await page.goto('admin.php?action=item');
+  const before = await tableColumn(page, 2, 'Name');
+  const row = page.locator('table.items tr', { hasText: 'Beitragsordnung' });
+  await submit(page, row.locator('a', { hasText: '↑' }));
+
+  const after = await tableColumn(page, 2, 'Name');
+  expect(after).not.toEqual(before);
+});
+
+test('Spezialseiten lassen sich nicht kopieren', async ({ page }) => {
+  await page.goto('admin.php?action=item');
+  const row = page.locator('table.items tr', { hasText: 'Willkommen' });
+  await expect(row.locator('a', { hasText: 'Kopie erstellen' })).toHaveCount(0);
 });

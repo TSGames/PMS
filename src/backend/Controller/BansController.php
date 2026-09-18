@@ -13,16 +13,19 @@ use Pms\Backend\Support\Request;
  */
 final class BansController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'bans';
     }
 
+    #[\Override]
     protected function requiredLevel(): int
     {
         return Auth::TYPE_SUPERADMIN;
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('bans')) {

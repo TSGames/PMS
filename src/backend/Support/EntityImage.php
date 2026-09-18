@@ -10,10 +10,16 @@ namespace Pms\Backend\Support;
  */
 final class EntityImage
 {
-    /** Erlaubte Bildformate. */
+    /**
+     * Erlaubte Bildformate.
+     *
+     * @return list<string>
+     */
     public static function supportedTypes(): array
     {
-        return $GLOBALS['supported_img'] ?? ['jpg', 'jpeg', 'gif', 'png'];
+        /** @var list<string> $types */
+        $types = $GLOBALS['supported_img'] ?? ['jpg', 'jpeg', 'gif', 'png'];
+        return $types;
     }
 
     /**

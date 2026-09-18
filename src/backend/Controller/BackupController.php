@@ -16,16 +16,19 @@ final class BackupController extends Controller
     /** So viele der neuesten Sicherungen bleiben in jedem Fall erhalten. */
     private const PROTECTED_RECENT = 3;
 
+    #[\Override]
     public function action(): string
     {
         return 'backup';
     }
 
+    #[\Override]
     protected function requiredLevel(): int
     {
         return Auth::TYPE_SUPERADMIN;
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('backup') && $this->checkToken()) {

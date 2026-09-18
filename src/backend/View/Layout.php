@@ -50,6 +50,10 @@ final class Layout
     public static function head(string $title): string
     {
         $tinymce = self::tinymceRequested() ? get_tinymce() : '';
+        // Token für Anfragen, die das Skript selbst absetzt (Zuschneiden, Import)
+        $token = Auth::isLoggedIn()
+            ? '<script>window.PMS_TOKEN=' . json_encode(\Pms\Backend\Support\Csrf::token()) . ';</script>'
+            : '';
 
         return '<!DOCTYPE html>
 <html lang="de">
@@ -70,7 +74,7 @@ final class Layout
     else if(stored==="light")document.documentElement.classList.add("light");
 })();
 </script>
-' . $tinymce . '
+' . $token . $tinymce . '
 <script type="text/javascript" src="drag.js"></script>
 <script type="text/javascript" src="crop_modal.js"></script>
 <script type="text/javascript" src="js/admin-forms.js"></script>

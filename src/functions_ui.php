@@ -86,7 +86,7 @@
 		if(!$ok)
 			$str="Es ist kein Referenzobjekt angelegt. Legen Sie das Element zuerst im Haupt-PMS an!
 <br><br>
-[<a href=\"admin.php?action=".$what."\">Zurï¿½ck</a>]";
+[<a href=\"admin.php?action=".$what."\">Zurück</a>]";
 		$str=heading($head)."<br>".$str;
 		return $str;
 	}
@@ -97,7 +97,7 @@
 	 */
 	function back_button()
 	{
-		return "[<a href=\"javascript:history.back()\">Zurï¿½ck</a>]";
+		return "[<a href=\"javascript:history.back()\">Zurück</a>]";
 	}
 
 	/**
@@ -235,7 +235,7 @@
 			else if($i<123) $array[1][$i]=chr($i);
 			else $array[1][$i]="_";
 		}
-		$a=str_replace(array("ï¿½","ï¿½","ï¿½","ï¿½","ï¿½","ï¿½"),array("Ae","Oe","Ue","ae","oe","ue"),$str);
+		$a=str_replace(array("Ä","Ö","Ü","ä","ö","ü","ß"),array("Ae","Oe","Ue","ae","oe","ue","ss"),$str);
 		$a=str_replace($array[0],$array[1],$a);
 		for($i=10;$i>1;$i--)
 			{

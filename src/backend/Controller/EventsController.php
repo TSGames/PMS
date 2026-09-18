@@ -15,11 +15,13 @@ final class EventsController extends Controller
     private const RANGES = [1, 7, 14, 30];
     private const RANGE_ALL = 'Alle';
 
+    #[\Override]
     public function action(): string
     {
         return 'events';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('events')) {

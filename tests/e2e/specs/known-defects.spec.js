@@ -57,9 +57,7 @@ test('B4a (behoben): Benutzer werden erst nach Rückfrage gelöscht', async ({ p
   await expect(page.locator('table.items')).toContainText('gast');
 });
 
-test('B4b: Inhalte werden erst nach Rückfrage gelöscht', async ({ page }) => {
-  test.fail(true, 'admin.php?action=item&delete=… löscht sofort per GET, ohne Bestätigung');
-
+test('B4b (behoben): Inhalte werden erst nach Rückfrage gelöscht', async ({ page }) => {
   await page.goto('admin.php?action=item&delete=4');
   await expect(page.locator('body')).not.toContainText('erfolgreich entfernt');
   await page.goto('admin.php?action=item');

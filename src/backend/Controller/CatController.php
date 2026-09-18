@@ -14,11 +14,13 @@ use Pms\Backend\Support\Sorting;
  */
 final class CatController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'cat';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('cat')) {

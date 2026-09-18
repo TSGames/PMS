@@ -49,16 +49,19 @@ final class ConfigController extends Controller
     /** Felder, die als Text gespeichert werden. */
     private const TEXTS = ['name', 'page', 'mail', 'language', 'search_list', 'visitors_password'];
 
+    #[\Override]
     public function action(): string
     {
         return 'config';
     }
 
+    #[\Override]
     protected function requiredLevel(): int
     {
         return Auth::TYPE_SUPERADMIN;
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('config')) {

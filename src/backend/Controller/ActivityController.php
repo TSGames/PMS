@@ -11,11 +11,13 @@ use Pms\Backend\Support\Request;
  */
 final class ActivityController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'activity';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('send_bot_filter')) {

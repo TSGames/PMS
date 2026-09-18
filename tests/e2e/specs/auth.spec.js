@@ -91,8 +91,8 @@ test('Administrator ohne Super-Admin-Rechte darf keine Kategorie löschen', asyn
   await expect(page.locator('input[name="cat_delete"]')).toHaveCount(0);
 });
 
-test('Direkter Aufruf eines Handler-Moduls ist verboten', async ({ page }) => {
-  const response = await page.goto('admin_actions_content.php');
+test('Direkter Aufruf einer Backend-Datei ist verboten', async ({ page }) => {
+  const response = await page.goto('backend/bootstrap.php');
   expect(response.status()).toBe(403);
   await expect(page.locator('body')).toContainText('Direct access not allowed');
 });

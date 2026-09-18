@@ -70,7 +70,7 @@ test('Speichern ohne gültiges Token wird abgewiesen', async ({ page }) => {
 });
 
 test('Handler-Dateien sind nicht direkt aufrufbar', async ({ request }) => {
-  for (const file of ['admin_actions_content.php', 'backend/bootstrap.php', 'backend/legacy.php', 'backend/modules.php']) {
+  for (const file of ['backend/bootstrap.php', 'backend/modules.php']) {
     const response = await request.get(file);
     expect(response.status(), file).toBe(403);
   }

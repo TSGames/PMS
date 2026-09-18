@@ -320,13 +320,13 @@ function header_def()
 		@mkdir(SubStr($backup_folder,0,-1));
 		$time=date("Y")."_".date("m")."_".date("d")."_".date("H")."_".date("i")."_".rand(10000,99999);
 		$exp="-- MYSQL Dump erzeugt von PMS, Version ".$pms_version."
--- Hinweis: Dies ist ein sehr einfacher MYSQL-Export. Wenn Sie einen besseren Export benï¿½tigen, nutzen Sie bitte den phpMyAdmin
--- Bitte seien Sie sich bewusst, dass wir keinerlei Garantie fï¿½r den erfolgreichen Export/Import zwischen verschiedenen PMS-Versionen geben kï¿½nnen
--- Wï¿½hlen Sie diesen Export wï¿½hrend des Installationsvorgangs aus, um ihn wiederherzustellen
--- www.TSGames.de?item=236 fï¿½r weitere Informationen ï¿½ber PMS
+-- Hinweis: Dies ist ein sehr einfacher MYSQL-Export. Wenn Sie einen besseren Export benötigen, nutzen Sie bitte den phpMyAdmin
+-- Bitte seien Sie sich bewusst, dass wir keinerlei Garantie für den erfolgreichen Export/Import zwischen verschiedenen PMS-Versionen geben können
+-- Wählen Sie diesen Export während des Installationsvorgangs aus, um ihn wiederherzustellen
+-- www.TSGames.de?item=236 für weitere Informationen über PMS
 		
--- Nur fï¿½r phpMyAdmin-Import:
--- Entfernen Sie die Kommentare vor den Folgenden Zeilen, um alle alten Daten vor dem Einlesen zu lï¿½schen.
+-- Nur für phpMyAdmin-Import:
+-- Entfernen Sie die Kommentare vor den Folgenden Zeilen, um alle alten Daten vor dem Einlesen zu löschen.
 ";
 		
 		$result = $pms_db_connection->fetchAllObject($pms_db_connection->list_tables());
@@ -348,7 +348,7 @@ function header_def()
 				{
 				continue; // we don't need to export the visitors
 			}
-			$exp=$exp."-- Daten fï¿½r Tabelle ".$table.chr(10);
+			$exp=$exp."-- Daten für Tabelle ".$table.chr(10);
 			$link=$pms_db_connection->query("SELECT * FROM ".$table);
 			if($link)
 				{

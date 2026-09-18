@@ -16,11 +16,13 @@ use Pms\Backend\Support\Request;
  */
 final class UserController extends Controller
 {
+    #[\Override]
     public function action(): string
     {
         return 'user';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('user')) {

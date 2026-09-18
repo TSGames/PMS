@@ -15,11 +15,13 @@ final class PollController extends Controller
 {
     private const ANSWER_COUNT = 10;
 
+    #[\Override]
     public function action(): string
     {
         return 'poll';
     }
 
+    #[\Override]
     public function handle(): string
     {
         if (Request::submitted('poll')) {

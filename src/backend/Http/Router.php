@@ -6,9 +6,6 @@ use Pms\Backend\Controller\Controller;
 
 /**
  * Ordnet eine Aktion dem zuständigen Bereich zu.
- *
- * Bereiche, die noch nicht umgestellt sind, werden weiterhin vom
- * Dispatcher des Altbestands (admin_action_dispatcher.php) bedient.
  */
 final class Router
 {
@@ -26,6 +23,10 @@ final class Router
         'events' => \Pms\Backend\Controller\EventsController::class,
         'backup' => \Pms\Backend\Controller\BackupController::class,
         'activity' => \Pms\Backend\Controller\ActivityController::class,
+        'item' => \Pms\Backend\Controller\ItemController::class,
+        'add_image' => \Pms\Backend\Controller\ItemController::class,
+        'item_restore' => \Pms\Backend\Controller\ItemRestoreController::class,
+        'item_recover' => \Pms\Backend\Controller\ItemRecoverController::class,
     ];
 
     public static function handles(string $action): bool
@@ -33,13 +34,13 @@ final class Router
         return isset(self::ROUTES[$action]);
     }
 
-    /** Führt den Bereich aus und liefert dessen HTML. */
+    /**
+     * Führt den Bereich aus und liefert dessen HTML.
+     * Unbekannte Aktionen landen auf der Startseite.
+     */
     public static function dispatch(string $action): string
     {
-        $class = self::ROUTES[$action] ?? null;
-        if ($class === null) {
-            return '';
-        }
+        $class = self::ROUTES[$action] ?? self::ROUTES['home'];
 
         /** @var Controller $controller */
         $controller = new $class();
