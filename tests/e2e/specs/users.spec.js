@@ -96,10 +96,19 @@ test('Eigener Account kann nicht gesperrt werden', async ({ page }) => {
   await expect(page.locator('body')).toContainText('nicht Ihren aktuellen Account sperren');
 });
 
-test('Benutzer löschen (heute ohne Rückfrage, siehe B4a)', async ({ page }) => {
+test('Benutzer löschen fragt nach und entfernt ihn', async ({ page }) => {
   await page.goto('admin.php?action=user&delete=5');
-  await expect(page.locator('body')).toContainText('erfolgreich entfernt');
+  await expect(page.locator('body')).toContainText('gesperrt');
+  await submit(page, 'input[name="confirm_delete"]');
 
+  await expect(page.locator('body')).toContainText('erfolgreich entfernt');
   await page.goto('admin.php?action=user');
   expect(await tableColumn(page, 2, 'Name')).not.toContain('gesperrt');
+});
+
+test('Eigenes Konto lässt sich nicht löschen', async ({ page }) => {
+  await page.goto('admin.php?action=user&delete=1');
+  await expect(page.locator('body')).toContainText('nicht selbst löschen');
+  await page.goto('admin.php?action=user');
+  expect(await tableColumn(page, 2, 'Name')).toContain('admin');
 });

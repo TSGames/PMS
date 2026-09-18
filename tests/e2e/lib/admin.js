@@ -100,10 +100,11 @@ async function tableColumn(page, columnIndex, headerLabel) {
 /**
  * Setzt die Mock-Datenbank auf den Ausgangszustand zurück.
  * Wird von allen Specs benutzt, die Daten verändern.
+ * Rührt bewusst nur die Datenbank an, nicht die Laufzeitkonfiguration.
  */
 function resetDatabase() {
   waitForIdleServer();
-  execFileSync('php', [path.join(REPO_ROOT, 'tests/mock/setup.php')], { stdio: 'pipe' });
+  execFileSync('php', [path.join(REPO_ROOT, 'tests/mock/reset-db.php')], { stdio: 'pipe' });
 }
 
 /**

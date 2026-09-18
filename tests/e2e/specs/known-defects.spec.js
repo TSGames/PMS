@@ -41,9 +41,7 @@ test('B2 (behoben): Ban ohne Dauer lässt sich speichern', async ({ page }) => {
   await expect(page.locator('table.items')).toContainText('192.0.2.99');
 });
 
-test('B3: Menüeintrag lässt sich speichern', async ({ page }) => {
-  test.fail(true, '$post wird für das Menü-Formular nie auf 2 gesetzt (admin_actions_menu.php:40)');
-
+test('B3 (behoben): Menüeintrag lässt sich speichern', async ({ page }) => {
   await page.goto('admin.php?action=menu&edit=3');
   await page.fill('input[name="name"]', 'Veranstaltungen');
   await submit(page, 'input[name="menu"]');
@@ -52,9 +50,7 @@ test('B3: Menüeintrag lässt sich speichern', async ({ page }) => {
   await expect(page.locator('table.items')).toContainText('Veranstaltungen');
 });
 
-test('B4a: Benutzer werden erst nach Rückfrage gelöscht', async ({ page }) => {
-  test.fail(true, 'admin.php?action=user&delete=… löscht sofort per GET, ohne Bestätigung');
-
+test('B4a (behoben): Benutzer werden erst nach Rückfrage gelöscht', async ({ page }) => {
   await page.goto('admin.php?action=user&delete=4');
   await expect(page.locator('body')).not.toContainText('erfolgreich entfernt');
   await page.goto('admin.php?action=user');
@@ -79,9 +75,7 @@ test('B5 (behoben): Login-Maske erzeugt keine JavaScript-Fehler', async ({ page,
   expect(errors).toEqual([]);
 });
 
-test('B8: Menü-Formular erzeugt keine SQL-Syntaxfehler', async ({ page }) => {
-  test.fail(true, 'make_sql("subcat","cat = ") erzeugt "WHERE cat =  ORDER BY ..."');
-
+test('B8 (behoben): Menü-Formular erzeugt keine SQL-Syntaxfehler', async ({ page }) => {
   const log = path.resolve(__dirname, '../../.runtime/logs/php-error.log');
   fs.writeFileSync(log, '');
   await page.goto('admin.php?action=menu&new=yes');

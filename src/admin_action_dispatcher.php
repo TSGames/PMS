@@ -17,14 +17,9 @@ function dispatch_admin_action($action)
 
 	$action_map = [
 		'home'          => 'handle_admin_home',
-		'menu'          => 'handle_admin_menu',
-		'user'          => 'handle_admin_user',
-		'cat'           => 'handle_admin_cat',
-		'subcat'        => 'handle_admin_subcat',
 		'item_restore'  => 'handle_admin_item_restore',
 		'item_recover'  => 'handle_admin_item_recover',
 		'item'          => 'handle_admin_item',
-		'config'        => 'handle_admin_config',
 		'events'        => 'handle_admin_events',
 		'backup'        => 'handle_admin_backup',
 		'activity'      => 'handle_admin_activity',

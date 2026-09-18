@@ -22,6 +22,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once __DIR__ . '/paths.php';
+require_once __DIR__ . '/database.php';
 
 $keepDb = in_array('--keep-db', $argv, true);
 
@@ -125,34 +126,12 @@ step("PHP-Konfiguration erzeugt (" . count(glob($confDir . '/*.ini')) . " Dateie
 if ($keepDb && file_exists($dbFile)) {
     step("Bestehende Datenbank beibehalten ($dbFile)");
 } else {
-    foreach ([$dbFile, $dbFile . '-wal', $dbFile . '-shm'] as $f) {
-        if (file_exists($f)) {
-            unlink($f);
-        }
+    $counts = pms_build_mock_database();
+    $summary = [];
+    foreach ($counts as $table => $count) {
+        $summary[] = $table . '=' . $count;
     }
-
-    $db = new SQLite3($dbFile);
-    $db->exec('PRAGMA journal_mode=WAL;');
-
-    $layout = file_get_contents($src . '/.db_layout.sql');
-    if (!$db->exec($layout)) {
-        fwrite(STDERR, "Schema konnte nicht angelegt werden: " . $db->lastErrorMsg() . "\n");
-        exit(1);
-    }
-    step("Schema aus src/.db_layout.sql angelegt");
-
-    $seed = file_get_contents(__DIR__ . '/seed.sql');
-    if (!$db->exec($seed)) {
-        fwrite(STDERR, "Mock-Daten konnten nicht eingespielt werden: " . $db->lastErrorMsg() . "\n");
-        exit(1);
-    }
-
-    $counts = [];
-    foreach (['user', 'cat', 'subcat', 'item', 'menu', 'dynamic', 'poll', 'bans', 'comments'] as $table) {
-        $counts[] = $table . '=' . $db->querySingle("SELECT COUNT(*) FROM $table");
-    }
-    $db->close();
-    step("Mock-Daten eingespielt (" . implode(', ', $counts) . ")");
+    step('Schema und Mock-Daten eingespielt (' . implode(', ', $summary) . ')');
 }
 
 // Schreibrechte, falls das Setup als root für einen anderen Nutzer läuft

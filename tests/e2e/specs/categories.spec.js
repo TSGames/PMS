@@ -62,7 +62,7 @@ test.describe('Kategorien', () => {
 
   test('Bestätigtes Löschen entfernt die Kategorie', async ({ page }) => {
     await page.goto('admin.php?action=cat&delete=3');
-    await submit(page, 'input[name="cat_delete"]');
+    await submit(page, 'input[name="confirm_delete"]');
 
     await page.goto('admin.php?action=cat');
     await expect(page.locator('table.items')).not.toContainText('Verein');

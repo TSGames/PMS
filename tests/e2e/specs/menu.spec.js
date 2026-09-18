@@ -1,12 +1,9 @@
 /**
- * Menüverwaltung: Liste und Formulare.
- *
- * Das Speichern von Menüeinträgen ist derzeit wirkungslos und in
- * specs/known-defects.spec.js (B3) festgehalten.
+ * Menüverwaltung: Liste, Formulare, Anlegen, Ändern, Löschen.
  */
 
 const { test, expect } = require('@playwright/test');
-const { login, resetDatabase, expectNoPhpError, tableColumn } = require('../lib/admin');
+const { login, resetDatabase, expectNoPhpError, submit, tableColumn } = require('../lib/admin');
 
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
@@ -71,4 +68,46 @@ test('Neues Menü-Formular ist vorbelegt', async ({ page }) => {
   await expect(page.locator('input[name="sort"]')).toHaveValue('1000');
   await expect(page.locator('input[name="visible"]')).toBeChecked();
   await expect(page.locator('input[name="typ"][value="0"]')).toBeChecked();
+});
+
+test('Neuen Menüeintrag als Link anlegen', async ({ page }) => {
+  await page.goto('admin.php?action=menu&new=yes');
+  await page.fill('input[name="name"]', 'Testlink');
+  await page.fill('input[name="sort"]', '95');
+  await page.check('input[name="typ"][value="2"]');
+  await page.fill('textarea[name="extern"]', '<a href="https://test.example.org">Test</a>');
+  await page.check('input[name="visible"]');
+  await submit(page, 'input[name="menu"]');
+
+  await expectNoPhpError(page);
+  await page.goto('admin.php?action=menu');
+  await expect(page.locator('table.items')).toContainText('Testlink');
+});
+
+test('Menüeintrag umbenennen', async ({ page }) => {
+  await page.goto('admin.php?action=menu&edit=3');
+  await page.fill('input[name="name"]', 'Veranstaltungen');
+  await submit(page, 'input[name="menu"]');
+
+  await page.goto('admin.php?action=menu');
+  await expect(page.locator('table.items')).toContainText('Veranstaltungen');
+});
+
+test('Menüeintrag löschen fragt nach und entfernt ihn', async ({ page }) => {
+  await page.goto('admin.php?action=menu&delete=9');
+  await expect(page.locator('body')).toContainText('Intern');
+  await submit(page, 'input[name="confirm_delete"]');
+
+  await page.goto('admin.php?action=menu');
+  expect(await tableColumn(page, 1, 'Name')).not.toContain('Intern');
+});
+
+test('Kategorieauswahl aktualisiert die Unterkategorien', async ({ page }) => {
+  await page.goto('admin.php?action=menu&new=yes');
+  await page.selectOption('select[name="cat"]', { label: 'Dokumente' });
+  await submit(page, 'input[name="menu_refresh"]');
+
+  const options = await page.locator('select[name="subcat"] option').allTextContents();
+  expect(options).toContain('Formulare');
+  expect(options).not.toContain('Neuigkeiten');
 });

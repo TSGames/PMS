@@ -17,6 +17,11 @@ final class Router
         'bans' => \Pms\Backend\Controller\BansController::class,
         'var' => \Pms\Backend\Controller\VarController::class,
         'poll' => \Pms\Backend\Controller\PollController::class,
+        'cat' => \Pms\Backend\Controller\CatController::class,
+        'subcat' => \Pms\Backend\Controller\SubcatController::class,
+        'menu' => \Pms\Backend\Controller\MenuController::class,
+        'user' => \Pms\Backend\Controller\UserController::class,
+        'config' => \Pms\Backend\Controller\ConfigController::class,
     ];
 
     public static function handles(string $action): bool

@@ -44,8 +44,6 @@ $select_reference = 0;
 // Eingaben verarbeiten
 process_content_post_handlers();
 process_monitoring_post_handlers();
-process_menu_post_handlers();
-process_admin_post_handlers();
 
 // Sonderfälle der Inhaltsverwaltung
 if (Request::submitted('item_restore')) {
@@ -59,12 +57,6 @@ if (Request::submitted('item_refresh')) {
     $action = 'item';
     $edit = Request::int('id');
     $post = 1;
-}
-
-if (Request::submitted('subcat_filter')) {
-    $action = 'subcat';
-    $subcat_filter = Request::int('uppcat');
-    $_SESSION['subcat_filter'] = $subcat_filter;
 }
 
 if (Request::submitted('item_filter')) {

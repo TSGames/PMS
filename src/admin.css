@@ -975,3 +975,15 @@ body.login-page {
     color: var(--color-text-muted);
     text-align: center;
 }
+
+/* Abschnittsüberschrift im Website-Konfigurator */
+.config_table .config_space {
+    margin-top: 18px;
+    padding: 8px 0 6px;
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 500;
+    color: var(--color-text-h2);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
