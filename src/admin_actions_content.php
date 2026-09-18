@@ -1396,6 +1396,7 @@ function handle_admin_item()
 						status.textContent = 'Wird importiert...';
 						var fd = new FormData();
 						fd.append('xlsx_file', this.files[0]);
+						fd.append('".\Pms\Backend\Support\Csrf::FIELD."', '".\Pms\Backend\Support\Csrf::token()."');
 						fetch('admin.php?action=xlsx_import_ajax', {method:'POST', body:fd})
 							.then(function(r){return r.json();})
 							.then(function(data){

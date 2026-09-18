@@ -148,6 +148,23 @@ class pms_db_class {
     }
 
     /**
+     * Prepares a statement so values can be bound instead of concatenated.
+     *
+     * @param string $sql SQL statement with named or positional placeholders.
+     * @return SQLite3Stmt|false The prepared statement, or False on failure.
+     */
+    public function prepare(string $sql): \SQLite3Stmt|false {
+        if (!$this->connection) return false;
+        try {
+            return $this->connection->prepare($sql);
+        } catch (\Exception $e) {
+            error_log("SQL PREPARE ERROR: " . $e->getMessage());
+            error_log("QUERY: " . $sql);
+            return false;
+        }
+    }
+
+    /**
      * Returns the last error message from the database connection.
      *
      * @return string The last error message, or an empty string if no error occurred.

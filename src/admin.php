@@ -1,541 +1,96 @@
 <?php
-define("PMS_FRONTEND",0);
-define("PMS_BACKEND",1);
-define("PMS_ADMIN_ENTRY",1);
-require('functions.php');
-require('admin_helpers.php');
-require('admin_templates.php');
-require('admin_actions_dynamic.php');
-require('admin_actions_admin.php');
-require('admin_actions_monitoring.php');
-require('admin_actions_ui.php');
-require('admin_actions_menu.php');
-require('admin_actions_content.php');
-require('admin_action_dispatcher.php');
+/**
+ * Einstiegspunkt des Administrationsbereichs.
+ *
+ * Ablauf einer Anfrage:
+ *   1. Schnittstellen ohne Seitenausgabe (JSON)
+ *   2. Anmeldung prüfen - ohne gültige Sitzung wird nichts verarbeitet
+ *   3. Eingaben verarbeiten (Controller bzw. Übergangsschicht)
+ *   4. Seite ausgeben
+ */
 
-// Handle AJAX endpoints before any output or buffering
-if(isset($_GET["action"]) && $_GET["action"] === 'xlsx_import_ajax')
-{
-	header('Content-Type: application/json');
-	if(!@$_SESSION['userid'])
-		{ echo json_encode(['error' => 'Not authenticated']); exit; }
-	if(!isset($_FILES['xlsx_file']) || $_FILES['xlsx_file']['error'] !== UPLOAD_ERR_OK)
-		{ echo json_encode(['error' => 'Upload fehlgeschlagen']); exit; }
-	if(!function_exists('parse_xlsx_to_text'))
-		{ echo json_encode(['error' => 'XLSX function not available']); exit; }
-	@mkdir('images/uploads/temp/', 0755, true);
-	$temp = 'images/uploads/temp/' . uniqid('xlsx_') . '.xlsx';
-	if(move_uploaded_file($_FILES['xlsx_file']['tmp_name'], $temp))
-	{
-		if(!file_exists($temp))
-			{ echo json_encode(['error' => 'Temp file not created']); exit; }
-		$result = parse_xlsx_to_text($temp);
-		@unlink($temp);
-		cleanup_xlsx_temp_files(1);
-		if(is_array($result) && isset($result['error']))
-			echo json_encode(['error' => $result['error']]);
-		else
-			echo json_encode(['content' => (string)$result]);
-	}
-	else echo json_encode(['error' => 'Datei konnte nicht gespeichert werden']);
-	exit;
+define('PMS_FRONTEND', 0);
+define('PMS_BACKEND', 1);
+define('PMS_ADMIN_ENTRY', 1);
+
+require 'functions.php';
+require 'backend/bootstrap.php';
+
+// Bereiche, die noch nicht auf Controller umgestellt sind
+require 'admin_helpers.php';
+require 'admin_templates.php';
+require 'admin_actions_admin.php';
+require 'admin_actions_monitoring.php';
+require 'admin_actions_ui.php';
+require 'admin_actions_menu.php';
+require 'admin_actions_content.php';
+require 'admin_action_dispatcher.php';
+
+use Pms\Backend\Http\Router;
+use Pms\Backend\Http\UpdateGate;
+use Pms\Backend\Http\XlsxEndpoint;
+use Pms\Backend\Support\Auth;
+use Pms\Backend\Support\Editor;
+use Pms\Backend\Support\Flash;
+use Pms\Backend\Support\Request;
+use Pms\Backend\View\Layout;
+
+// 1. Schnittstellen, die kein HTML liefern
+XlsxEndpoint::handleIfRequested();
+
+// 2. Anmeldung: setzt Cookies und muss vor jeder Ausgabe laufen
+Auth::handleRequest();
+Auth::resumePendingAction();
+Auth::enforceBackendAccess();
+
+if (!Auth::isLoggedIn()) {
+    // Ohne gültige Sitzung werden keinerlei Eingaben verarbeitet.
+    if (!Request::submitted('login')) {
+        if (Request::isPost()) {
+            Flash::error('Aus Sicherheitsgründen wurde die Sitzung beendet.<br>'
+                . 'Bitte geben Sie Ihre Zugangsdaten erneut ein');
+        }
+        // Angefangenen Vorgang merken, damit er nach der Anmeldung weitergeht
+        store_all();
+    }
+
+    $rememberedName = '';
+    if (!empty($_COOKIE['login_id'])) {
+        $rememberedName = (string)from_db('user', (int)$_COOKIE['login_id'], 'name');
+    }
+
+    Layout::renderLogin($rememberedName);
+    exit;
 }
 
-$modul=$_GET["modul"];
+// 3. Besucherzähler des Backends
+// counter.php ordnet den Aufruf über $action_list einer Backend-Seite zu
+$admin_center = 1;
+$action_list = \Pms\Backend\Http\Navigation::actionNames();
+include 'counter.php';
 
-$admin_center=1;
+Editor::syncSession();
 
-$action_name[0]="Home";
-$action_list[0]="home";
-$action_info[0]="Anzeigen der Startseite von PMS";
-$action_name[1]="Website-Konfigurator";
-$action_list[1]="config";
-$action_info[1]="Festlegen globaler Einstellungen für diese Website";
-$action_name[2]="Menü";
-$action_list[2]="menu";
-$action_info[2]="Konfigurieren und Anpassen der Menü-Einträge";
-$action_name[3]="Benutzerverwaltung";
-$action_list[3]="user";
-$action_info[3]="Verwaltung und Rechtevergabe der Benutzerkonten";
-$action_name[4]="Kategorien";
-$action_list[4]="cat";
-$action_info[4]="Anlegen, Bearbeiten und Löschen von Haupt-Kategorien";
-$action_name[5]="Unterkategorien";
-$action_list[5]="subcat";
-$action_info[5]="Anlegen, Bearbeiten und Löschen von Unter-Kategorien";
-$action_name[6]="Inhalte";
-$action_list[6]="item";
-$action_info[6]="Erstellen, Bearbeiten und Löschen von Textseiten sowie Wiederherstellung aus Backups";
-$action_name[7]="Variablen";
-$action_list[7]="var";
-$action_info[7]="Konfigurieren von veränderbaren Platzhaltern";
-$action_name[8]="Umfragen";
-$action_list[8]="poll";
-$action_info[8]="Festlegen von Fragen & Antworten für das Umfragen-Plugin";
-$action_name[9]="Bans/Sperrungen";
-$action_list[9]="bans";
-$action_info[9]="Bestimmte IP-Adressen dauerhaft oder vorübergehend sperren";
-$action_name[10]="Ereignisse";
-$action_list[10]="events";
-$action_info[10]="Übersichtliche Liste der Ereignisse auf der Website";
-$action_name[11]="Backup-Manager";
-$action_list[11]="backup";
-$action_info[11]="Erstellen und Löschen von Datenbank & System-Backups";
-$action_name[12]="Website-Status";
-$action_list[12]="activity";
-$action_info[12]="Anzeige aktueller Website-Aktivitäten";
-$action_name[13]="Website anzeigen";
-$action_list[13]="page";
-$action_info[13]="Die Website anzeigen";
+$modul = Request::string('modul');
+$action = Request::action($modul === '' ? 'home' : '');
+
+require 'backend/modules.php';  // $modul_name, $modul_content
+require 'backend/legacy.php';   // verarbeitet Eingaben, kann $action ändern
+
+// 4. Inhalt erzeugen
 ob_start();
-if(@include('update.php'))
-{
-	$modul_content=ob_get_contents();
-	$modul_name[0][0]="Update";
-	$modul_name[0][1]="update";
-}
-if(@include('modules/upload.php'))
-{
-	$modul_content=ob_get_contents();
-	$modul_name[5][0]="Bilder-Upload";
-	$modul_name[5][1]="picture_upload";
-}
-if(@include('modules/newsletter.php'))
-{
-	$modul_content=ob_get_contents();
-	$modul_name[10][0]="Newsletter";
-	$modul_name[10][1]="newsletter";
-}
-ob_end_clean();
-ob_start();
-include('counter.php');
-echo '<!DOCTYPE html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<script>
-(function(){
-    var s=null;
-    try{s=localStorage.getItem("adminTheme");}catch(e){}
-    if(s==="dark")document.documentElement.classList.add("dark");
-    else if(s==="light")document.documentElement.classList.add("light");
-})();
-</script>
-<link rel="stylesheet" type="text/css" href="admin.css">
-<link rel="stylesheet" type="text/css" href="crop_modal.css">
-<link rel="icon" type="image/svg+xml" href="admin-favicon.svg">
-<link rel="icon" type="image/x-icon" href="admin.ico">
 
-<title>PMS Administration (BackEnd) - '.from_db("config",1,"name").'</title>';
-if(!$_SESSION['tinymce'])
-{
-	$_SESSION['tinymce']=(int)from_db("config",1,"editor")+1;
-}
-if(array_key_exists("item_step1",$_POST))
-{
-	$_SESSION['tinymce']=(int)$_POST['tinymce']+1; // Check as soon as possible!
-}
-echo '
-<script type="text/javascript">
-var IE = document.all?true:false
-
-// If NS -- that is, !IE -- then set up for mouse capture
-if (!IE) document.captureEvents(Event.MOUSEMOVE)
-
-// Set-up to use getMouseXY function onMouseMove
-document.onmousemove = getMouseXY;
-
-// Temporary variables to hold mouse x-y pos.s
-var tempX = 0
-var tempY = 0
-
-function getMouseXY(e) {
-	if (IE) { // grab the x-y pos.s if browser is IE
-		tempX = event.clientX + document.body.scrollLeft
-		tempY = event.clientY + document.body.scrollTop
-	} else {  // grab the x-y pos.s if browser is NS
-		tempX = e.pageX
-		tempY = e.pageY
-	} 
+$updateNotice = UpdateGate::render();
+if ($updateNotice !== null) {
+    echo $updateNotice;
+} elseif ($modul !== '') {
+    echo $modul_content;
+} elseif (Router::handles($action)) {
+    echo Router::dispatch($action);
+} else {
+    dispatch_admin_action($action);
 }
 
-function show_info(a)
-{
-	if(!tempX && !tempY) return;
-	var b=document.getElementById(\'info_1\');
-	b.style.left=(tempX+14) + "px";
-	b.style.top=(tempY+15) + "px";
-	b.firstChild.nodeValue=a;
-	b.style.display=\'\';
-	b=document.getElementById(\'info_2\');
-	b.style.left=(tempX+18) + "px";
-	b.style.top=(tempY+19) + "px";
-	b.firstChild.nodeValue=a;
-	b.style.display=\'\';
-}
-function hide_info()
-{
-	document.getElementById(\'info_2\').style.display=\'none\';
-	document.getElementById(\'info_1\').style.display=\'none\';
-}
-</script>
-';
-if($_SESSION['tinymce']==2 || $modul=="newsletter")
-{
-	echo get_tinymce();
-}
-?>
-<script type="text/javascript" src="drag.js"></script>
-<script type="text/javascript" src="crop_modal.js"></script>
-<script type="text/javascript" src="js/admin-forms.js"></script>
-<script type="text/javascript" src="js/admin-tables.js"></script>
-<script type="text/javascript" src="js/admin-dialogs.js"></script>
-<script type="text/javascript" src="js/admin-image.js"></script>
-<script type="text/javascript" src="js/admin-theme.js"></script>
-</head>
-<body>
-<table width="100%" height="100%" cellspacing="0" cellpadding="0">
-<tr height="6px">
-<td>
-<?
-$login=0;
-if(@$_SESSION['pmsglobal']==1)
-{
-	$login=1;
-}
-if(@$_GET["action"]=="logout")
-{
-	delete_sessions();
-	echo "<center>";
-	$ok="Logout erfolgreich!";
-	ok_error();
-	echo "</center>";
-	$login=0;
-}
-if(array_key_exists("login",$_POST) || @$_COOKIE["login_id"] && @$_COOKIE["login_pw"])
-{
-	$post=array_key_exists("login",$_POST);
-	if($post)
-	$a=do_login($_POST['login_name'],$_POST['login_password'],2);
-	else $a=do_login(from_db("user",$_COOKIE["login_id"]*1,"name"),$_COOKIE["login_pw"],2,0);
-	if(!is_array($a))
-	{
-		setcookie("login_id","",time()-3600,"/",$cookie_domain);
-		setcookie("login_pw","",time()-3600,"/",$cookie_domain);
-		if($post)
-		{
-			echo "<div align=\"center\">";
-			if($a==1)
-			$error="Benutzer existiert nicht!";
-			else if($a==2)
-			$error="Passwort ist ungültig!";
-			else if($a==3)
-			$error="Der Benutzer ist gesperrt!";
-			else if($a==4)
-			$error="Ihre Berechtigungen sind zu niedrig!";
-			
-			ok_error();
-			echo "</div>";
-		}
-	}
-	else
-	{
-		setcookie("login_id",$a[3],time()+60*60*24*1000,"/",$cookie_domain);
-		if($_POST['save_login'])
-		{
-			setcookie("login_pw",md5($_POST['login_password']),time()+60*60*24*1000,"/",$cookie_domain);
-		}
-		$set_reloadable=reload_all(0);
-		$_SESSION['reload_check']=1;
-	}
-	unset($post);
-}
-if(@$_GET["action"]=="load_last") // run pending actions from last logout
-{
-	unset($_SESSION['reload_check']);
-	reload_all(1);
-}
-if(@$_SESSION['reload_check']>=2)
-{
-	unset($_SESSION['reload_check']);
-	reload_all(-1);
-}
-if(@$_SESSION['reload_check'])$_SESSION['reload_check']++;
+$content = ob_get_clean();
 
-$action=@$_POST["action"] ?: @$_GET["action"];
-
-// Get Global Values from GET/session as defaults (POST handlers can override these)
-$delete=@$_GET["delete"];
-$edit=@$_GET["edit"];
-$new=@$_GET["new"];
-$subcat_filter=@$_SESSION["subcat_filter"];
-$item_filter=@$_SESSION["item_filter"];
-$item_filter2=@$_SESSION["item_filter2"];
-$sort_do=@$_GET["sort"];
-$sort_para=@$_GET["pos"];
-$id_para=@$_GET["id"];
-$modul=@$_GET["modul"];
-
-process_content_post_handlers();
-process_dynamic_post_handlers();
-process_monitoring_post_handlers();
-process_menu_post_handlers();
-process_admin_post_handlers();
-
-if(from_db("user",@$_SESSION['userid'],"typ")<2)
-{
-	delete_sessions();
-	$login=0;
-}
-if($login==0)
-{
-	if(count($_POST) && !$_POST["login"])
-	{
-		$error="Aus Sicherheitsgründen wurde die Sitzung beendet.<br>Bitte geben Sie Ihre Zugangsdaten erneut ein";
-		ok_error();
-	}
-	unset($name);
-	if(!@$_POST["login"]) store_all(); // save last action!
-	if(@$_COOKIE["login_id"]) $name=from_db("user",@$_COOKIE["login_id"]*1,"name");
-	echo form()."<table align=\"center\" style=\"max-width: 500px; justify-self: center;\"><tr>
-	<td style=\"display:flex;justify-content:center\">
-	</td></tr><tr><td><center><b>PMS Back End Login</b><table><tr><td>Benutzername:</td><td>
-	<input type=\"text\" name=\"login_name\" value=\"".str_replace('"','&quot;',@$name || '')."\"></td></tr>
-	<tr><td>Passwort:</td><td><input type=\"password\" name=\"login_password\"></td></tr>
-	<tr><td colspan=\"2\"><div align=\"center\"><input type=\"checkbox\" name=\"save_login\" value=\"1\"> Zugangsdaten auf diesem Computer speichern</div>
-	<tr><td colspan=\"2\"><div align=\"center\"><input type=\"submit\" name=\"login\" value=\"Einloggen\"></div>
-	</td></tr></table>
-	</form></td></tr>
-	</table>";
-}
-echo ob_get_clean();
-if($login==1)
-{
-	unset($a);
-	echo '<button class="sidebar-toggle" id="sidebar-toggle" aria-label="Navigation öffnen" title="Navigation öffnen">&#9776;</button>';
-	echo '<div class="admin-layout">';
-	echo '<aside class="admin-sidebar" id="admin-sidebar">';
-	echo '<div class="sidebar-header">'.htmlspecialchars($config_values->name).'<button class="sidebar-close" id="sidebar-close" aria-label="Navigation schließen" title="Navigation schließen">✕</button></div>';
-	echo '<div class="sidebar-user">Hallo, '.from_db("user",$_SESSION['userid'],"name").' (<a href="admin.php?action=logout">Logout</a>)</div>';
-	echo '<nav class="sidebar-nav">';
-	echo '<div class="nav-section-label">Navigation</div>';
-	echo '<ul class="nav-list">';
-	for($i=0;$i<count($action_name);$i++)
-	{
-		$icon="";
-		$file=$image_path."admin/".$action_list[$i].".png";
-		if(file_exists($file)) $icon='<img src="'.$file.'" width="16" height="16" alt="">';
-		$href='admin.php?action='.$action_list[$i];
-		$target="";
-		if($action_list[$i]=="page"){
-			$href="index.php";
-			$target=' target="_blank"';
-		}
-		$active=($action==$action_list[$i]) ? ' active' : '';
-		echo '<li class="nav-item'.$active.'"><a href="'.$href.'"'.$target.' title="'.htmlspecialchars($action_info[$i]).'"><span class="nav-icon">'.$icon.'</span><span class="nav-label">'.htmlspecialchars($action_name[$i]).'</span></a></li>';
-	}
-	echo '</ul>';
-	if(count($modul_name))
-	{
-		echo '<div class="nav-divider"></div>';
-		echo '<div class="nav-section-label">Module</div>';
-		echo '<ul class="nav-list">';
-		foreach($modul_name as $a)
-		{
-			$icon="";
-			$file=$image_path."admin/".$a[1].".png";
-			if(file_exists($file)) $icon='<img src="'.$file.'" width="16" height="16" alt="">';
-			echo '<li class="nav-item"><a href="admin.php?modul='.htmlspecialchars($a[1]).'"><span class="nav-icon">'.$icon.'</span><span class="nav-label">'.htmlspecialchars($a[0]).'</span></a></li>';
-		}
-		echo '</ul>';
-	}
-	echo '</nav>';
-	echo '<div class="sidebar-footer">';
-	echo '<button class="theme-toggle" id="theme-toggle" aria-label="Farbschema wechseln" title="Farbschema wechseln">';
-	echo '<span class="theme-toggle-icon" id="theme-toggle-icon">&#9790;</span>';
-	echo '<span class="theme-toggle-label" id="theme-toggle-label">Dunkler Modus</span>';
-	echo '</button>';
-	echo '</div>';
-	echo '</aside>';
-	echo '<main class="admin-main"><div class="admin-content-inner">';
-	$update_info="update.info";
-	if($_SESSION["config_id"]) $update_info="update_".$_SESSION["config_id"].".info";
-	if(!file_exists($update_info))
-	{
-		$f=fopen($update_info,"w+");
-		fwrite($f,$pms_version);
-		fclose($f);
-	}
-	if(file_exists("update.sql") && $action=="update" && from_db("user",$_SESSION['userid'],"typ")>2)
-	{
-		$last_version=trim(@file_get_contents($update_info));
-		$a_count=update_engine(1,$last_version,$pms_db_prefix);
-		if($a_count[0]==$a_count[1])
-		{
-			$f=fopen($update_info,"w+");
-			fwrite($f,$pms_version);
-			fclose($f);
-			$ok="Update erfolgreich installiert!";
-		}
-		else 
-		$error="Fehler bei der Installation des Updates.<br>Bitte melden Sie das Problem an den Support!<br>Weitere Informationen in der Datei update_sql.log";
-		ok_error(); 
-		unlink("update.sql");
-		$action="home";
-	}
-	$last_version=trim(@file_get_contents($update_info));
-	if($pms_db_use_reference)
-	{
-		$id=$pms_db_reference_id*1;
-		if($id) $id="_".$id;
-		else $id="";
-		if($last_version<trim(@file_get_contents("update".$id.".info")) && !file_exists("update.sql")) // added update.sql
-		{
-			$found=1;
-			echo heading("Updates notwendig").'
-			Dieses Web-System ist ein Referenz-System eines anderen Systems.
-			<br>
-			Es wurde jedoch festgestellt, dass das primäre System eine andere Datenbank-Version benutzt.
-			<br><br>
-			Klicken Sie bitte auf den Button unten, um ein Update auszuführen.<br><br>
-			<br><br><br>
-			[';
-			if(from_db("user",$_SESSION['userid'],"typ")>2) 
-			echo '<a href="update.php?action=do">System aktualisieren</a>]';
-			else echo '<span class="disabled">System aktualisieren</span>]<br><br>
-			<span class="disabled">Sie müssen Super-Administrator sein, um den Vorgang fortzusetzen.
-			<br><br>
-			Ein Zugriff auf die Administrationsoberfläche ist erst möglich,<br>
-			wenn ein Super-Administrator diesen Vorgang abgeschlossen hat.</span>';
-		}
-	}
-	if(file_exists("update.sql") && !$found)
-	{
-		$found=update_engine(0,$last_version);
-		if($found)
-		{
-			echo heading("Update Installieren").'
-			Das System wurde aktualisiert.<br>Bevor jedoch die volle Funktionalität der neuen Version verfügbar ist, muss die Installation abgeschlossen werden.<br>
-			<br>
-			Klicken Sie bitte auf den Button unten, um die Installation durchzuführen.<br><br>
-			<b>Wichtig: </b>Erstellen Sie nach erfolgreichem Update ein Backup der Website!
-			<br><br><br>
-			[';
-			if(from_db("user",$_SESSION['userid'],"typ")>2) 
-			echo '<a href="admin.php?action=update">Update Installieren</a>]';
-			else echo '<span class="disabled">Update Installieren</span>]<br><br>
-			<span class="disabled">Sie müssen Super-Administrator sein, um den Vorgang fortzusetzen.
-			<br><br>
-			Ein Zugriff auf die Administrationsoberfläche ist erst möglich,<br>
-			wenn ein Super-Administrator diesen Vorgang abgeschlossen hat.</span>';
-		}
-		else
-		@unlink("update.sql");
-	}
-	if(!$found)
-	{
-		if($_POST["item_restore"]) $action="item_restore";
-
-		
-		if(array_key_exists("item_refresh",$_POST))
-		{
-			if($_POST['tinymce_vis'])
-			{
-				$_SESSION['tinymce']=$_POST['tinymce']+1;
-			}
-			$action="item";
-			$edit=$_POST['id'];
-			$post=1;
-		}
-		$confirmation_dialogs[0][0]="user_guestbook";
-		$confirmation_dialogs[0][1]="mail_guestbook";
-		$confirmation_dialogs[1][0]="user_comments";
-		$confirmation_dialogs[1][1]="mail_comments";
-		$confirmation_dialogs[2][0]="user_register";
-		$confirmation_dialogs[2][1]="mail_register";
-		if(array_key_exists("subcat_filter",$_POST))
-		{
-			$action="subcat";
-			$subcat_filter=$_POST["uppcat"];
-			$_SESSION["subcat_filter"]=$_POST["uppcat"];
-		}
-		if(array_key_exists("item_filter",$_POST))
-		{
-			$action="item";
-			$item_filter=$_POST["uppcat"];
-			$_SESSION["item_filter"]=$_POST["uppcat"];
-			$item_filter2=$_POST["uppcat2"];
-			$ok=0;
-			$link=$pms_db_connection->query(make_sql("subcat","id = '$item_filter2' AND cat = '$item_filter'","id"));
-			if($link)
-			{
-				$a=$pms_db_connection->fetchObject($link);
-				if($a->id)
-				{
-					$ok=1;
-				}
-			}
-			if($ok==0)
-			{
-				$item_filter2=0;
-			}
-			$_SESSION["item_filter2"]=$item_filter2;
-		}
-		handle_admin_add_image();
-		if(!$action && !$modul)
-		{
-			$action = 'home';
-		}
-		if($action && !$modul)
-		{
-			dispatch_admin_action($action);
-		}
-			echo $modul_content;
-			echo "</center></td></tr></table>";
-		}
-		else
-		{
-			echo "</center></td></tr></table>";
-		}
-		echo "</div></main></div>";
-	}
-	?>
-	<script type="text/javascript">
-	const sidebarToggle = document.getElementById('sidebar-toggle');
-	const sidebarClose = document.getElementById('sidebar-close');
-	const adminSidebar = document.getElementById('admin-sidebar');
-
-	function closeSidebar() {
-		adminSidebar.classList.remove('open');
-		document.body.classList.remove('sidebar-open');
-	}
-
-	function openSidebar() {
-		adminSidebar.classList.add('open');
-		document.body.classList.add('sidebar-open');
-	}
-
-	sidebarToggle.addEventListener('click', function(e) {
-		e.stopPropagation();
-		if (adminSidebar.classList.contains('open')) {
-			closeSidebar();
-		} else {
-			openSidebar();
-		}
-	});
-
-	sidebarClose.addEventListener('click', function(e) {
-		e.stopPropagation();
-		closeSidebar();
-	});
-
-	document.addEventListener('click', function(e) {
-		if (adminSidebar.classList.contains('open')) {
-			if (!adminSidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-				closeSidebar();
-			}
-		}
-	});
-	</script>
-	</body>
-	</html>
+Layout::render($content, $action, $modul_name);

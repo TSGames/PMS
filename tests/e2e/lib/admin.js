@@ -11,8 +11,6 @@ const REPO_ROOT = path.resolve(__dirname, '../../..');
  * Siehe tests/BEFUNDE.md; die Einträge entfallen, sobald die Ursachen behoben sind.
  */
 const KNOWN_JS_ERRORS = [
-  // B5: admin.php gibt den Seitenleisten-Code auch auf der Login-Maske aus
-  "Cannot read properties of null (reading 'addEventListener')",
   // B6: Der Monaco-Editor der Variablen-Seite wird von einem CDN geladen und
   // steht ohne Internetzugang nicht zur Verfügung
   'require is not defined',
@@ -104,7 +102,24 @@ async function tableColumn(page, columnIndex, headerLabel) {
  * Wird von allen Specs benutzt, die Daten verändern.
  */
 function resetDatabase() {
+  waitForIdleServer();
   execFileSync('php', [path.join(REPO_ROOT, 'tests/mock/setup.php')], { stdio: 'pipe' });
+}
+
+/**
+ * Wartet, bis der Entwicklungsserver keine Anfrage mehr bearbeitet.
+ * Er ist einprozessig: Sobald diese Anfrage beantwortet ist, sind alle
+ * vorherigen abgeschlossen und die Datenbank kann gefahrlos neu aufgebaut
+ * werden.
+ */
+function waitForIdleServer() {
+  const host = process.env.PMS_MOCK_HOST || '127.0.0.1';
+  const port = process.env.PMS_MOCK_PORT || '8099';
+  try {
+    execFileSync('curl', ['-s', '-o', '/dev/null', '--max-time', '10', `http://${host}:${port}/robots.txt`]);
+  } catch (error) {
+    // Server läuft noch nicht - dann gibt es auch nichts abzuwarten
+  }
 }
 
 module.exports = {

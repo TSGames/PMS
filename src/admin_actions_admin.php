@@ -15,31 +15,6 @@ function process_admin_post_handlers()
 	global $pms_db_connection, $pms_db_prefix, $_SESSION, $_POST, $_FILES;
 	global $edit, $action, $error, $ok, $post, $confirmation_dialogs;
 
-	// Process bans save
-	if($_POST['bans']=="Speichern")
-	{
-		$action="bans";
-		$edit=$_POST['id'];
-		$ip=$_POST['ip'];
-		$reason=$_POST['reason'];
-		$time=time()+str_replace(",",".",$_POST['time'])*60*60*24;
-		if(str_replace(",",".",$_POST['time'])<=0)
-		{
-			$time=0;
-		}
-		$do="INSERT INTO ".$pms_db_prefix."bans (ip,reason,time) VALUES ('$ip','$reason','$time');";
-		if($edit)
-		{
-			$do="UPDATE ".$pms_db_prefix."bans SET ip = '$ip', reason = '$reason', time = '$time' WHERE id = '$edit' LIMIT 1;";
-		}
-		if($pms_db_connection->query($do))
-			$ok="Ban erfolgreich gespeichert!";
-		else
-			$error="Fehler beim Speichern des Bans!";
-		ok_error();
-		unset($edit);
-	}
-
 	// Process config save
 	if($_POST['config']=='Speichern' && from_db("user",$_SESSION['userid'],"typ")>=3)
 	{
@@ -167,78 +142,6 @@ function process_admin_post_handlers()
 				$error=$a;
 		}
 		ok_error();
-	}
-}
-
-/**
- * Handle bans (IP ban management) action
- * Requires super-admin permissions (typ >= 3)
- */
-function handle_admin_bans()
-{
-	global $pms_db_connection, $pms_db_prefix, $new, $edit, $delete, $action, $error, $ok;
-
-	if(from_db("user", @$_SESSION['userid'], "typ") < 3)
-	{
-		$error = "Ihre Berechtigungen sind zu niedrig, um diesen Bereich anzuzeigen!";
-		ok_error();
-	}
-	else
-	{
-		if($new || $edit)
-		{
-			$time = '';
-			unset($time);
-			if($edit)
-			{
-				$ip = from_db("bans", $edit, "ip");
-				$reason = from_db("bans", $edit, "reason");
-				$time = ban_time(from_db("bans", $edit, "time"));
-				if($time == "Unbegrenzt")
-					unset($time);
-			}
-			$add = "erstellen";
-			$add1 = "Neuen ";
-			if($edit)
-			{
-				$add1 = "";
-				$add = "bearbeiten";
-			}
-			echo form().heading($add1."Ban ".$add)."
-			<input type=\"hidden\" name=\"id\" value=\"".$edit."\">
-			<table>
-			<tr><td>IP:</td><td><input type=\"text\" maxlength=\"15\" name=\"ip\" value=\"".$ip."\"></td></tr>
-			<tr><td>Begründung (Optional):</td><td><textarea name=\"reason\" rows=\"5\" cols=\"19\">".str_replace('&','&amp;',$reason)."</textarea></td></tr>
-			<tr><td>Zeitlimit in Tagen (0 = Kein Limit):</td><td><input type=\"text\" size=\"3\" name=\"time\" value=\"".$time."\"></td></tr>
-			<tr><td colspan=\"2\"><center><input type=\"submit\" name=\"bans\" value=\"Speichern\"></center></td></tr>
-			</table></form>";
-		}
-		else
-		{
-			if($delete)
-			{
-				if($pms_db_connection->query("DELETE FROM ".$pms_db_prefix."bans WHERE id = '$delete' LIMIT 1;"))
-					$ok = "Ban erfolgreich entfernt!";
-				else
-					$error = "Fehler beim Löschen des Bans!";
-				ok_error();
-			}
-			echo heading("Bans verwalten");
-			echo '<div class="action-section"><a href="admin.php?action='.$action.'&new=yes" class="button">Neuer Ban</a></div>';
-			echo '<table class="group">';
-			echo table_header("ID:30px|IP:100px|Begründung:200px|Verbleibende Dauer<br>(in Tagen):140px|Bearbeiten:80px|Löschen:65px");
-			$link = $pms_db_connection->query(make_sql("bans", "", "id"));
-			for($i=0; $link && $a=$pms_db_connection->fetchObject($link); $i++)
-			{
-				$menu[$i][0] = $a->id;
-				$menu[$i][1] = $a->ip;
-				$menu[$i][2] = def($a->reason);
-				$menu[$i][3] = ban_time($a->time);
-				$menu[$i][4] = "<a href=\"admin.php?action=".$action."&edit=".$a->id."\">Bearbeiten</a>";
-				$menu[$i][5] = "<a href=\"admin.php?action=".$action."&delete=".$a->id."\">Löschen</a>";
-			}
-			echo array_table($menu, 5);
-		}
 	}
 }
 

@@ -18,9 +18,7 @@ test.beforeEach(async ({ page }) => {
   await login(page, 'admin');
 });
 
-test('B1: Benutzer lässt sich über das Formular anlegen', async ({ page }) => {
-  test.fail(true, 'Fatal error in admin_actions_admin.php:140 ("" * 1) beim leeren id-Feld');
-
+test('B1 (behoben): Benutzer lässt sich über das Formular anlegen', async ({ page }) => {
   await page.goto('admin.php?action=user&new=yes');
   await page.fill('input[name="name"]', 'neuerbenutzer');
   await page.fill('input[name="password"]', 'geheim123');
@@ -33,9 +31,7 @@ test('B1: Benutzer lässt sich über das Formular anlegen', async ({ page }) => 
   await expect(page.locator('table.items')).toContainText('neuerbenutzer');
 });
 
-test('B2: Ban ohne Dauer lässt sich speichern', async ({ page }) => {
-  test.fail(true, 'Fatal error in admin_actions_admin.php:25 ("" * 60) bei leerem Dauer-Feld');
-
+test('B2 (behoben): Ban ohne Dauer lässt sich speichern', async ({ page }) => {
   await page.goto('admin.php?action=bans&new=yes');
   await page.fill('input[name="ip"]', '192.0.2.99');
   await page.fill('textarea[name="reason"]', 'Ban ohne Ablaufdatum');
@@ -74,9 +70,7 @@ test('B4b: Inhalte werden erst nach Rückfrage gelöscht', async ({ page }) => {
   await expect(page.locator('table.items')).toContainText('Jahreshauptversammlung');
 });
 
-test('B5: Login-Maske erzeugt keine JavaScript-Fehler', async ({ page, context }) => {
-  test.fail(true, 'admin.php gibt den Seitenleisten-Code auch ohne Seitenleiste aus');
-
+test('B5 (behoben): Login-Maske erzeugt keine JavaScript-Fehler', async ({ page, context }) => {
   await context.clearCookies();
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
