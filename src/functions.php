@@ -68,6 +68,11 @@ $special_typ[3]="Gesperrter/Ungültiger Content";
 $special_typ[4]="Gästebuch";
 $special_typ[5]="IP gebannt";
 
+// E-Mail-Benachrichtigungen: Formularfeld, Datenbankspalte, Beschriftung
+$confirmation_dialogs[0]=array("user_guestbook","mail_guestbook","Gästebuch");
+$confirmation_dialogs[1]=array("user_comments","mail_comments","Kommentare");
+$confirmation_dialogs[2]=array("user_register","mail_register","Registration");
+
 $valid_actions=array("download","search","register","password_recover","sitemap","logout","guestbook","user","topuser","user_panel","item","register_finish");
 
 $language_folder="dialoges";

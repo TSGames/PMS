@@ -109,7 +109,8 @@ final class ConfigController extends Controller
     /** Übernimmt die Auswahl der E-Mail-Benachrichtigungen je Benutzer. */
     private function saveNotifications(): void
     {
-        foreach ($GLOBALS['confirmation_dialogs'] ?? [] as [$field, $column]) {
+        foreach ($GLOBALS['confirmation_dialogs'] ?? [] as $dialog) {
+            [$field, $column] = $dialog;
             Db::execute('UPDATE ' . Db::table('user') . ' SET ' . $column . " = 0 WHERE typ >= 1");
 
             foreach (Request::intList($field) as $userId) {
@@ -263,15 +264,17 @@ final class ConfigController extends Controller
     {
         $dialogs = $GLOBALS['confirmation_dialogs'] ?? [];
 
-        $html = '<table class="group"><tr><td class="confirm_head">Benutzer</td>'
-            . '<td class="confirm_head">Gästebuch</td>'
-            . '<td class="confirm_head">Kommentare</td>'
-            . '<td class="confirm_head">Registration</td></tr>';
+        $html = '<table class="group"><tr><td class="confirm_head">Benutzer</td>';
+        foreach ($dialogs as $dialog) {
+            $html .= '<td class="confirm_head">' . Html::e((string)($dialog[2] ?? $dialog[0])) . '</td>';
+        }
+        $html .= '</tr>';
 
         $users = Db::select('SELECT * FROM ' . Db::table('user') . ' WHERE typ >= 1 ORDER BY typ DESC, name');
         foreach ($users as $user) {
             $html .= '<tr><td>' . Html::e((string)$user->name) . ' (' . Html::e((string)$user->mail) . ')</td>';
-            foreach ($dialogs as [$field, $column]) {
+            foreach ($dialogs as $dialog) {
+                [$field, $column] = $dialog;
                 $checked = !empty($user->$column) ? ' checked' : '';
                 $html .= '<td style="text-align:center;"><input type="checkbox" name="' . Html::e($field) . '[]"'
                     . ' value="' . (int)$user->id . '"' . $checked . '></td>';

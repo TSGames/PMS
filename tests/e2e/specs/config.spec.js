@@ -66,3 +66,19 @@ test('Änderung wird gespeichert', async ({ page }) => {
   await expect(page.locator('input[name="name"]')).toHaveValue('PMS Testsystem');
   await expect(page.locator('.sidebar-header')).toContainText('PMS Testsystem');
 });
+
+test('Benachrichtigungen lassen sich je Benutzer setzen und speichern', async ({ page }) => {
+  const guestbookForRedakteur = page.locator('input[name="user_guestbook[]"][value="2"]');
+  await expect(guestbookForRedakteur).not.toBeChecked();
+
+  await guestbookForRedakteur.check();
+  await submit(page, 'input[name="config"]');
+
+  await page.goto('admin.php?action=config');
+  await expect(page.locator('input[name="user_guestbook[]"][value="2"]')).toBeChecked();
+});
+
+test('Spalten der Benachrichtigungstabelle sind beschriftet', async ({ page }) => {
+  const headers = await page.locator('.confirm_head').allTextContents();
+  expect(headers).toEqual(['Benutzer', 'Gästebuch', 'Kommentare', 'Registration']);
+});
