@@ -549,3 +549,18 @@ Erweiterter Modus
 
 ##EDIT_VAR
 Klicken Sie hier, um den Inhalt der Variable zu bearbeiten
+
+##FORM_REJECTED
+Die Anfrage stammt nicht von dieser Seite oder Ihre Sitzung ist abgelaufen. Bitte laden Sie die Seite neu und versuchen Sie es erneut.
+
+##COMMENT_DELETE
+Kommentar löschen
+
+##MENU_LABEL
+Menü
+
+##COUNTER_HEADING
+Besucher
+
+##MENU_COUNT
+%1 Seiten

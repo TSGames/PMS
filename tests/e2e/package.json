@@ -1,0 +1,15 @@
+{
+  "name": "pms-admin-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-End-Tests und Screenshots für das PMS-Admin-Backend",
+  "scripts": {
+    "setup": "php ../mock/setup.php",
+    "test": "playwright test --project=tests",
+    "screenshots": "playwright test --project=screenshots && node bin/make-index.js",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}

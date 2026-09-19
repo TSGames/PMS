@@ -1,0 +1,23 @@
+{
+  "name": "pms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fremdbibliotheken des Admin-Backends. Sie werden lokal ausgeliefert, nicht von einem CDN geladen.",
+  "scripts": {
+    "vendor": "npm run vendor:alpine && npm run vendor:editor",
+    "vendor:alpine": "cp node_modules/alpinejs/dist/cdn.min.js src/js/vendor/alpine.min.js",
+    "vendor:editor": "esbuild build/editor.js --bundle --minify --format=iife --legal-comments=none --outfile=src/js/vendor/editor.js"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-html": "^6.4.12",
+    "@codemirror/lang-php": "^6.0.2",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.38.6",
+    "alpinejs": "3.17.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

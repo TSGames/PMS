@@ -148,6 +148,23 @@ class pms_db_class {
     }
 
     /**
+     * Prepares a statement so values can be bound instead of concatenated.
+     *
+     * @param string $sql SQL statement with named or positional placeholders.
+     * @return SQLite3Stmt|false The prepared statement, or False on failure.
+     */
+    public function prepare(string $sql): \SQLite3Stmt|false {
+        if (!$this->connection) return false;
+        try {
+            return $this->connection->prepare($sql);
+        } catch (\Exception $e) {
+            error_log("SQL PREPARE ERROR: " . $e->getMessage());
+            error_log("QUERY: " . $sql);
+            return false;
+        }
+    }
+
+    /**
      * Returns the last error message from the database connection.
      *
      * @return string The last error message, or an empty string if no error occurred.
@@ -163,17 +180,6 @@ class pms_db_class {
      */
     public function list_tables(): SQLite3Result|bool {
         return $this->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
-    }
-
-    /**
-     * Returns the name of a table at a specified index in the result set.
-     *
-     * @param mixed $link The result set to fetch from.
-     * @param int $i The index of the table to retrieve.
-     * @return ?string The name of the table, or Null if no more tables are available.
-     */
-    public function tablename($link, int $i): ?string {
-        return mysqli_tablename($link, $i);
     }
 
     /**
@@ -200,14 +206,67 @@ $pms_db_connection = new pms_db_class();
 $pms_db_connection->connect($db_databasename);
 
 /**
- * Fetches an object from a result set.
+ * Eine Zeile eines Ergebnisses als Objekt.
  *
- * @param mixed $link The result set to fetch from.
- * @return object|bool An object representing the fetched row, or False if no more rows are available.
+ * Der bevorzugte Name fuer neuen Code. Fuer den Altbestand gibt es
+ * darunter zusaetzlich die mysqli_*-Namen.
  */
-function mysqli_fetch_object($link) {
-    global $pms_db_connection ;
-    return $pms_db_connection->fetchObject($link);
+function pms_fetch_object($link): object|bool {
+    global $pms_db_connection;
+    return $link instanceof SQLite3Result ? $pms_db_connection->fetchObject($link) : false;
+}
+
+/** Zahl der Zeilen eines Ergebnisses. */
+function pms_num_rows($link): int {
+    global $pms_db_connection;
+    return $link instanceof SQLite3Result ? count($pms_db_connection->fetchAllObject($link)) : 0;
+}
+
+/**
+ * Kompatibilitaet fuer Inhalte aus der Datenbank.
+ *
+ * PMS lief frueher auf MySQL. Redaktionelle Inhalte koennen deshalb
+ * [php]-Bloecke enthalten, die mysqli_fetch_object() und Verwandte rufen -
+ * make_dynamic() fuehrt sie per eval() aus. Diese Aufrufe stehen in der
+ * Datenbank, nicht im Quelltext, und bleiben bei einer Suche im Code
+ * unsichtbar.
+ *
+ * Die Namen werden nur belegt, wenn die mysqli-Erweiterung fehlt. Ist sie
+ * geladen, gibt es die echten Funktionen bereits; sie zu ueberschreiben
+ * wuerde das Laden der gesamten Website mit "Cannot redeclare function"
+ * abbrechen (BEFUNDE B19).
+ *
+ * Fuer neuen Code sind pms_fetch_object() und pms_num_rows() gedacht.
+ */
+if (!extension_loaded('mysqli')) {
+    function mysqli_fetch_object($link) {
+        return pms_fetch_object($link);
+    }
+
+    function mysqli_num_rows($link) {
+        return pms_num_rows($link);
+    }
+
+    function mysqli_fetch_assoc($link) {
+        $row = pms_fetch_object($link);
+        return $row === false ? null : (array)$row;
+    }
+
+    function mysqli_fetch_array($link) {
+        $row = pms_fetch_object($link);
+        if ($row === false) {
+            return null;
+        }
+        $assoc = (array)$row;
+        return array_merge($assoc, array_values($assoc));
+    }
+
+    function mysqli_free_result($link) {
+        if ($link instanceof SQLite3Result) {
+            $link->finalize();
+        }
+        return true;
+    }
 }
 
 /**
@@ -313,12 +372,6 @@ function update_engine(bool $do = false, int $last_version = 0, string $pms_db_p
 }
 
     return array($a_count, 0);
-}
-
-function mysqli_field_name($result, int $field_offset): ?string
-{
-    $properties = mysqli_fetch_field_direct($result, $field_offset);
-    return is_object($properties) ? $properties->name : null;
 }
 
 ?>

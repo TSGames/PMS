@@ -33,7 +33,9 @@
 		if($config_values->safemail || $force_safe)
 			{
 			$a=strlen($mail);
-			$time=(date(Y)%6-date(m)*2)*2;
+			$str="";
+			// date(Y) ohne Anführungszeichen ist unter PHP 8 ein Fehler
+			$time=(date("Y")%6-date("m")*2)*2;
 			if($time<0) $time*=-1;
 			for($i=0;$i<strlen($mail);$i++)
 				{

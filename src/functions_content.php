@@ -160,9 +160,13 @@
 	 */
 	function clear_comment($str)
 	{
-		$search=array('<','>','&lt;br&gt;');
-		$replace=array('&lt;','&gt;','<br>');
-		return str_replace($search,$replace,$str);
+		// Auch das Anfuehrungszeichen wird maskiert: Kommentartitel landen
+		// nicht nur im Text, sondern auch im value-Attribut des
+		// Bearbeitungsformulars. Im Text macht das keinen Unterschied, der
+		// Browser stellt &quot; als " dar.
+		$search=array('<','>','"','&lt;br&gt;');
+		$replace=array('&lt;','&gt;','&quot;','<br>');
+		return str_replace($search,$replace,(string)$str);
 	}
 
 	/**
@@ -445,15 +449,16 @@
 				 */
 				function content_mostdiscussed($id)
 				{
-					$str="<table><tr><td><center>".make_link(from_db("item",$id,"name"),"","","",$id)."</td>
-</tr><tr><td><center>".make_link(make_contentimg("item",$id,from_db("item",$id,"image"),0),"","","",$id)."</td></tr>
-<tr><td><center>";
+					// Ohne Layouttabelle: Die Anordnung entscheidet das Stylesheet
+					$str="<div class=\"most_discussed align_center\">"
+						."<div class=\"most_discussed_name\">".make_link(from_db("item",$id,"name"),"","","",$id)."</div>"
+						."<div class=\"most_discussed_image\">".make_link(make_contentimg("item",$id,from_db("item",$id,"image"),0),"","","",$id)."</div>";
 					$c=get_comments($id);
 					if($c)
 						{
-						$str.="(".$c.")";
+						$str.="<div class=\"most_discussed_count\">(".$c.")</div>";
 					}
-					return $str."</center></td></tr></table>";
+					return $str."</div>";
 				}
 
 				/**

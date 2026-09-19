@@ -1,4 +1,6 @@
 <?php
+define("PMS_FRONTEND", 1);
+require __DIR__ . '/bootstrap.php';
 function rss_entities(string $a, int $dynamic = 0)
 {
     global $dyn;

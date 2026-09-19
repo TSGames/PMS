@@ -1,0 +1,113 @@
+/**
+ * Der Code-Editor der Variablen-Seite.
+ *
+ * Gestaltet wird nur die Huelle; die Farben der Syntaxhervorhebung bringt
+ * CodeMirror selbst mit. Alle Werte kommen aus den Token von admin.css,
+ * damit der Editor im hellen wie im dunklen Farbschema passt.
+ */
+
+.code-editor {
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--c-surface);
+}
+
+.code-editor:focus-within {
+    border-color: var(--c-focus);
+    box-shadow: 0 0 0 3px var(--c-accent-soft);
+}
+
+/* Das Textfeld bleibt im Formular, wird aber nicht mehr angezeigt:
+   Der Editor schreibt seinen Stand hinein. */
+.code-editor-source {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.code-editor .cm-editor {
+    /* Mehrzeilig, auch wenn nur eine Zeile drinsteht: Die Felder nehmen
+       HTML-Schnipsel und [php]-Blöcke auf, da hilft Platz. */
+    min-height: 170px;
+    max-height: 420px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+
+.code-editor .cm-editor,
+.code-editor .cm-scroller {
+    height: auto;
+}
+
+.code-editor .cm-editor.cm-focused {
+    outline: none;
+}
+
+.code-editor .cm-scroller {
+    line-height: 1.6;
+}
+
+.code-editor .cm-content {
+    padding: 10px 0;
+    caret-color: var(--c-text);
+}
+
+.code-editor .cm-gutters {
+    background: var(--c-surface-alt);
+    border-right: 1px solid var(--c-border);
+    color: var(--c-muted);
+}
+
+.code-editor .cm-activeLine {
+    background: var(--c-surface-hover);
+}
+
+.code-editor .cm-activeLineGutter {
+    background: var(--c-surface-hover);
+    color: var(--c-text);
+}
+
+.code-editor .cm-selectionBackground,
+.code-editor .cm-content ::selection {
+    background: var(--c-accent-soft);
+}
+
+/* Im dunklen Farbschema bringt CodeMirror seine hellen Vorgaben mit -
+   Schriftfarbe und Flaechen kommen deshalb von hier. */
+:root.dark .code-editor .cm-content,
+:root.dark .code-editor .cm-line {
+    color: var(--c-text);
+}
+
+:root.dark .code-editor .cm-cursor {
+    border-left-color: var(--c-text);
+}
+
+/**
+ * Die Sondermarken von PMS.
+ *
+ * [php]…[/php] und [code]…[/code] sind weder HTML noch PHP-Syntax, sondern
+ * eine Eigenheit von PMS. Was zwischen [php] steht, wird beim Anzeigen
+ * ausgeführt - deshalb ist der Block hinterlegt, damit man seine Grenzen
+ * sieht.
+ */
+.code-editor .cm-pms-tag {
+    color: var(--c-accent);
+    font-weight: 600;
+}
+
+.code-editor .cm-pms-php {
+    background: var(--c-accent-soft);
+    border-radius: 2px;
+}
+
+:root.dark .code-editor .cm-pms-php {
+    background: rgba(99, 102, 241, 0.16);
+}

@@ -549,3 +549,18 @@ Save Changes
 
 ##EDIT_VAR
 Click here to edit the content of this variable
+
+##FORM_REJECTED
+The request did not come from this page, or your session has expired. Please reload the page and try again.
+
+##COMMENT_DELETE
+Delete comment
+
+##MENU_LABEL
+Menu
+
+##COUNTER_HEADING
+Visitors
+
+##MENU_COUNT
+%1 pages

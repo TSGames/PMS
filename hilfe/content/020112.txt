@@ -1,3 +1,0 @@
-Besucherzähler erhöhen
-
-Die hier eingegebene Zahl wird dem Besucherzähler hinzugefügt.

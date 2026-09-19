@@ -19,11 +19,15 @@
 	 */
 	function get_tinymceinit($match,$height)
 	{
+		// Die Breite kommt aus dem Umfeld: 640 Pixel liessen im Backend
+		// zwei Drittel der Karte leer stehen und sprengten im Frontend
+		// die schmale Spalte. Ziehen laesst sich nur noch die Hoehe -
+		// die Breite bestimmt die Spalte.
 		return 'tinymce.init({
     selector: "#'.$match.'",
-    width: 640,
+    width: "100%",
     height: "'.$height.'",
-    resize: "both",
+    resize: true,
     language: "de",
     plugins: "advlist autolink lists link image charmap preview anchor \
               searchreplace visualblocks code fullscreen insertdatetime media \
@@ -76,58 +80,20 @@
 	}
 
 	/**
-	 * Initialize Monaco code editor
-	 * @return string Monaco editor HTML/JavaScript
+	 * Bindet den Code-Editor der Variablen-Seite ein.
+	 *
+	 * Er haengt sich an jedes Textfeld mit dem Merkmal data-editor. Frueher
+	 * stand hier der Monaco-Editor, der von einem CDN nachgeladen wurde -
+	 * rund fuenf Megabyte, eine Anfrage an einen Dritt-Server bei jeder
+	 * Bearbeitung, und ohne Internetzugang blieb das Feld leer. Die jetzige
+	 * Zusammenstellung liefert das Projekt selbst aus
+	 * (src/js/vendor/editor.js, gebaut mit "npm run vendor:editor").
+	 *
+	 * @return string HTML zum Einbinden des Editors
 	 */
-	function get_monaco(){
-		return <<<JS
-		
-		<!-- Load Monaco from CDN -->
-		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js"></script>
-		<script>
-		// Configure the Monaco base path for its internal modules
-		require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } });
-		
-		
-		// Configure Monaco base path
-		require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } });
-		
-		// Load Monaco editor
-		require(['vs/editor/editor.main'], function() {
-			// Get all textarea elements
-			document.querySelectorAll('textarea').forEach(function(textarea) {
-				// Create a wrapper div to host the editor
-				const wrapper = document.createElement('div');
-				wrapper.className = 'monaco-wrapper';
-				wrapper.style.minHeight = '200px';
-				
-				// Insert wrapper before textarea
-				textarea.parentNode.insertBefore(wrapper, textarea);
-				// Hide the original textarea
-				textarea.style.display = 'none';
-				
-				// Determine language from optional data attribute or simple detection
-				let language = 'php';
-				
-				// Create Monaco editor in the wrapper
-				const editor = monaco.editor.create(wrapper, {
-					value: textarea.value,
-					language: language,
-					theme: 'vs-light',
-					minimap: { enabled: false },
-					automaticLayout: true
-				});
-				
-				// Sync back to textarea on change (for form submission, etc.)
-				editor.onDidChangeModelContent(() => {
-					textarea.value = editor.getValue();
-				});
-			});
-		});
-		
-		</script>
-		JS;
-		
+	function get_code_editor(){
+		return '<link rel="stylesheet" type="text/css" href="css/code-editor.css">'
+			.'<script defer src="js/vendor/editor.js"></script>';
 	}
 
 	/**
@@ -145,8 +111,12 @@
 		if(!$edit_mode) return $string;
 		if($mode==2) $string=cleanup_content($string);
 		$str="";
-		$add='rows="4" cols="50"';
-		if($mode==2) $add='rows="20" width="100%"';
+		// Die Breite kommt aus pms.css, nicht aus cols oder width: cols
+		// setzt eine feste Spaltenzahl, width kennt ein textarea gar
+		// nicht - beides sprengte im Inhaltsbereich die Spalte.
+		$add='rows="4"';
+		if($mode==2) $add='rows="20"';
+		$class=trim($class." item_edit_field");
 		if(!$mode) $str.='<input type="text" name="edit_'.$name.'" id="edit_'.$name.'" class="'.$class.'" value="'.str_replace('"',"&quot;",$string).'">';
 		else $str.='<textarea name="edit_'.$name.'" id="edit_'.$name.'" class="'.$class.'" '.$add.'>'.str_replace('&','&amp;',$string).'</textarea>';
 		return $str;

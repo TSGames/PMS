@@ -1,6 +1,15 @@
 <?
 define("PMS_FRONTEND",1);
+require(__DIR__.'/bootstrap.php');
 require('functions.php');
+
+use Pms\Data\Db;
+use Pms\Frontend\Http\Forms;
+use Pms\Frontend\Http\Kernel;
+use Pms\Frontend\View\Sidebar;
+use Pms\Frontend\View\Template;
+use Pms\Support\Request;
+
 $template="/var/template/template.html";
 
 // compress output using gzip
@@ -11,96 +20,33 @@ if($config_values->allow_compress && extension_loaded("zlib") && strstr($_SERVER
 }
 // end of compressing
 
+// Adresse zerlegen, Sperrliste pruefen, unbekannte Aktionen verwerfen
+$target=Kernel::boot();
 
-if($_GET["follow"]=="404"){
-    $_GET["item"]=get_errorpage();
-}
-else if($config_values->speciallinks)
-{
-    $_GET2=$_GET;
-    if($_GET["download"])
-    {
-        $_GET["action"]="download";
-        $temp=explode("-",$_GET["download"]);
-        $_GET["id"]=$temp[1];
-    }
-    $query=$_GET["follow"];
-    $query=explode("-",$query);
-    $what=substr($query[1],-1);
-    if($what=="c") $_GET["cat"]=substr($query[1],0,-1);
-    else if($what=="s") $_GET["subcat"]=substr($query[1],0,-1);
-    else if($what=="u")
-    {
-        $_GET["action"]="user";
-        $_GET["id"]=substr($query[1],0,-1);
-    }
-    else 
-    {
-        if(from_db("item",$query[1],"id"))
-        $_GET["item"]=$query[1];
-        else
-        unset($query[1]);
-    }
-    if(count($query)<2 && $query[0])
-    {
-        $search_query=$query[0];
-        $action="search";
-    }
-}
-if(is_array($_GET2))
-{
-    foreach($_GET2 as $key => $value)
-    {
-        if($value)
-        $_GET[$key]=$value;
-    }
-}
-$cat=(int)$_GET["cat"];
-$subcat=(int)$_GET["subcat"];
-$item=(int)$_GET["item"];
-if(!$action) $action=$_GET['action'];
-$id=$_GET['id']*1;
+$action=$target->action;
+$cat=$target->cat;
+$subcat=$target->subcat;
+$item=$target->item;
+$id=$target->id;
+$content_page=$target->page;
+if($target->search!=="") $search_query=$target->search;
+
 $comments=$_GET['comments'];
 $comment_get=$_GET['comment'];
-$content_page=$_GET['page'];
 $login=0;
 
-$link=$pms_db_connection->query(make_sql("bans","","id"));
-while($link && $a=$pms_db_connection->fetchObject($link))
+if($ban=Kernel::ban())
 {
-    if(stristr($_SERVER['REMOTE_ADDR'],$a->ip))
-    {
-        unset($_POST);
-        unset($_GET);
-        unset($action);
-        $item=-1;
-        $link=$pms_db_connection->query(make_sql("item","special = '5'","id LIMIT 1"));
-        if($link && $b=$pms_db_connection->fetchObject($link))
-        {
-            $item=$b->id;
-        }
-        $ip_is_banned=1;
-        $banned_ip=$_SERVER['REMOTE_ADDR'];
-        $banned_reason=def($a->reason);
-        if(!$banned_reason || ctype_space($banned_reason))
-        {
-            $banned_reason=language("BAN_NO_REASON");
-        }
-        $banned_time=ban_time($a->time);
-        if($banned_time==1)
-        {
-            $banned_time=$banned_time." Tag";
-        }
-        elseif($banned_time!=language("BAN_UNLIMITED"))
-        {
-            $banned_time=$banned_time." Tage";
-        }
-        break;
-    }
+    $ip_is_banned=1;
+    $banned_ip=$ban->ip;
+    $banned_reason=$ban->reason;
+    $banned_time=$ban->time;
 }
-if(($_POST['user_login']==language("USER_LOGIN") || (!$_SESSION['pmsglobal'] && $_COOKIE['login_id'] && $_COOKIE['login_pw'])) && !$login)
+
+$login_submitted=Forms::submitted('user_login');
+if(($login_submitted || (!$_SESSION['pmsglobal'] && $_COOKIE['login_id'] && $_COOKIE['login_pw'])) && !$login)
 {
-    if($_POST['user_login']==language("USER_LOGIN"))
+    if($login_submitted)
     {
         
         load_hidden();
@@ -188,7 +134,7 @@ if(@array_key_exists("recover_pass",$_POST))
     }
 }
 
-if($_POST['user']==language("REGISTER_BUTTON"))
+if(Forms::submitted('user'))
 {
     $action="register";
     $name=$_POST['name'];
@@ -238,16 +184,17 @@ if($action=="logout")
 
 $item_allowed_edit=$login==1 && from_db("user",$user_id,"typ")>1;
 $item_edit_mode=$item_allowed_edit && $_GET["edit"];
-if($_POST['item_edit'] && $_POST['item_id'] && $item_allowed_edit)
+if(Forms::submitted('item_edit') && $_POST['item_id'] && $item_allowed_edit)
 {
     $item=from_db("item",$_POST['item_id']*1,"id");
     if($item)
     {
-        $name=$pms_db_connection->escape($_POST["edit_name"]);
-        $description=$pms_db_connection->escape($_POST["edit_description"]);
-        $content=$pms_db_connection->escape($_POST["edit_content"]);
-        $pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET name = '$name', description = '$description', content = '$content', time_changed = '".time()."' WHERE id = '".$item."'");
-        unset($name);unset($description);unset($content);
+        Db::update("item",(int)$item,array(
+            "name" => Request::text("edit_name"),
+            "description" => Request::text("edit_description"),
+            "content" => Request::text("edit_content"),
+            "time_changed" => time(),
+        ));
     }
 }
 
@@ -257,7 +204,7 @@ if($item) $check=from_db("item",$item,"subcat");
 if(!$check) $check=$subcat;
 check_subcatjump($check);
 
-if($_POST['rate']==language("RATE_BUTTON"))
+if(Forms::submitted('rate'))
 {
     $item=$_POST['id'];
     $cname='rate_'.$item;
@@ -270,11 +217,11 @@ if($_POST['rate']==language("RATE_BUTTON"))
             $rating=from_db("item",$item,"rating",0)+$_POST['rating'];
             $numratings=from_db("item",$item,"numratings",0)+1;
             user_points($user_id,10);
-            $pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET rating = '$rating', numratings = '$numratings' WHERE id = '$item' LIMIT 1;");
+            Db::update("item",(int)$item,array("rating" => $rating, "numratings" => $numratings));
         }
     }
 }
-if($_POST['user_config']==language("USER_PANEL_SAVE") && $login)
+if(Forms::submitted('user_config') && $login)
 {
     $action="user_panel";
     $password=$_POST['password'];
@@ -293,16 +240,17 @@ if($_POST['user_config']==language("USER_PANEL_SAVE") && $login)
         $register_fail=$a;
     }
 }
-if($_GET['search']==language("SEARCH_BUTTON") || $_GET['search_query'])
+if(array_key_exists('search',$_GET) || $_GET['search_query'])
 $action="search";
 
 
-if($_POST['poll']==language("POLL_VOTE") || $_POST['poll']==language("POLL_RESULTS"))
+$poll_vote=Forms::submitted('poll_vote');
+if($poll_vote || Forms::submitted('poll_results'))
 {
     load_hidden();
     $poll_id=$_POST['poll_id'];
     $cname='poll'.$poll_id;
-    if(!$_SESSION[$cname] && !$_COOKIE[$cname] && $_POST['poll']==language("POLL_VOTE"))
+    if(!$_SESSION[$cname] && !$_COOKIE[$cname] && $poll_vote)
     {
         setcookie($cname,1,time()+60*60*24*1000,"/",$cookie_domain);
         $_SESSION[$cname]=1;
@@ -320,10 +268,10 @@ if(@array_key_exists("edit_comment",$_POST) && $login && (from_db("user",$_SESSI
     {
         $action="guestbook";
     }
-    $commentid=$pms_db_connection->escape($_POST['id']);
-    $com_title=$pms_db_connection->escape($_POST['title']);
-    $com_comment=$pms_db_connection->escape($_POST['comment']);
-    if($pms_db_connection->query("UPDATE ".$pms_db_prefix."comments SET title = '$com_title', comment = '$com_comment' WHERE id = '$commentid' LIMIT 1;"))
+    $commentid=Request::int('id');
+    $com_title=Request::text('title');
+    $com_comment=Request::text('comment');
+    if(Db::update("comments",$commentid,array("title" => $com_title, "comment" => $com_comment)))
     {
         $last_comment=language("COMMENT_SUCCESS");
         if($action=="guestbook")
@@ -357,9 +305,9 @@ elseif($action=="user")
 {
     $item=get_errorpage();
 }
-if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==language("GUESTBOOK_SEND"))
+if(Forms::submitted('post_comment'))
 {
-    $item=$pms_db_connection->escape($_POST['item']);
+    $item=Request::int('item');
     if(from_db("item",$item,"special")==4) // guestbook
     $action="guestbook";
     
@@ -368,11 +316,11 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
     $date=time();
     if(!$user)
     {
-        $com_name=$pms_db_connection->escape($_POST['name']);
-        $com_mail=$pms_db_connection->escape($_POST['mail']);
+        $com_name=Request::string('name');
+        $com_mail=Request::string('mail');
     }
-    $com_title=$pms_db_connection->escape($_POST['title']);
-    $com_comment=$pms_db_connection->escape($_POST['comment']);
+    $com_title=Request::text('title');
+    $com_comment=Request::text('comment');
     $ok=1;
     if(!comp_spam($_POST['spam'],$_POST['session'],$_POST['spamcount']) && !$com_user)
     {
@@ -404,11 +352,11 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
         $ok=0;
         $last_comment=language("GUESTBOOK_ERROR_NOT_ACTIVATED");
     }
-    $link=$pms_db_connection->query(make_sql("comments","item = '$item' AND title = '$com_title' AND comment = '$com_comment' AND user = '$com_user'","id"));
-    if($link && $ok)
+    if($ok)
     {
-        $a=$pms_db_connection->fetchObject($link);
-        if($a->id)
+        $a=Db::first("SELECT id FROM ".Db::table("comments")." WHERE item = ? AND title = ? AND comment = ? AND user = ? ORDER BY id",
+            array($item,$com_title,$com_comment,(int)$com_user));
+        if($a)
         {
             $last_comment=language("COMMENT_ERROR_MULTIPLE_POST");
             if($action=="guestbook")
@@ -419,7 +367,11 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
     }
     if($ok)
     {
-        if($pms_db_connection->query("INSERT INTO ".$pms_db_prefix."comments (item,title,comment,name,user,date,mail,ip) VALUES ('$item','$com_title','$com_comment','$com_name','$com_user','$date','$com_mail','$ip');"))
+        if(Db::insert("comments",array(
+            "item" => $item, "title" => $com_title, "comment" => $com_comment,
+            "name" => $com_name, "user" => (int)$com_user, "date" => $date,
+            "mail" => $com_mail, "ip" => $ip,
+        )))
         {
             $last_comment=-1; 
             // Keine ausgabe ist besser!
@@ -492,7 +444,7 @@ if($config_values->topusers)
         }
         if($top_rand==$i)
         {
-            $top_user="<table class=\"top_users\"><tr><td><div align=\"center\">".user_out($i+1,$users[$i][1],0,1,0,0,$users[$i][0])."[".make_link(language("TOP_USER_MORE"),"action=topuser","","","")."]</div></td></tr></table>";
+            $top_user="<table class=\"top_users\"><tr><td><div class=\"align_center\">".user_out($i+1,$users[$i][1],0,1,0,0,$users[$i][0])."[".make_link(language("TOP_USER_MORE"),"action=topuser","","","")."]</div></td></tr></table>";
         }
     }
 }
@@ -578,7 +530,7 @@ if($action=="user_panel" && $login)
     unset($bday);
     
     $link=$pms_db_connection->query("SELECT COUNT(id) as `count` FROM ".$pms_db_prefix."comments WHERE user = '$user_id';");
-    if($link && $a=mysqli_fetch_object($link))
+    if($link && $a=$pms_db_connection->fetchObject($link))
     {
         $points=$a->count*60;
     }
@@ -599,16 +551,16 @@ if($action=="user_panel" && $login)
     {
         $content.="</td></tr><tr><td>".make_contentimg("user",$user_id,$image,0)."</td><td><input type=\"checkbox\" name=\"image_delete\" value=\"1\"> ".language("USER_PANEL_AVATAR_DELETE");
     }
-    $top="<tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"top\" value=\"1\" ".$top."> ".language("USER_PANEL_SHOW_TOP")."</center></td></tr>";
+    $top="<tr><td colspan=\"2\" class=\"align_center\"><input type=\"checkbox\" name=\"top\" value=\"1\" ".$top."> ".language("USER_PANEL_SHOW_TOP")."</td></tr>";
     if(!$config_values->topusers)
     {
         $top="<input type=\"hidden\" name=\"top\" value=\"".from_db("user",$user_id,"top")."\">";
     }
     $content.="
-    <tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"showmail\" value=\"1\" ".$showmail."> ".language("USER_PANEL_SHOW_MAIL")."</center></td></tr>".$top."
+    <tr><td colspan=\"2\" class=\"align_center\"><input type=\"checkbox\" name=\"showmail\" value=\"1\" ".$showmail."> ".language("USER_PANEL_SHOW_MAIL")."</td></tr>".$top."
     <br><br><td></tr>
-    <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"user_config\" value=\"".language("USER_PANEL_SAVE")."\"></center></td></tr>
-    </table></center>
+    <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"user_config\" value=\"".language("USER_PANEL_SAVE")."\"></td></tr>
+    </table>
     </td></tr></table>
     </form>";
 }
@@ -616,11 +568,11 @@ elseif($action=="user_panel")
 {
     $site_not_found=1;
 }
-if($comment_get=="delete" && $id && $login)
+if($comment_get=="delete" && $id && $login && Forms::allowed())
 {
     if(from_db("user",$user_id,"typ")>=1)
     {
-        $pms_db_connection->query("DELETE FROM ".$pms_db_prefix."comments WHERE id = '$id' LIMIT 1;");
+        Db::delete("comments",(int)$id);
     }
 }
 if($subcat)
@@ -849,13 +801,13 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             {
                 if($subcat)
                 {
-                    $edit=" [<a class=\"item_edit\" href=\"admin.php?action=subcat&edit=".$subcat."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
-                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"admin.php?action=item&new=yes&cat=".$cat."&subcat=".$subcat."\" target=\"_blank\">".language("ITEM_ADD")."</a>]</div>";
+                    $edit=" [<a class=\"item_edit\" href=\"".admin_url("subcat",["edit"=>$subcat])."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
+                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"".admin_url("item",["new"=>"yes","cat"=>$cat,"subcat"=>$subcat])."\" target=\"_blank\">".language("ITEM_ADD")."</a>]</div>";
                 }
                 else
                 {
-                    $edit=" [<a class=\"item_edit\" href=\"admin.php?action=cat&edit=".$cat."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
-                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"admin.php?action=subcat&new=yes&cat=".$cat."\" target=\"_blank\">".language("SUBCAT_ADD")."</a>]</div>";
+                    $edit=" [<a class=\"item_edit\" href=\"".admin_url("cat",["edit"=>$cat])."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
+                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"".admin_url("subcat",["new"=>"yes","cat"=>$cat])."\" target=\"_blank\">".language("SUBCAT_ADD")."</a>]</div>";
                 }
             }
         }
@@ -881,7 +833,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             <br>
             <table width=\"100%\" height=\"100%\"><tr><td>".$con_limit.$add_limit;
             $max=$config_values->list_rows;
-            if($link && count($linkData)<$max) $max=mysqli_num_rows($link);
+            if(count($linkData)<$max) $max=count($linkData);
             if($max>1)
             {
                 $add1="<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>";
@@ -957,7 +909,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $c=rand(0,9);
                     $pass=$pass.$a.$b.$c;
                 }
-                $pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET password = '".md5($pass)."' WHERE id = '$user_sel' LIMIT 1;");
+                Db::update("user",(int)$user_sel,array("password" => md5($pass)));
                 $content.=language("PASSWORD_RECOVER_SUCCESS");
                 my_mail(from_db("user",$user_sel,"mail"),str_replace("%1",$config_values->name,language("PASSWORD_RECOVER_MAIL_SUBJECT")),
                 str_replace(array('%1','%2'),array(from_db("user",$user_sel,"name"),$pass),language("PASSWORD_RECOVER_MAIL_BODY")));
@@ -966,18 +918,18 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             {
                 $content.=language("PASSWORD_RECOVER_ERROR");
             }
-            $content.="</div></center>";
+            $content.="</div>";
         }
         else
         {
             if($password_recover)
             $content.="<div class=\"password_info\">".$password_recover."<br><br></div>";
             
-            $content.=form()."<div align=\"center\"><table>
+            $content.=form()."<div class=\"align_center\"><table>
             <tr><td>".language("PASSWORD_RECOVER_NAME")."</td><td><input type=\"text\" name=\"name\" maxlength=\"32\"></td></tr>
             <tr><td></td></tr>
-            <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"recover_pass\" value=\"".language("PASSWORD_RECOVER_BUTTON")."\"></center></td></tr>
-            </table></center></div>
+            <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"recover_pass\" value=\"".language("PASSWORD_RECOVER_BUTTON")."\"></td></tr>
+            </table></div>
             </form>";
         }
         $content.="</td></tr></table>";
@@ -997,7 +949,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         if($key==$_GET['key'])
         {
             $content.=language("REGISTER_FINISH_SUCCESS");
-            $pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET active = 1 WHERE id = '$id' LIMIT 1;");
+            Db::update("user",(int)$id,array("active" => 1));
         }
         else
         {
@@ -1040,9 +992,10 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     unset($av);
                 }
                 $link3=$pms_db_connection->query(make_sql("item",$av."cat = '$a->id' AND subcat = '$b->id'","sort,name"));
-                if(!$b->jump || mysqli_num_rows($link3)!=1)
+                $items=$link3?$pms_db_connection->fetchAllObject($link3):array();
+                if(!$b->jump || count($items)!=1)
                 {
-                    while($link3 && $c=$pms_db_connection->fetchObject($link3))
+                    foreach($items as $c)
                     {
                         $content.="<tr class=\"sitemap_table\"><td class=\"sitemap_table\" style=\"padding-left:40px\">".make_link($c->name,"",$a->id,$b->id,$c->id)."</td></tr>
                         ";
@@ -1062,13 +1015,13 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         {
             $content.="<div class=\"register_fail\">".$register_fail."<br></div>";
         }
-        $content.="<div class=\"register_form\" align=\"center\">
+        $content.="<div class=\"register_form align_center\">
         <table>
-        <tr><td width=\"170px\">".language("REGISTER_NAME")."</td><td><input type=\"text\" name=\"name\" maxlength=\"32\" value=\"".$name."\"></td></tr>".make_antispam()."
+        <tr><td class=\"form_label\">".language("REGISTER_NAME")."</td><td><input type=\"text\" name=\"name\" maxlength=\"32\" value=\"".$name."\"></td></tr>".make_antispam()."
         <tr><td>".language("REGISTER_PW")."</td><td><input type=\"password\" name=\"password\" maxlength=\"32\" value=\"".$password."\"></td></tr>
         <tr><td>".language("REGISTER_PW_REPEAT")."</td><td><input type=\"password\" name=\"passwordr\" maxlength=\"32\" value=\"".$passwordr."\"></td></tr>
         <tr><td>".language("REGISTER_MAIL")."</td><td><input type=\"text\" name=\"mail\" maxlength=\"100\" value=\"".$mail."\"><br><br></td></tr>
-        <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"user\" value=\"".language("REGISTER_BUTTON")."\"></center></td></tr>
+        <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"user\" value=\"".language("REGISTER_BUTTON")."\"></td></tr>
         </table></div>
         </form></td></tr></table>";
     }
@@ -1110,16 +1063,16 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                 }
                 if($current>0)
                 {
-                    $last="<th align=\"left\"><div class=\"switch\">".make_link(language("ITEM_PREVIOUS"),"",$cat,$subcat,$ids[$current-1])."</div></th>";
+                    $last="<th class=\"switch_prev\"><div class=\"switch\">".make_link(language("ITEM_PREVIOUS"),"",$cat,$subcat,$ids[$current-1])."</div></th>";
                 }
                 if($max>$current+1)
                 {
-                    $next="<th align=\"right\"><div class=\"switch\">".make_link(language("ITEM_NEXT"),"",$cat,$subcat,$ids[$current+1])."</div></th>";
+                    $next="<th class=\"switch_next\"><div class=\"switch\">".make_link(language("ITEM_NEXT"),"",$cat,$subcat,$ids[$current+1])."</div></th>";
                 }
             }
             unset($edit);
             if($item_edit_mode && $item)
-            $edit=" [<a class=\"item_edit\" href=\"admin.php?action=item&edit=".$item."\">".language("ITEM_EDIT_EXTENDED")."</a>]";
+            $edit=" [<a class=\"item_edit\" href=\"".admin_url("item",["edit"=>$item])."\">".language("ITEM_EDIT_EXTENDED")."</a>]";
             else if($item_allowed_edit && $item)
             $edit=" [<a class=\"item_edit\" href=\"index.php?item=".$item."&edit=true\">".language("ITEM_EDIT")."</a>]";
             
@@ -1208,7 +1161,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     if(!$item_edit_mode)$i_con=str_replace("#item_picture",make_contentimg("item",$item,$image,1),$i_con);
                 }
                 else
-                $content.="<tr><td><center>".make_contentimg("item",$item,$image,1)."<br><br></td></tr>";
+                $content.="<tr><td class=\"align_center\">".make_contentimg("item",$item,$image,1)."</td></tr>";
             }
             if($i_con && !ctype_space($i_con))
             {
@@ -1219,7 +1172,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             <tr style=\"width:100%;\"><td><table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>".$last.$next."</tr></table></td></tr>";
             $content.="</table>";
             if($item_edit_mode)
-            $content.='<div align="center"><input type="submit" name="item_edit" value="'.language("ITEM_EDIT_SAVE").'"></form></div>';
+            $content.='<div class="item_edit_actions"><input type="submit" name="item_edit" value="'.language("ITEM_EDIT_SAVE").'"></div></form>';
             
             
             if($action=="download")
@@ -1249,11 +1202,11 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                 while($link && $a=$pms_db_connection->fetchObject($link))
                 {
                     $search=$a->searcher;
-                    $replace=dynamic_string(def($replace),$item_allowed_edit,$a->id);
+                    $replace=$a->replacer;
                     if($a->makebr)
                     {
                         $search=def($search);
-                        $replace=dynamic_string(def($replace),$item_allowed_edit);
+                        $replace=dynamic_string(def($replace),$item_allowed_edit,$a->id);
                     }
                     $content=str_replace($search,$replace,$content);
                     $current_pos_name=str_replace($search,$replace,$current_pos_name);
@@ -1280,7 +1233,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     }
                     $comment_str=$comment_str."
                     <a name=\"comments\"></a>
-                    <center><table align=\"center\" width=\"540px\">";
+                    <table class=\"comment_form\">";
                     $com_title_top=language("COMMENT_TOP");
                     $com_title_middle=language("COMMENT_TITLE");
                     $com_title_bottom=language("COMMENT_BOTTOM");
@@ -1295,7 +1248,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     }
                     if($last_comment && $last_comment!=-1)
                     {
-                        $comment_str=$comment_str."<tr><td colspan=\"2\"><div class=\"comment_error\"><center>".$last_comment."</center></div><br><br></td></tr>";
+                        $comment_str=$comment_str."<tr><td colspan=\"2\"><div class=\"comment_error align_center\">".$last_comment."</div><br><br></td></tr>";
                     }
                     if($last_comment!=-1)
                     {
@@ -1323,16 +1276,16 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             $comment_str=$comment_str."
                             <input type=\"hidden\" name=\"id\" value=\"".$id."\">
                             <tr><td colspan=\"2\"><div class=\"comment_write\">".$com_title_top."</div></td></tr>
-                            <tr><td width=\"210px\">".language("COMMENT_NAME")."</td><td width=\"370px\">".$name."</td></tr>
-                            <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".str_replace('"','&quot;',clear_comment($a->title))."\">
+                            <tr><td class=\"comment_label\">".language("COMMENT_NAME")."</td><td class=\"comment_value\">".$name."</td></tr>
+                            <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".clear_comment($a->title)."\">
                             <tr><td>".$com_title_bottom."</td><td><textarea name=\"comment\" rows=\"5\" cols=\"39\">".clear_comment($a->comment)."</textarea></td></tr>
-                            <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"edit_comment\" value=\"".$com_send."\"><br><br></center></form></td></tr></table>";
+                            <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"edit_comment\" value=\"".$com_send."\"></form></td></tr></table>";
                         }
                         else
                         {
                             $comment_str=$comment_str."
                             <tr><td colspan=\"2\"><div class=\"comment_write\">".$com_title_top."</div></td></tr>
-                            <tr><td width=\"210px\">".language("COMMENT_NAME")."</td><td width=\"370px\">".$name."</td></tr>
+                            <tr><td class=\"comment_label\">".language("COMMENT_NAME")."</td><td class=\"comment_value\">".$name."</td></tr>
                             <tr><td>".language("COMMENT_MAIL");
                             if(!$login)
                             {
@@ -1341,11 +1294,11 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             $comment_str=$comment_str."</td><td>".$mail."</td></tr>".$anti_spam."
                             <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".str_replace('"','&quot;',stripslashes($com_title))."\">
                             <tr><td>".$com_title_bottom."</td><td><textarea name=\"comment\" rows=\"5\" cols=\"39\">".stripslashes($com_comment)."</textarea></td></tr>
-                            <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"post_comment\" value=\"".$com_send."\"><br><br></center></form></td></tr></table>";
+                            <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"post_comment\" value=\"".$com_send."\"></form></td></tr></table>";
                         }
                     }
                 }
-                $comment_str=$comment_str."<table width=\"538px\">";
+                $comment_str=$comment_str."<table class=\"comment_list\">";
                 // comments:
                 $limit=$config_values->numcomments;
                 $limit_name=language("COMMENT_SHOWALL");
@@ -1416,16 +1369,21 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                         }
                         if(from_db("user",$user_id,"typ")>=1 || $a->user == $user_id)
                         {
-                            $c_edit=make_link_mark(make_img("edit.png",0)." ",$add_act."comment=edit&id=".$a->id,0,0,$item_add,"comments");
+                            // Ein Bedienelement braucht einen Textersatz: Die
+                            // Symbolbilder fehlen in der Auslieferung, und
+                            // ohne alt bleibt der Verweis unsichtbar.
+                            $c_edit=make_link_mark(make_imgalt("edit.png",0,language("COMMENT_EDIT"),"","",language("COMMENT_EDIT"))." ",$add_act."comment=edit&id=".$a->id,0,0,$item_add,"comments");
                         }
                         if(from_db("user",$user_id,"typ")>=1)
                         {
-                            $delete=make_link_mark(make_img("delete.png",0),$add_act."comment=delete&id=".$a->id,0,0,$item_add,"comments");
+                            // Das Loeschen laeuft ueber einen Verweis, deshalb
+                            // traegt er das Token der Sitzung mit.
+                            $delete=make_link_mark(make_imgalt("delete.png",0,language("COMMENT_DELETE"),"","",language("COMMENT_DELETE")),$add_act."comment=delete&id=".$a->id."&".\Pms\Support\Csrf::FIELD."=".\Pms\Support\Csrf::token(),0,0,$item_add,"comments");
                             $ip="<tr><td colspan=\"2\">".language("COMMENT_LIST_IP")." ".$a->ip."</td></tr>";
                             $rowspan+=1;
                         }
                     }
-                    $comment_str=$comment_str."<tr><td width=\"434px\" colspan=\"2\"><a name=\"comment_".$a->id."\"></a><div class=\"comment_heading\">".clear_comment($title)."</div></td><td width=\"40px\">".$c_edit.$delete."</td><td width=\"64px\" rowspan=\"".$rowspan."\">".$ava."</td></tr>
+                    $comment_str=$comment_str."<tr><td class=\"comment_main\" colspan=\"2\"><a name=\"comment_".$a->id."\"></a><div class=\"comment_heading\">".clear_comment($title)."</div></td><td class=\"comment_actions\">".$c_edit.$delete."</td><td class=\"comment_avatar\" rowspan=\"".$rowspan."\">".$ava."</td></tr>
                     <tr><td>".language("COMMENT_LIST_FROM")." ".$name.$add_name."</td><td>".language("COMMENT_LIST_DATE")." ".make_date($date,0)."</td></tr>".$ip."
                     <tr><td colspan=\"2\">";
                     if(($mail && !$a->user) || ($a->user && from_db("user",$a->user,"showmail")))
@@ -1442,153 +1400,12 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                         $comment_str=$comment_str.make_link_mark($limit_name,"comments=all",$cat,$subcat,$item,"comments");
                     }
                 }
-                $comment_str=$comment_str."</center>";
+                
             }
         }
     }
     // menu
-    $link=$pms_db_connection->query(make_sql("menu","visible = 1 AND usertyp <= '$user_typ2'","sort,name"));
-    if($config_values->menu_mode)
-    {
-        $menu='<div class="menu"><ul>';
-        while($link && $a=$pms_db_connection->fetchObject($link)){
-            $menu.='<li>';
-            if($a->typ==0)
-            {
-                $class="";
-                if($a->item)
-                {
-                    if($a->item==$item)
-                    $class="menu_active";
-                }
-                else if($a->subcat)
-                {
-                    if($a->subcat==$subcat)
-                    $class="menu_active";
-                }
-                else if($a->cat)
-                {
-                    if($a->cat==$cat)
-                    $class="menu_active";
-                }
-                $menu.=make_link_mark($a->name,"",$a->cat,$a->subcat,$a->item,"",$class,0,"",0);
-                if($a->popup && !$a->item)
-                {
-                    $what="subcat";
-                    $what2="cat";
-                    $filter="available = 1 AND ";
-                    $id=$a->cat;
-                    if($a->subcat)
-                    {
-                        $id=$a->subcat;
-                        $what="item";
-                        $what2="subcat";
-                        $filter="visible = 1 AND available = 1 AND ";
-                    }
-                    if(from_db("user",$user_id,"typ")>1) unset($filter);
-                    $link2=$pms_db_connection->query(make_sql($what,$filter.$what2." = '".$id."'","sort,name"));
-                    if($link2 && mysqli_num_rows($link2))
-                    {
-                        $menu.='<!--[if IE 7]><!--></a><!--<![endif]--><ul><!--[if lte IE 6]><table class="menu_table"><tr><td><![endif]-->';
-                        while($b=$pms_db_connection->fetchObject($link2))
-                        {
-                            unset($id2);
-                            $id1=$b->id;
-                            if($a->subcat)
-                            {
-                                $id1=$a->subcat;
-                                $id2=$b->id;
-                            }
-                            $menu.='<li>'.make_link_mark($b->name,"",$a->cat,$id1,$id2,"").'</li>';
-                        }
-                    }
-                    $menu.='<!--[if lte IE 6]></td></tr></table></a><![endif]--></ul></li>';
-                }
-                else $menu.="</a></li>";
-            }
-            else if($a->typ==1)
-            {
-                $class="";
-                if(substr($plugin_intern[$a->plugin][1],0,1)!="#")
-                {
-                    if($plugin_intern[$a->plugin][1]==$action)
-                    $class="menu_active";
-                    $menu.=make_link($a->name,"action=".$plugin_intern[$a->plugin][1],0,0,0,$class)."</li>";
-                }
-                else
-                {
-                    if($a->plugin==6 && $frontpage) $class=" class=\"menu_active\"";
-                    $menu.="<a".$class." href=\"".substr($plugin_intern[$a->plugin][1],1)."\">".$a->name."</a></li>";
-                }
-            }
-            else if($a->typ==2)
-            $menu.="<".$a->extern.">".$a->name."</a></li>";
-            if($a->typ==3)
-            $menu.="<a href=\"#\">".$a->name."</a></li>";
-        }
-        $menu.='</ul></div>';
-    }
-    else
-    {
-        $break=$config_values->menubreak;
-        $vertical=$config_values->vertical;
-        $menu_height=$config_values->menu_height;
-        $menu_width=$config_values->menu_width;
-        if($vertical)
-        {
-            $menu="<table class=\"menu_outer\"><tr><td><table class=\"menu_inner\">";
-        }
-        for($i=0;$link && $a=$pms_db_connection->fetchObject($link);$i++)
-        {
-            if($break>1)
-            {
-                if($i%$break==0 && $i!=0)
-                {
-                    if(!$vertical)
-                    {
-                        $menu=$menu."</tr><tr>";
-                    }
-                    else
-                    {
-                        $menu=$menu."</table></td><td><table class=\"menu_inner\">";
-                    }
-                }
-            }
-            if($vertical)
-            {
-                $menu=$menu."<tr>";
-            }
-            $menu=$menu."<td width=\"".$menu_width."px\" height=\"".$menu_height."px\" class=\"menu\">";
-            if($a->typ==0)
-            $menu.=make_link($a->name,"",$a->cat,$a->subcat,$a->item,"menu");
-            else if($a->typ==1)
-            {
-                if(substr($plugin_intern[$a->plugin][1],0,1)!="#")
-                {
-                    $menu.=make_link($a->name,"action=".$plugin_intern[$a->plugin][1],0,0,0,"menu");
-                }
-                else
-                {
-                    $menu.="<a class=\"menu\" href=\"".substr($plugin_intern[$a->plugin][1],1)."\">".$a->name."</a>";
-                }
-            }
-            else if($a->typ==2)
-            $menu.="<".$a->extern." class=\"menu\">".$a->name."</a>";
-            if($a->typ==3)
-            $menu.=$a->name;
-            
-            $menu=$menu."</td>
-            ";
-            if($vertical)
-            {
-                $menu=$menu."</tr>";
-            }
-        }
-        if($vertical)
-        {
-            $menu=$menu."</table></td></tr></table>";
-        }
-    }
+    $menu=(new \Pms\Frontend\View\Menu($target,(int)$user_typ2,(bool)$frontpage))->render();
     
     // poll
     $link=$pms_db_connection->query(make_sql("poll","available = 1","sort,question"));
@@ -1622,7 +1439,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     }
     if($login==1 && from_db("user",$user_id,"typ")>1)
     {
-        $poll=$poll."[<a href=\"admin.php?action=poll&new=yes\" target=\"_blank\">".language("POLL_ADD")."</a>]";
+        $poll=$poll."[<a href=\"".admin_url("poll",["new"=>"yes"])."\" target=\"_blank\">".language("POLL_ADD")."</a>]";
     }
     if($c==0)
     {
@@ -1652,10 +1469,8 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         $poll=$poll."<div class=\"poll_question\">".$question[$sel]."</div>";
         if($login==1 && from_db("user",$user_id,"typ")>1)
         {
-            $poll=$poll."[<a href=\"admin.php?action=poll&edit=".$ids[$sel]."\" target=\"_blank\">".language("POLL_EDIT")."</a>]<br>";
+            $poll=$poll."[<a href=\"".admin_url("poll",["edit"=>$ids[$sel]])."\" target=\"_blank\">".language("POLL_EDIT")."</a>]<br>";
         }
-        $poll=$poll."
-        <br>";
         if(!$_SESSION["poll".$ids[$sel]] && !$_COOKIE["poll".$ids[$sel]] && !$current_poll)
         {
             $poll=$poll.form()."<input type=\"hidden\" name=\"poll_id\" value=\"".$ids[$sel]."\">";
@@ -1672,8 +1487,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $poll=$poll."<div class=\"poll_answer\"><input type=\"radio\" name=\"answer\" value=\"".$i."\"".$sele.">".$answer[$sel][$i]."</div>";
                 }
             }
-            $poll=$poll.hidden_positions()."<br><center><input type=\"submit\" name=\"poll\" value=\"".language("POLL_VOTE")."\">
-            <br><input type=\"submit\" name=\"poll\" value=\"".language("POLL_RESULTS")."\"></center></form>";
+            $poll=$poll.hidden_positions()."<div class=\"poll_buttons\"><input type=\"submit\" name=\"poll_vote\" value=\"".language("POLL_VOTE")."\"><input type=\"submit\" name=\"poll_results\" value=\"".language("POLL_RESULTS")."\"></div></form>";
         }
         else
         {
@@ -1686,10 +1500,13 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     {
                         $width=($answers2[$sel][$i]/$max_sel)*120;
                     }
-                    $poll=$poll."<table><tr><td><div class=\"poll_answer\">".$answer[$sel][$i]." (".$answers2[$sel][$i].")</div></td></tr></table><table><tr><td class=\"poll_bar".$i."\" width=\"".$width."px\" height=\"4px\"></td></tr></table>";
+                    // Die Breite des Balkens ist ein Messwert, keine Gestaltung -
+                    // deshalb steht sie weiterhin am Element, jetzt als Anteil.
+                    $poll=$poll."<div class=\"poll_result\"><div class=\"poll_answer\">".$answer[$sel][$i]." (".$answers2[$sel][$i].")</div>"
+                        ."<div class=\"poll_bar poll_bar".$i."\" style=\"width:".round($width/120*100,1)."%\"></div></div>";
                 }
             }
-            $poll=$poll."<br>".$all[$sel]." ".language("POLL_PARTICIPANTS");
+            $poll=$poll."<p class=\"poll_total\">".$all[$sel]." ".language("POLL_PARTICIPANTS")."</p>";
         }
     }
     // Module: latest_comments
@@ -1713,55 +1530,27 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     
     if(!$login)
     {
-        if($last_login)
-        {
-            $last_login=$last_login."<br>";
-        }
-        $user_str.=$last_login.form().hidden_positions()."<table class=\"user_panel\">";
-        if($login_fail)
-        {
-            $user_str.="<tr><td colspan=\"2\"><center><div class=\"login_fail\">".$login_fail."</div></td></tr>";
-        }
-        $user_now="";
-        if($_COOKIE["login_id"])
-        {
-            $user_now=from_db("user",$_COOKIE["login_id"]*1,"name");
-        }
-        $user_str.="
-        <tr><td>".language("USER_NAME")."</td><td><input type=\"text\" name=\"name\" size=\"6\" value=\"".$user_now."\"></td></tr>
-        <tr><td>".language("USER_PW")."</td><td><input type=\"password\" name=\"password\" size=\"6\"></td></tr>
-        <tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"save_login\" value=\"1\"> ".language("USER_STAY_LOGGED_IN")."</center></td></tr>
-        <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"user_login\" value=\"".language("USER_LOGIN")."\"></center>
-        </td></tr>";
-        if($register_activated)
-        {
-            $user_str.="<tr><td colspan=\"2\"><center>".make_link_mark(language("USER_REGISTER"),"action=register",0,0,0,"","user_register")."</center></td></tr>";
-        }
-        if($password_recovery_activated)
-        {
-            $user_str.="<tr><td colspan=\"2\"><center>".make_link_mark(language("USER_PASSWORD_LOST"),"action=password_recover",0,0,0,"","user_pw_recover")."</center></td></tr>";
-        }
-        $user_str.="</table></form>";
+        if($last_login) $last_login=$last_login."<br>";
+        $user_str.=Sidebar::loginForm(
+            $_COOKIE["login_id"] ? (string)from_db("user",$_COOKIE["login_id"]*1,"name") : "",
+            $login_fail ?? "",
+            $last_login ?? "",
+            (bool)$register_activated,
+            (bool)$password_recovery_activated
+        );
     }
     else
     {
-        $user_str.="<table class=\"user_panel\"><tr><td>".str_replace("%1",from_db("user",$user_id,"name"),language("USER_ONLINE"))."</td></tr>
-        <tr><td>";
-        if(!$_SESSION['last_login'])
-        {
-            $user_str.=language("USER_FIRST_TIME_ONLINE");
-        }
-        else
-        {
-            $user_str.=str_replace("%1",make_date($_SESSION['last_login'],0,1),language("USER_LAST_TIME_ONLINE"));
-        }
-        $user_str.="</td></tr>";
-        $a=make_contentimg("user",$user_id,from_db("user",$user_id,"image"),0);
-        if($a)
-        $user_str.="<tr><td style=\"text-align:center;\">".$a."</td></tr>";
-        
-        $user_str.="<tr><td><center>(".make_link(language("USER_SETTINGS"),"action=user_panel",0,0,0,"user_settings").")</center></td></tr>
-        <tr><td><center>(".make_link(language("USER_LOGOUT"),"action=logout",$cat,$subcat,$item,"user_logout",$id).")</center></td></tr></table>";
+        $letzter=$_SESSION['last_login']
+            ? str_replace("%1",make_date($_SESSION['last_login'],0,1),language("USER_LAST_TIME_ONLINE"))
+            : language("USER_FIRST_TIME_ONLINE");
+        $user_str.=Sidebar::userPanel(
+            (string)from_db("user",$user_id,"name"),
+            $letzter,
+            (string)make_contentimg("user",$user_id,from_db("user",$user_id,"image"),0),
+            \Pms\Frontend\Http\Routes::action("logout",array("cat"=>$cat,"subcat"=>$subcat,"item"=>$item,"id"=>$id)),
+            \Pms\Frontend\Http\Routes::action("user_panel")
+        );
     }
     $title=$config_values->name;
     $con=$config_values->title;
@@ -1827,22 +1616,25 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     }
     else
     {
-        $most_discussed="<table><tr><td><center>".language("MOST_DISCUSSED_NONE")."</center></td></tr></table>";
+        $most_discussed="<div class=\"most_discussed_none\">".language("MOST_DISCUSSED_NONE")."</div>";
     }
     include('counter.php');
     
-    $user_counter="
-    <div class=\"user_counter\">".language("COUNTER_OVERALL")." ".$number_visitors."<br>
-    ".language("COUNTER_ONLINE")." ".count_db_exp("visitors_counter","WHERE time>='".(time()-60*$config_values->visitors_lifetime)."'")."<br>
-    ".language("COUNTER_TODAY")." ".$config_values->visitors_today."<br>
-    ".language("COUNTER_YESTERDAY")." ".$config_values->visitors_yesterday."<br>
-    ".language("COUNTER_COMMENTS")." ".count_db("comments")."<br>
-    ".language("COUNTER_VALUES")." ".sum_db("item","numratings")."<br>
-    ".language("COUNTER_ITEMS")." ".count_db("item")."<br>
-    ".language("COUNTER_USERS")." ".count_db("user")."</div>";
-    $search_plugin=form("","get")."<table class=\"search\"><tr class=\"search\"><td class=\"search\"><center><input type=\"text\" class=\"search_field\" size=\"17\" name=\"search_query\" value=\"".str_replace('"',"&quot;",$search_query3)."\"><br>
-    <input type=\"submit\" class=\"search_button\" name=\"search\" value=\"".language("SEARCH_BUTTON")."\"></form></center></td></tr></table>";
+    $user_counter=Sidebar::counter(array(
+        language("COUNTER_OVERALL") => $number_visitors,
+        language("COUNTER_ONLINE") => count_db_exp("visitors_counter","WHERE time>='".(time()-60*$config_values->visitors_lifetime)."'"),
+        language("COUNTER_TODAY") => $config_values->visitors_today,
+        language("COUNTER_YESTERDAY") => $config_values->visitors_yesterday,
+        language("COUNTER_COMMENTS") => count_db("comments"),
+        language("COUNTER_VALUES") => sum_db("item","numratings"),
+        language("COUNTER_ITEMS") => count_db("item"),
+        language("COUNTER_USERS") => count_db("user"),
+    ));
+    $search_plugin=Sidebar::search($search_query3 ?? "");
     $poll=smileys($poll);
+    // Wurde etwas abgelehnt, weil das Token fehlte, soll der Besucher das
+    // sehen - sonst wirkt die Seite, als sei nichts passiert.
+    $content=Forms::notice().$content;
     unset($dyn);
     
     for($i=0;!$item_edit_mode && $i<2;$i++)
@@ -1862,23 +1654,24 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     
     if(file_exists($template))
     {
-        $search=get_template();
-        $out=$template_content;
-        if(!strstr($out,"#comments_list")) $out=str_replace("#content","#content#comments_list",$out);
-        $pms_styles='<link rel="stylesheet" type="text/css" href="pms.css">';
-        if(!strstr($out,"#pms_styles")) $out=str_replace("</head>","#pms_styles</head>",$out);
-        $replace=array($content,$title,$menu,$user_str,$poll,$footer,$user_counter,$birthday,$top_user,$most_discussed,$search_plugin,$position_row,$latest_comments,$comment_str,$newsletter,$pms_styles);
-        for($i=0;$i<2;$i++)
-        $out=replace_dynamic(do_check(make_dynamic(trim($out))));
-        
-        if($item_edit_mode)
-        {
-            $search[count($search)]=$search[0];
-            $replace[count($replace)]=$content;
-            unset($search[0]);
-            unset($replace[0]);
-        }
-        $out=str_replace($search,$replace,$out);
+        $out=(new Template($template_content,array(
+            "content" => $content,
+            "title" => $title,
+            "menu" => $menu,
+            "user_panel" => $user_str,
+            "poll" => $poll,
+            "footer" => $footer,
+            "counter" => $user_counter,
+            "birthday" => $birthday ?? "",
+            "topuser" => $top_user ?? "",
+            "mostdiscussed" => $most_discussed ?? "",
+            "search" => $search_plugin,
+            "position_row" => $position_row,
+            "latest_comments" => $latest_comments ?? "",
+            "comments_list" => $comment_str ?? "",
+            "newsletter" => $newsletter ?? "",
+            "pms_styles" => Template::styles($template_content),
+        )))->render();
         echo ($out);
     }
     ?>

@@ -502,6 +502,7 @@
     const outDim   = finalDimensions(orig.w, orig.h);
     const formData = new FormData();
     formData.append('action',        'crop_image_ajax');
+    formData.append('pms_token',     window.PMS_TOKEN || '');
     formData.append('image_file',    state.imageFile);
     formData.append('image_data',    state.blob, state.imageFile);
     formData.append('crop_x',        orig.x);
@@ -511,7 +512,9 @@
     formData.append('resize_width',  outDim.w);
     formData.append('resize_height', outDim.h);
 
-    fetch('admin.php', { method: 'POST', body: formData, credentials: 'same-origin' })
+    // Die Schnittstelle liegt unter einer eigenen Adresse; über admin.php
+    // käme HTML statt JSON zurück
+    fetch((window.PMS_CROP_URL || 'admin.php'), { method: 'POST', body: formData, credentials: 'same-origin' })
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
       .then(text => {
         let data;
@@ -525,7 +528,10 @@
         const imageUrl = 'images/uploads/' + (data.filename || state.imageFile);
         window.closeCropModal();
 
-        if (typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor) {
+        // Der Bild-Dialog kennt beide Fälle: grafischer Editor und Textfeld
+        if (typeof window.PMS_INSERT_IMAGE === 'function') {
+          window.PMS_INSERT_IMAGE(imageUrl);
+        } else if (typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor) {
           tinyMCE.activeEditor.execCommand('mceInsertContent', false,
             '<img src="' + imageUrl + '" alt="">');
         }

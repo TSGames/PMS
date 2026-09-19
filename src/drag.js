@@ -72,29 +72,23 @@ reader.onloadend = function(evt) {
             };
             img.src = evt.target.result;
         } else {
-            // Fallback: direct upload if modal not available
-            post_to_url("admin.php", evt.target.result, "post");
+            // Ohne den Dialog lässt sich nichts zuschneiden
+            post_to_url();
         }
     }
 }
 
-function post_to_url(path, data, method) {
-    var form = document.createElement("form");
-    form.setAttribute("method", method);
-    form.setAttribute("action", path);
-
-    document.getElementById("drag_data").value = escape(data);
-    document.getElementById("add_image").value = "true";
-    document.getElementById("item").value = item_id;
-    document.getElementById("drag_name").value = file_name;
-
-    var statusElement = document.getElementById("image_status");
-    if (statusElement) {
-        statusElement.textContent = 'Wird verarbeitet...';
+/**
+ * Rückfall, wenn der Zuschneide-Dialog nicht zur Verfügung steht.
+ * Der reguläre Weg läuft über crop_modal.js und die Schnittstelle
+ * /admin/api/bild-zuschneiden.
+ */
+function post_to_url() {
+    alert('Der Zuschneide-Dialog steht nicht zur Verfügung. '
+        + 'Bitte benutzen Sie "Bild hochladen".');
+    if (dropZone) {
+        dropZone.innerHTML = "oder eine Bilddatei hierher ziehen, um sie zuzuschneiden";
     }
-    dropZone.innerHTML = "Bitte Warten...<br>Upload der Datei '" + file_name + "'";
-
-    add_image("dragdrop");
 }
 
 function handleDragOver(evt) {

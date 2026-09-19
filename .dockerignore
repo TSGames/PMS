@@ -1,0 +1,12 @@
+# Abhängigkeiten werden im Image selbst installiert
+/vendor/
+/src/tinymce
+/tests/
+**/node_modules
+
+# Entwicklungsdaten
+/tests/.runtime/
+/.phpunit.cache/
+/phpunit.xml
+/psalm.xml
+.git

@@ -21,7 +21,7 @@ if(@PMS_FRONTEND==1 || @PMS_BACKEND==1)
 		}
 		else
 			{
-			die(header_def().'Lï¿½schen Sie den Install-Ordner und aktualisieren Sie dann die Seite.</div></h1></td></tr></table>
+			die(header_def().'Löschen Sie den Install-Ordner und aktualisieren Sie dann die Seite.</div></h1></td></tr></table>
 </body>
 </html>');
 		}
@@ -48,7 +48,7 @@ $plugin_intern[3][0]="Passwort vergessen";
 $plugin_intern[3][1]="password_recover";
 $plugin_intern[4][0]="Top Users";
 $plugin_intern[4][1]="topuser";
-$plugin_intern[5][0]="Gï¿½stebuch";
+$plugin_intern[5][0]="Gästebuch";
 $plugin_intern[5][1]="guestbook";
 $plugin_intern[6][0]="Startseite";
 $plugin_intern[6][1]="#index.php";
@@ -64,11 +64,19 @@ $special_tags[1][1]="[/php]";
 
 $special_typ[1]="Startseite"; // Beginn with 1 for !$var
 $special_typ[2]="Download-Seite";
-$special_typ[3]="Gesperrter/Ungï¿½ltiger Content";
-$special_typ[4]="Gï¿½stebuch";
+$special_typ[3]="Gesperrter/Ungültiger Content";
+$special_typ[4]="Gästebuch";
 $special_typ[5]="IP gebannt";
 
-$valid_actions=array("download","search","register","password_recover","sitemap","logout","guestbook","user","topuser","user_panel","item","register_finish");
+// E-Mail-Benachrichtigungen: Formularfeld, Datenbankspalte, Beschriftung
+$confirmation_dialogs[0]=array("user_guestbook","mail_guestbook","Gästebuch");
+$confirmation_dialogs[1]=array("user_comments","mail_comments","Kommentare");
+$confirmation_dialogs[2]=array("user_register","mail_register","Registration");
+
+// Die Aktionen des Frontends stehen in Frontend\Http\Routes; counter.php und
+// convert_action() legen den Index dieser Liste ab, deshalb bleibt sie hier
+// als Feld verfuegbar.
+$valid_actions=\Pms\Frontend\Http\Routes::ACTIONS;
 
 $language_folder="dialoges";
 
@@ -90,7 +98,7 @@ if(!$pms_db_connection->valid())
 	if(file_exists("/var/template/template.html"))
 	{
 	$a=trim(file_get_contents("/var/template/template.html"));
-	$error="<h1>Keine Verbindung zur Datenbank mï¿½glich!</h1>
+	$error="<h1>Keine Verbindung zur Datenbank möglich!</h1>
 <h2>Administrative Informationen: ".$pms_db_connection->error()."</h2>";
 	$a=str_replace(array("#title","#content","#footer"),array("Professional Management System - Datenbank-Fehler",$error,$footer),$a);
 	$b=get_template();
@@ -193,9 +201,3 @@ if(stristr(substr($cookie_domain,0,7),"://"))
 	}
 	
 	$str.=make_imgalt("rate".$b.".gif",0,$alt,"template_files/","rate");
-	
-	
-	
-				
-				?>
-				

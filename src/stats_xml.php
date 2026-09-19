@@ -1,4 +1,6 @@
 <?php
+define("PMS_FRONTEND", 1);
+require __DIR__ . '/bootstrap.php';
 require "static.php"; // connect db
 require "functions.php";
 if($config_values->visitors_password==$_GET["pw"])

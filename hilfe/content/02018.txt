@@ -1,3 +1,0 @@
-Einträge/Seite
-
-Bestimmt, wieviele Inhaltsobjekte bzw. Unterkategorien beim Auflisten einer Kategorie pro Seite angezeigt werden sollen.

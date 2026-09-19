@@ -1,1 +1,17 @@
 /vendor/
+/node_modules/
+
+# Mock-/Testsystem (siehe tests/README.md)
+/.phpunit.cache/
+/tests/.runtime/
+/tests/e2e/node_modules/
+/tests/e2e/test-results/
+/tests/e2e/playwright-report/
+
+# Zur Laufzeit erzeugte Pfade des Mock-Systems
+/src/template_files
+/src/images/
+
+# Editor wird über composer bezogen (tinymce/tinymce) und im Image aus
+# vendor/ kopiert; lokal als Symlink von tests/mock/setup.php angelegt
+/src/tinymce

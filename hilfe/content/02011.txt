@@ -1,3 +1,0 @@
-Website-Name
-
-Geben Sie hier den Namen der Website ein. Dieser wird später in der Titelleiste des Browsers sowie im Seitenuntertitel ("Footer") angezeigt.

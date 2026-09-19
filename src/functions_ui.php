@@ -2,6 +2,23 @@
 // Module: functions_ui.php
 
 	/**
+	 * Adresse eines Backend-Bereichs, absolut.
+	 *
+	 * Ein relatives "admin.php?action=item&edit=81" zeigt unter einer
+	 * sprechenden Adresse wie /content/probenplan.html auf
+	 * /content/admin.php und damit ins Leere. Deshalb baut diese Funktion
+	 * den vollen Pfad.
+	 *
+	 * @param string $action Bereich, z.B. "item"
+	 * @param array $params Parameter der Adresse
+	 * @return string z.B. /admin/inhalte?edit=81
+	 */
+	function admin_url($action, array $params = [])
+	{
+		return \Pms\Backend\Http\Routes::url($action, $params);
+	}
+
+	/**
 	 * Display warning message box
 	 *
 	 * @param str Warning message
@@ -69,12 +86,15 @@
 		$link=$pms_db_connection->query("SELECT id,".$name." FROM ".$pms_db_reference.$what." ORDER BY ".$sort.",".$name);
 		$link2=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix.$what." ORDER BY ".$sort.",".$name);
 		$ok=0;
-		if($link && mysqli_num_rows($link))
+		// Die Zeilen einmal einsammeln: Das Ergebnis laesst sich nur einmal
+		// durchlaufen, und weiter unten wird es noch gebraucht.
+		$rows=$link?$pms_db_connection->fetchAllObject($link):array();
+		if($rows)
 			{
 			for($i=0;$link2 && $a=$pms_db_connection->fetchObject($link2);$i++) $ids[$i]=$a->id;
 			$str.=form("","get")."<input type=\"hidden\" name=\"action\" value=\"".$action."\">
 <table><tr><td>".$info."</td><td><select name=\"reference\">";
-			while($a=$pms_db_connection->fetchObject($link))
+			foreach($rows as $a)
 				{
 				if(@in_array($a->id,$ids)) continue;
 				$ok++;
@@ -86,7 +106,7 @@
 		if(!$ok)
 			$str="Es ist kein Referenzobjekt angelegt. Legen Sie das Element zuerst im Haupt-PMS an!
 <br><br>
-[<a href=\"admin.php?action=".$what."\">Zurï¿½ck</a>]";
+[<a href=\"".admin_url($what)."\">Zurück</a>]";
 		$str=heading($head)."<br>".$str;
 		return $str;
 	}
@@ -97,7 +117,7 @@
 	 */
 	function back_button()
 	{
-		return "[<a href=\"javascript:history.back()\">Zurï¿½ck</a>]";
+		return "[<a href=\"javascript:history.back()\">Zurück</a>]";
 	}
 
 	/**
@@ -112,7 +132,10 @@
 	{
 		if($add) $add="?".$add;
 		if($on_submit) $on_submit=' onSubmit="'.$on_submit.'"';
-		return '<form action="'.$_SERVER["PHP_SELF"].$add.'"'.$on_submit.' name="pms_form" method="'.$method.'" enctype="multipart/form-data" accept-charset="utf-8">';
+		// Jedes veraendernde Formular traegt das Token der Sitzung. Es steht
+		// hier und nicht an den 25 Aufrufstellen, damit es keines vergisst.
+		$token=strtolower($method)=="post" ? \Pms\Support\Csrf::field() : "";
+		return '<form action="'.$_SERVER["PHP_SELF"].$add.'"'.$on_submit.' name="pms_form" method="'.$method.'" enctype="multipart/form-data" accept-charset="utf-8">'.$token;
 	}
 
 	/**
@@ -235,7 +258,7 @@
 			else if($i<123) $array[1][$i]=chr($i);
 			else $array[1][$i]="_";
 		}
-		$a=str_replace(array("ï¿½","ï¿½","ï¿½","ï¿½","ï¿½","ï¿½"),array("Ae","Oe","Ue","ae","oe","ue"),$str);
+		$a=str_replace(array("Ä","Ö","Ü","ä","ö","ü","ß"),array("Ae","Oe","Ue","ae","oe","ue","ss"),$str);
 		$a=str_replace($array[0],$array[1],$a);
 		for($i=10;$i>1;$i--)
 			{

@@ -1,6 +1,15 @@
 RewriteEngine On
 RewriteBase /
 
+# Kein Schraegstrich anhaengen, wenn ein Pfad zufaellig wie ein
+# Verzeichnis heisst. Sonst antwortet mod_dir mit einer Weiterleitung,
+# bevor die Regeln unten ueberhaupt drankommen - und /admin landet im
+# Verzeichnis statt im Backend.
+DirectorySlash Off
+
+# Administrationsbereich: /admin/... wird von admin.php beantwortet
+RewriteRule ^admin(/.*)?$ admin.php [QSA,L]
+
 RewriteRule ^content/download/(.*)\.html$ index.php?download=$1 [QSA]
 RewriteRule ^content/download/(.*)$ $1
 RewriteRule ^content/(.*)\.html$ index.php?follow=$1 [QSA]

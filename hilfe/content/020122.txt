@@ -1,4 +1,0 @@
-Top-Userliste aktiv
-
-Aktiviert/Deaktiviert die Top-Userliste. Bei vielen Usern bzw. einer langsamen Datenbank kann diese Funktion die Seitenladegeschwindigkeit erheblich beeinträchtigen. 
-Deaktivieren Sie diese Funktion, um Datenbank-Verkehr einzusparen.

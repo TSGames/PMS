@@ -43,7 +43,7 @@ box-shadow: 2px 2px 6px rgba(0, 0, 0,0.5);
     -moz-box-shadow:  2px 2px 6px rgba(0, 0, 0,0.5);
 }
 </style>
-<div class="edit_var_layer" onmouseover="this.className=\'edit_var_layer_hover\';" onmouseout="this.className=\'edit_var_layer\'" title="'.language("EDIT_VAR").'" onclick="document.location=\'admin.php?action=var&edit='.$id.'\';">'.$str.'</div>';
+<div class="edit_var_layer" onmouseover="this.className=\'edit_var_layer_hover\';" onmouseout="this.className=\'edit_var_layer\'" title="'.language("EDIT_VAR").'" onclick="document.location=\''.admin_url("var",["edit"=>$id]).'\';">'.$str.'</div>';
 }
 
 /**
@@ -133,7 +133,14 @@ function convert_action($typ,$con)
 		return "Plugin: ".$name;
 	}
 	if($typ==4)
-		return 'PMS Administration (<a href="admin.php?action='.$action_list[$con].'">'.$action_name[$con].'</a>)';
+		{
+		// Der Besucher kann auf einem Bereich gewesen sein, den die Liste
+		// nicht kennt - dann bleibt es beim Namen, ohne Verweis.
+		$action=isset($action_list[$con]) ? $action_list[$con] : "";
+		if($action=="") return "PMS Administration";
+		$name=isset($action_name[$con]) ? $action_name[$con] : $action;
+		return 'PMS Administration (<a href="'.admin_url($action).'">'.$name.'</a>)';
+	}
 }
 
 /**
@@ -320,13 +327,13 @@ function header_def()
 		@mkdir(SubStr($backup_folder,0,-1));
 		$time=date("Y")."_".date("m")."_".date("d")."_".date("H")."_".date("i")."_".rand(10000,99999);
 		$exp="-- MYSQL Dump erzeugt von PMS, Version ".$pms_version."
--- Hinweis: Dies ist ein sehr einfacher MYSQL-Export. Wenn Sie einen besseren Export benï¿½tigen, nutzen Sie bitte den phpMyAdmin
--- Bitte seien Sie sich bewusst, dass wir keinerlei Garantie fï¿½r den erfolgreichen Export/Import zwischen verschiedenen PMS-Versionen geben kï¿½nnen
--- Wï¿½hlen Sie diesen Export wï¿½hrend des Installationsvorgangs aus, um ihn wiederherzustellen
--- www.TSGames.de?item=236 fï¿½r weitere Informationen ï¿½ber PMS
+-- Hinweis: Dies ist ein sehr einfacher MYSQL-Export. Wenn Sie einen besseren Export benötigen, nutzen Sie bitte den phpMyAdmin
+-- Bitte seien Sie sich bewusst, dass wir keinerlei Garantie für den erfolgreichen Export/Import zwischen verschiedenen PMS-Versionen geben können
+-- Wählen Sie diesen Export während des Installationsvorgangs aus, um ihn wiederherzustellen
+-- www.TSGames.de?item=236 für weitere Informationen über PMS
 		
--- Nur fï¿½r phpMyAdmin-Import:
--- Entfernen Sie die Kommentare vor den Folgenden Zeilen, um alle alten Daten vor dem Einlesen zu lï¿½schen.
+-- Nur für phpMyAdmin-Import:
+-- Entfernen Sie die Kommentare vor den Folgenden Zeilen, um alle alten Daten vor dem Einlesen zu löschen.
 ";
 		
 		$result = $pms_db_connection->fetchAllObject($pms_db_connection->list_tables());
@@ -348,7 +355,7 @@ function header_def()
 				{
 				continue; // we don't need to export the visitors
 			}
-			$exp=$exp."-- Daten fï¿½r Tabelle ".$table.chr(10);
+			$exp=$exp."-- Daten für Tabelle ".$table.chr(10);
 			$link=$pms_db_connection->query("SELECT * FROM ".$table);
 			if($link)
 				{
@@ -512,12 +519,12 @@ function header_def()
 	 */
 	function browser($a)
 	{
-		return $a;
-		if(strstr($a,"Firefox"))
+		// Die Auswertung gehört zum Backend; im Frontend bleibt die Kennung roh
+		if(class_exists('\\Pms\\Backend\\Support\\UserAgent'))
 			{
-			$b=explode("Firefox/",$a);
-			return "Firefox ".$b[1];
+			return \Pms\Support\UserAgent::describe($a);
 		}
+		return $a;
 	}
 
 	/**
