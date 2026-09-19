@@ -5,7 +5,9 @@ namespace Pms\Backend\Controller;
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
 
 /**
  * Variablen: Platzhalter, die beim Ausliefern der Seiten ersetzt werden.
@@ -23,11 +25,6 @@ final class VarController extends Controller
     {
         if (Request::submitted('var')) {
             $this->save();
-        }
-
-        if (Request::submitted('poll_filter')) {
-            $_SESSION['poll_search'] = Request::checkbox('poll_search');
-            $_SESSION['poll_replace'] = Request::checkbox('poll_replace');
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -113,43 +110,43 @@ final class VarController extends Controller
 
     private function overview(): string
     {
-        $hideSearch = !empty($_SESSION['poll_search']);
-        $hideReplace = !empty($_SESSION['poll_replace']);
-
-        $headers = ['ID'];
-        if (!$hideSearch) {
-            $headers[] = 'Suche';
-        }
-        if (!$hideReplace) {
-            $headers[] = 'Ersetzen mit';
-        }
-        $headers[] = 'Bearbeiten';
-        $headers[] = 'Löschen';
+        // Der Altbestand bot an, die Spalten "Suche" und "Ersetzen mit"
+        // auszublenden - ein Behelf, solange die Liste nicht durchsuchbar war.
+        // Mit dem Suchfeld ist er entbehrlich.
+        $list = Listing::from('dynamic')
+            ->searchIn(['searcher', 'replacer'])
+            ->sortableBy(['id' => 'id', 'searcher' => 'LOWER(searcher)', 'replacer' => 'LOWER(replacer)'])
+            ->orderedBy('LOWER(searcher)')
+            ->load();
 
         $rows = [];
-        foreach (Db::select('SELECT * FROM ' . Db::table('dynamic') . ' ORDER BY LOWER(searcher)') as $rule) {
-            $row = [(string)(int)$rule->id];
-            if (!$hideSearch) {
-                $row[] = nl2br(Html::e((string)$rule->searcher));
-            }
-            if (!$hideReplace) {
-                $row[] = nl2br(Html::e((string)$rule->replacer));
-            }
-            $row[] = $this->editLink((int)$rule->id);
-            $row[] = $this->deleteLink((int)$rule->id);
-            $rows[] = $row;
+        foreach ($list->rows as $rule) {
+            $rows[] = [
+                (string)(int)$rule->id,
+                '<code>' . nl2br(Html::e((string)$rule->searcher)) . '</code>',
+                nl2br(Html::e((string)$rule->replacer)),
+                $this->rowActions((int)$rule->id),
+            ];
         }
 
-        return Html::heading('Regeln verwalten')
-            . '<div class="action-section">' . Html::button('Neue Regel', $this->url(['new' => 'yes'])) . '</div>'
-            . '<div class="action-section">'
-            . Html::formOpen($this->action())
-            . Html::checkbox('poll_search', $hideSearch, 'Zeige keine Such-Kriterien')
-            . ' | '
-            . Html::checkbox('poll_replace', $hideReplace, 'Zeige keine Ersetz-Kriterien')
-            . ' <input type="submit" name="poll_filter" value="OK">'
-            . Html::formClose()
-            . '</div>'
-            . Html::table($headers, $rows, 'Es sind keine Regeln angelegt.');
+        return Components::pageHeader(
+            'Variablen',
+            'Platzhalter, die beim Anzeigen eines Inhalts ersetzt werden.',
+            Components::primary('Neue Regel', $this->url(['new' => 'yes']))
+        )
+            . Components::toolbar($this->action(), $list, [], 'Platzhalter oder Ersetzung suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'searcher', 'label' => 'Suche', 'class' => 'cell-title'],
+                    ['key' => 'replacer', 'label' => 'Ersetzen mit'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
+                $rows,
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Keine Regel passt zur Suche.' : 'Es sind keine Regeln angelegt.'
+            )
+            . Components::pagination($list, $this->action());
     }
 }

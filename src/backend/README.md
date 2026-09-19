@@ -25,7 +25,7 @@ den Webserver nicht erreichbar (`.htaccess`) und wird ausschließlich von
 | `Controller/` | Je ein Controller pro Bereich des Backends |
 | `Data/` | `Db` – Datenbankzugriff mit vorbereiteten Anweisungen |
 | `Http/` | Router, Navigation, JSON-Schnittstellen, Update-Prüfung |
-| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine |
+| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen |
 | `View/` | Grundgerüst, Templates und Symbole |
 
 ## Ein Controller
@@ -75,6 +75,41 @@ Feste Regeln:
 4. Testfälle unter `tests/e2e/specs/` ergänzen und den Bildschirm in
    `tests/e2e/lib/screens.js` aufnehmen, damit er in Smoke-Test und
    Screenshots erscheint.
+
+## Eine Übersicht bauen
+
+Alle Listen des Backends folgen demselben Muster. `Support\Listing` baut die
+Abfrage aus dem, was in der Adresse steht (Suchbegriff `q`, Sortierspalte
+`order` und `dir`, Seite `page`, dazu die Filter des Bereichs);
+`View\Components` gibt sie aus:
+
+```php
+$list = Listing::from('cat')
+    ->searchIn(['name'])
+    ->sortableBy(['id' => 'id', 'name' => 'name', 'sort' => 'sort'])
+    ->orderedBy('sort, name')
+    ->keep('available', $available)   // Filter bleibt in allen Links erhalten
+    ->where('available = :available', ['available' => $available])
+    ->load();
+
+return Components::pageHeader('Kategorien', 'Kurze Erläuterung', $primaryAction)
+    . Components::toolbar($this->action(), $list, $filters, 'Kategorie suchen')
+    . Components::table($columns, $rows, $this->action(), $list, $leerText)
+    . Components::pagination($list, $this->action());
+```
+
+Spaltennamen stehen ausschließlich im Code. Aus der Adresse kommen nur
+Schlüssel, die `sortableBy()` freigegeben hat - alles andere fällt auf die
+Grundreihenfolge zurück. Werte werden gebunden, nie in das SQL eingesetzt.
+
+Die Zahl der Einträge je Seite kommt aus der Website-Konfiguration
+(`config.page_limit`). Filter senden bei Auswahl selbst ab (Alpine);
+ohne JavaScript erscheint stattdessen ein Schalter "Anwenden".
+
+`Controller::rowActions()` liefert die Aktionsspalte, `Components::chip()`
+und `Components::booleanChip()` die farbigen Markierungen. `Html::table()`
+bleibt für die wenigen Übersichten, die weder Suche noch Sortierung
+brauchen (Sicherungen, Ereignisse, Website-Status).
 
 ## Oberfläche
 

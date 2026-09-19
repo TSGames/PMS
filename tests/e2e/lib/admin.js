@@ -53,6 +53,28 @@ async function submit(page, selector) {
 }
 
 /**
+ * Wählt einen Filter der Werkzeugleiste aus. Die Auswahlfelder senden
+ * selbst ab, deshalb wird auf den Seitenwechsel gewartet.
+ */
+async function selectFilter(page, name, option) {
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    page.selectOption(`select[name="${name}"]`, option),
+  ]);
+}
+
+/**
+ * Sucht in einer Übersicht über das Suchfeld der Werkzeugleiste.
+ */
+async function searchList(page, term) {
+  await page.fill('input[name="q"]', term);
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    page.press('input[name="q"]', 'Enter'),
+  ]);
+}
+
+/**
  * Meldet einen Benutzer im Backend an und landet auf der Startseite.
  */
 async function login(page, role = 'admin') {
@@ -85,16 +107,14 @@ async function expectNoPhpError(page) {
 }
 
 /**
- * Liest eine Spalte der Admin-Tabellen ohne die Kopfzeile.
- * Die Tabellen des Backends rendern die Kopfzeile ebenfalls mit <td>.
+ * Liest eine Spalte der Admin-Tabellen. Die Kopfzeile steht im thead und
+ * taucht deshalb nicht mit auf.
  */
-async function tableColumn(page, columnIndex, headerLabel) {
+async function tableColumn(page, columnIndex) {
   const values = await page
-    .locator(`table.items tr td:nth-child(${columnIndex})`)
+    .locator(`table.data-table tbody td:nth-child(${columnIndex})`)
     .allTextContents();
-  return values
-    .map((value) => value.trim())
-    .filter((value, index) => !(index === 0 && value === headerLabel));
+  return values.map((value) => value.trim());
 }
 
 /**
@@ -130,6 +150,8 @@ module.exports = {
   login,
   logout,
   resetDatabase,
+  searchList,
+  selectFilter,
   submit,
   tableColumn,
   USERS,

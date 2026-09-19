@@ -332,7 +332,7 @@ const SCREENS = [
     title: 'Variablen/Regeln',
     role: 'admin',
     url: 'admin/variablen',
-    heading: 'Regeln verwalten',
+    heading: 'Variablen',
     wide: true,
   },
   {
@@ -386,7 +386,7 @@ const SCREENS = [
     title: 'Sperrungen',
     role: 'admin',
     url: 'admin/sperrungen',
-    heading: 'Bans verwalten',
+    heading: 'Sperrungen',
     wide: true,
   },
   {

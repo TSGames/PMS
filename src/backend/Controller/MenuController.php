@@ -5,8 +5,10 @@ namespace Pms\Backend\Controller;
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
+use Pms\Backend\View\Components;
 
 /**
  * Menüeinträge der Website.
@@ -316,28 +318,59 @@ final class MenuController extends Controller
 
     private function overview(): string
     {
-        $entries = Db::select('SELECT * FROM ' . Db::table('menu') . ' ORDER BY sort, name');
+        $typ = Request::queryInt('typ', -1);
+
+        $list = Listing::from('menu')
+            ->searchIn(['name'])
+            ->sortableBy(['name' => 'name', 'sort' => 'sort', 'typ' => 'typ', 'visible' => 'visible'])
+            ->orderedBy('sort, name')
+            ->keep('typ', $typ < 0 ? '' : (string)$typ);
+
+        if ($typ >= 0) {
+            $list->where('typ = :typ', ['typ' => $typ]);
+        }
+
+        $list->load();
 
         $rows = [];
-        foreach ($entries as $index => $entry) {
+        foreach ($list->rows as $index => $entry) {
+            $sort = $list->isDefaultOrder()
+                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $entry, $list->rows[$index + 1] ?? null)
+                : Html::e((string)(int)$entry->sort);
+
             $rows[] = [
                 Html::e((string)$entry->name),
-                Sorting::cell($this->action(), $entries[$index - 1] ?? null, $entry, $entries[$index + 1] ?? null),
-                Html::e(self::TYPE_LABELS[(int)$entry->typ] ?? ''),
-                Html::yesNo($entry->visible),
-                $this->editLink((int)$entry->id),
-                $this->deleteLink((int)$entry->id),
+                $sort,
+                Components::chip(self::TYPE_LABELS[(int)$entry->typ] ?? '', 'accent'),
+                Components::booleanChip($entry->visible, 'Sichtbar', 'Verborgen'),
+                $this->rowActions((int)$entry->id),
             ];
         }
 
-        return Html::heading('Menüverwaltung')
-            . '<div class="action-section">'
-            . Html::button('Neuer Menüeintrag', $this->url(['new' => 'yes']))
-            . '</div>'
-            . Html::table(
-                ['Name', 'Sortierung', 'Link auf', 'Sichtbar', 'Bearbeiten', 'Löschen'],
+        return Components::pageHeader(
+            'Menüverwaltung',
+            'Die Einträge der Hauptnavigation im Frontend.',
+            Components::primary('Neuer Menüeintrag', $this->url(['new' => 'yes']))
+        )
+            . Components::toolbar($this->action(), $list, [[
+                'name' => 'typ',
+                'label' => 'Verweistyp',
+                'options' => [-1 => 'Alle Verweistypen'] + self::TYPE_LABELS,
+                'value' => $typ,
+            ]], 'Menüeintrag suchen')
+            . Components::table(
+                [
+                    ['key' => 'name', 'label' => 'Name', 'class' => 'cell-title'],
+                    ['key' => 'sort', 'label' => 'Sortierung'],
+                    ['key' => 'typ', 'label' => 'Link auf'],
+                    ['key' => 'visible', 'label' => 'Status'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'Es sind keine Menüeinträge angelegt.'
-            );
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Kein Menüeintrag passt zur Suche.' : 'Es sind keine Menüeinträge angelegt.'
+            )
+            . Components::pagination($list, $this->action());
     }
 }

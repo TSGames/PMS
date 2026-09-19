@@ -36,7 +36,7 @@ test('Website-Status benennt die zuletzt besuchte Backend-Seite', async ({ page 
   await page.goto('admin/benutzer');
   await page.goto('admin/status');
 
-  const row = page.locator('table.items tr', { hasText: 'admin' }).first();
+  const row = page.locator('table.data-table tr', { hasText: 'admin' }).first();
   await expect(row).toContainText('PMS Administration');
   await expect(row.locator('a[href*="action="]').last()).toHaveText(/Benutzerverwaltung|Website-Status/);
 });

@@ -6,7 +6,9 @@ use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
 
 /**
  * Benutzerkonten.
@@ -240,43 +242,85 @@ final class UserController extends Controller
 
     private function overview(): string
     {
-        $userTable = Db::table('user');
-        $commentTable = Db::table('comments');
+        /** @var array<int, string> $labels */
         $labels = $GLOBALS['user_typ'] ?? [];
+        $typ = Request::queryInt('typ', -1);
 
         // Punkte: eigene Punkte zuzüglich 60 je verfasstem Kommentar
-        $users = Db::select(
-            'SELECT u.*, COUNT(c.id) * 60 + u.points AS points
-               FROM ' . $userTable . ' u
-               LEFT JOIN ' . $commentTable . ' c ON c.user = u.id
-              GROUP BY u.id
-              ORDER BY u.id'
-        );
+        $list = Listing::from('user')
+            ->alias('u')
+            ->join('LEFT JOIN ' . Db::table('comments') . ' c ON c.user = u.id')
+            ->groupBy('u.id', 'COUNT(DISTINCT u.id)')
+            ->select('u.*, COUNT(c.id) * 60 + u.points AS points')
+            ->searchIn(['u.name', 'u.mail'])
+            ->sortableBy([
+                'id' => 'u.id',
+                'name' => 'LOWER(u.name)',
+                'typ' => 'u.typ',
+                'login' => 'u.login',
+                'register' => 'u.register',
+                'points' => 'points',
+                'active' => 'u.active',
+            ])
+            ->orderedBy('u.id')
+            ->keep('typ', $typ < 0 ? '' : (string)$typ);
+
+        if ($typ >= 0) {
+            $list->where('u.typ = :typ', ['typ' => $typ]);
+        }
+
+        $list->load();
 
         $rows = [];
-        foreach ($users as $user) {
+        foreach ($list->rows as $user) {
             $rows[] = [
                 (string)(int)$user->id,
                 Html::e((string)$user->name),
                 '<a href="mailto:' . Html::e((string)$user->mail) . '">' . Html::e((string)$user->mail) . '</a>',
-                Html::e($labels[(int)$user->typ] ?? ''),
+                Components::chip($labels[(int)$user->typ] ?? '', (int)$user->typ >= 2 ? 'accent' : ''),
                 Html::date($user->login),
                 Html::date($user->register),
-                Html::e((string)$user->registerip),
+                '<code>' . Html::e((string)$user->registerip) . '</code>',
                 (string)(int)$user->points,
-                Html::yesNo((int)$user->active === 1),
-                $this->editLink((int)$user->id),
-                $this->deleteLink((int)$user->id),
+                Components::booleanChip((int)$user->active === 1, 'Aktiv', 'Gesperrt'),
+                $this->rowActions((int)$user->id),
             ];
         }
 
-        return Html::heading('Benutzerverwaltung')
-            . '<div class="action-section">' . Html::button('Neuer Benutzer', $this->url(['new' => 'yes'])) . '</div>'
-            . Html::table(
-                ['ID', 'Name', 'E-Mail', 'Typ', 'Letzter Login', 'Registriert', 'Registrations-IP', 'Punkte', 'Aktiviert', 'Bearbeiten', 'Löschen'],
+        $filters = [];
+        if ($labels !== []) {
+            $filters[] = [
+                'name' => 'typ',
+                'label' => 'Benutzertyp',
+                'options' => [-1 => 'Alle Typen'] + $labels,
+                'value' => $typ,
+            ];
+        }
+
+        return Components::pageHeader(
+            'Benutzerverwaltung',
+            'Konten der Website und ihre Rechtestufe.',
+            Components::primary('Neuer Benutzer', $this->url(['new' => 'yes']))
+        )
+            . Components::toolbar($this->action(), $list, $filters, 'Name oder E-Mail suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'name', 'label' => 'Name', 'class' => 'cell-title'],
+                    ['label' => 'E-Mail'],
+                    ['key' => 'typ', 'label' => 'Typ'],
+                    ['key' => 'login', 'label' => 'Letzter Login'],
+                    ['key' => 'register', 'label' => 'Registriert'],
+                    ['label' => 'Registrations-IP'],
+                    ['key' => 'points', 'label' => 'Punkte', 'class' => 'cell-number'],
+                    ['key' => 'active', 'label' => 'Status'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'Es sind keine Benutzer angelegt.'
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Kein Benutzer passt zur Suche.' : 'Es sind keine Benutzer angelegt.'
             )
-            . '<p>' . count($users) . ' Benutzer registriert.</p>';
+            . Components::pagination($list, $this->action());
     }
 }

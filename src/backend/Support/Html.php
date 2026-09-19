@@ -69,7 +69,8 @@ final class Html
     }
 
     /**
-     * Tabelle aus vorbereiteten Zeilen.
+     * Tabelle aus vorbereiteten Zeilen - für Übersichten ohne Suche,
+     * Sortierung und Seitenaufteilung. Alles andere baut View\Components::table.
      *
      * @param list<string>            $headers Spaltenüberschriften
      * @param list<list<string>>      $rows    Bereits fertiges HTML je Zelle
@@ -77,15 +78,15 @@ final class Html
     public static function table(array $headers, array $rows, string $emptyMessage = 'Keine Einträge vorhanden.'): string
     {
         if ($rows === []) {
-            return '<p class="empty-hint">' . self::e($emptyMessage) . '</p>';
+            return '<div class="empty-state"><div class="empty-state-title">'
+                . self::e($emptyMessage) . '</div></div>';
         }
 
-        $html = '<div class="table-responsive"><table class="group items">';
-        $html .= '<tr>';
+        $html = '<div class="table-wrap"><table class="data-table"><thead><tr>';
         foreach ($headers as $header) {
-            $html .= '<td>' . self::e($header) . '</td>';
+            $html .= '<th>' . self::e($header) . '</th>';
         }
-        $html .= '</tr>';
+        $html .= '</tr></thead><tbody>';
 
         foreach ($rows as $row) {
             $html .= '<tr>';
@@ -96,7 +97,7 @@ final class Html
             $html .= '</tr>';
         }
 
-        return $html . '</table></div>';
+        return $html . '</tbody></table></div>';
     }
 
     /** Auswahlfeld aus Wert => Beschriftung. */

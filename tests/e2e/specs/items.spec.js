@@ -4,7 +4,15 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { login, resetDatabase, expectNoPhpError, submit, tableColumn } = require('../lib/admin');
+const {
+  login,
+  resetDatabase,
+  expectNoPhpError,
+  searchList,
+  selectFilter,
+  submit,
+  tableColumn,
+} = require('../lib/admin');
 
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
@@ -20,8 +28,7 @@ test('Liste zeigt die Inhalte der gewählten Kategorie', async ({ page }) => {
 
 test('Filter nach Kategorie und Unterkategorie', async ({ page }) => {
   await page.goto('admin/inhalte');
-  await page.selectOption('select[name="uppcat"]', { label: 'Dokumente' });
-  await submit(page, 'input[name="item_filter"]');
+  await selectFilter(page, 'cat', { label: 'Dokumente' });
 
   await expect(page.locator('body')).toContainText('Aufnahmeantrag');
   await expect(page.locator('body')).not.toContainText('Sommerfest 2024');
@@ -88,7 +95,7 @@ test('Kopie eines Inhalts erstellen', async ({ page }) => {
   await page.goto('admin/inhalte?do_copy=2');
   await expectNoPhpError(page);
   await page.goto('admin/inhalte');
-  const rows = await page.locator('table.items').textContent();
+  const rows = await page.locator('table.data-table').textContent();
   expect(rows.match(/Sommerfest 2024/g).length).toBeGreaterThanOrEqual(2);
 });
 
@@ -98,7 +105,7 @@ test('Löschen fragt nach und entfernt den Inhalt', async ({ page }) => {
 
   await submit(page, 'input[name="confirm_delete"]');
   await expect(page.locator('body')).toContainText('erfolgreich entfernt');
-  await expect(page.locator('table.items')).not.toContainText('Jahreshauptversammlung');
+  await expect(page.locator('table.data-table')).not.toContainText('Jahreshauptversammlung');
 });
 
 test('Wiederherstellungsseite ist erreichbar', async ({ page }) => {
@@ -166,32 +173,43 @@ test('Übernehmen und Schließen kehrt zur Liste zurück', async ({ page }) => {
   await page.fill('input[name="name"]', 'Jahreshauptversammlung 2025');
   await submit(page, page.locator('input[value="Übernehmen & Schließen"]'));
 
-  await expect(page.locator('table.items')).toContainText('Jahreshauptversammlung 2025');
+  await expect(page.locator('table.data-table')).toContainText('Jahreshauptversammlung 2025');
 });
 
 test('Liste lässt sich nach Unterkategorie filtern', async ({ page }) => {
   await page.goto('admin/inhalte');
-  await page.selectOption('select[name="uppcat"]', { label: 'Aktuelles' });
-  await submit(page, 'input[name="item_filter"]');
-  await page.selectOption('select[name="uppcat2"]', { label: 'Termine' });
-  await submit(page, 'input[name="item_filter"]');
+  await selectFilter(page, 'cat', { label: 'Aktuelles' });
+  await selectFilter(page, 'subcat', { label: 'Termine' });
 
-  await expect(page.locator('table.items')).toContainText('Jahreshauptversammlung');
-  await expect(page.locator('table.items')).not.toContainText('Sommerfest 2024');
+  await expect(page.locator('table.data-table')).toContainText('Jahreshauptversammlung');
+  await expect(page.locator('table.data-table')).not.toContainText('Sommerfest 2024');
+});
+
+test('Suche findet einen Inhalt über den Titel', async ({ page }) => {
+  await page.goto('admin/inhalte');
+  await searchList(page, 'Sommerfest');
+  expect(await tableColumn(page, 2)).toEqual(['Sommerfest 2024']);
+});
+
+test('Spaltenkopf sortiert die Inhalte nach Namen', async ({ page }) => {
+  await page.goto('admin/inhalte');
+  await submit(page, 'th a:has-text("Name")');
+  const names = await tableColumn(page, 2);
+  expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'de')));
 });
 
 test('Sortierung der Inhalte lässt sich ändern', async ({ page }) => {
   await page.goto('admin/inhalte');
-  const before = await tableColumn(page, 2, 'Name');
-  const row = page.locator('table.items tr', { hasText: 'Beitragsordnung' });
-  await submit(page, row.locator('a', { hasText: '↑' }));
+  const before = await tableColumn(page, 2);
+  const row = page.locator('table.data-table tbody tr', { hasText: 'Beitragsordnung' });
+  await submit(page, row.locator('a[title="Nach oben"]'));
 
-  const after = await tableColumn(page, 2, 'Name');
+  const after = await tableColumn(page, 2);
   expect(after).not.toEqual(before);
 });
 
 test('Spezialseiten lassen sich nicht kopieren', async ({ page }) => {
   await page.goto('admin/inhalte');
-  const row = page.locator('table.items tr', { hasText: 'Willkommen' });
-  await expect(row.locator('a', { hasText: 'Kopie erstellen' })).toHaveCount(0);
+  const row = page.locator('table.data-table tbody tr', { hasText: 'Willkommen' });
+  await expect(row.locator('a[title="Kopie erstellen"]')).toHaveCount(0);
 });

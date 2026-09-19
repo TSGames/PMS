@@ -7,8 +7,10 @@ use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\EntityImage;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
+use Pms\Backend\View\Components;
 
 /**
  * Unterkategorien.
@@ -26,10 +28,6 @@ final class SubcatController extends Controller
     {
         if (Request::submitted('subcat')) {
             $this->save();
-        }
-
-        if (Request::submitted('subcat_filter')) {
-            $_SESSION['subcat_filter'] = Request::int('uppcat');
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -65,7 +63,6 @@ final class SubcatController extends Controller
 
         $id = Request::int('id');
         $cat = Request::int('uppcat');
-        $_SESSION['subcat_filter'] = $cat;
 
         $data = [
             'name' => $name,
@@ -172,7 +169,7 @@ final class SubcatController extends Controller
         $isEdit = $subcat !== null;
         $id = $isEdit ? (int)$subcat->id : 0;
 
-        $selectedCat = $isEdit ? (int)$subcat->cat : Request::queryInt('cat', (int)($_SESSION['subcat_filter'] ?? 0));
+        $selectedCat = $isEdit ? (int)$subcat->cat : Request::queryInt('cat');
         $image = $isEdit ? (string)$subcat->image : '';
         if ($isEdit && $image === '') {
             $image = (string)EntityImage::detect('subcat', $id);
@@ -218,48 +215,64 @@ final class SubcatController extends Controller
     {
         $categories = $this->categoryOptions();
 
-        $filter = (int)($_SESSION['subcat_filter'] ?? 0);
-        if ($filter > 0 && !isset($categories[$filter])) {
-            $filter = 0;
-            $_SESSION['subcat_filter'] = 0;
+        $cat = Request::queryInt('cat');
+        if ($cat > 0 && !isset($categories[$cat])) {
+            $cat = 0;
         }
 
-        $sql = 'SELECT * FROM ' . Db::table('subcat');
-        $params = [];
-        if ($filter > 0) {
-            $sql .= ' WHERE cat = :cat';
-            $params['cat'] = $filter;
+        $list = Listing::from('subcat')
+            ->searchIn(['name', 'description'])
+            ->sortableBy(['id' => 'id', 'name' => 'name', 'sort' => 'sort', 'available' => 'available'])
+            ->orderedBy('sort, name')
+            ->keep('cat', $cat > 0 ? $cat : '');
+
+        if ($cat > 0) {
+            $list->where('cat = :cat', ['cat' => $cat]);
         }
-        $subcats = Db::select($sql . ' ORDER BY sort, name', $params);
+
+        $list->load();
 
         $rows = [];
-        foreach ($subcats as $index => $subcat) {
+        foreach ($list->rows as $index => $subcat) {
+            $sort = $list->isDefaultOrder()
+                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $subcat, $list->rows[$index + 1] ?? null)
+                : Html::e((string)(int)$subcat->sort);
+
             $rows[] = [
                 (string)(int)$subcat->id,
                 Html::e((string)$subcat->name),
                 Html::e($categories[(int)$subcat->cat] ?? ''),
-                Sorting::cell($this->action(), $subcats[$index - 1] ?? null, $subcat, $subcats[$index + 1] ?? null),
-                Html::yesNo($subcat->available),
-                $this->editLink((int)$subcat->id),
-                $this->deleteLink((int)$subcat->id),
+                $sort,
+                Components::booleanChip($subcat->available, 'Verfügbar', 'Versteckt'),
+                $this->rowActions((int)$subcat->id),
             ];
         }
 
-        return Html::heading('Unterkategorien')
-            . '<div class="action-section">'
-            . Html::button('Neue Unterkategorie', $this->url(['new' => 'yes']))
-            . '</div>'
-            . '<div class="action-section">'
-            . Html::formOpen($this->action())
-            . 'Zeige nur Unterkategorien der Kategorie '
-            . Html::select('uppcat', [0 => '[Alle]'] + $categories, $filter)
-            . ' <input type="submit" name="subcat_filter" value="OK">'
-            . Html::formClose()
-            . '</div>'
-            . Html::table(
-                ['ID', 'Name', 'In Kategorie', 'Sortierung', 'Verfügbar', 'Bearbeiten', 'Löschen'],
+        return Components::pageHeader(
+            'Unterkategorien',
+            'Die zweite Ebene: Unterkategorien gehören immer zu einer Kategorie.',
+            Components::primary('Neue Unterkategorie', $this->url(['new' => 'yes'] + ($cat > 0 ? ['cat' => $cat] : [])))
+        )
+            . Components::toolbar($this->action(), $list, [[
+                'name' => 'cat',
+                'label' => 'Kategorie',
+                'options' => [0 => 'Alle Kategorien'] + $categories,
+                'value' => $cat,
+            ]], 'Unterkategorie suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'name', 'label' => 'Name', 'class' => 'cell-title'],
+                    ['label' => 'In Kategorie'],
+                    ['key' => 'sort', 'label' => 'Sortierung'],
+                    ['key' => 'available', 'label' => 'Status'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'Es sind keine Unterkategorien angelegt.'
-            );
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Keine Unterkategorie passt zur Suche.' : 'Es sind keine Unterkategorien angelegt.'
+            )
+            . Components::pagination($list, $this->action());
     }
 }

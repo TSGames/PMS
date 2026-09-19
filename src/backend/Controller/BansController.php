@@ -6,7 +6,9 @@ use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
 
 /**
  * Sperrungen von IP-Adressen.
@@ -123,28 +125,58 @@ final class BansController extends Controller
     /** Übersicht aller Sperrungen. */
     private function overview(): string
     {
-        $bans = Db::select('SELECT * FROM ' . Db::table('bans') . ' ORDER BY id');
+        $list = Listing::from('bans')
+            ->searchIn(['ip', 'reason'])
+            ->sortableBy(['id' => 'id', 'ip' => 'ip', 'time' => 'time'])
+            ->orderedBy('id')
+            ->load();
 
         $rows = [];
-        foreach ($bans as $ban) {
+        foreach ($list->rows as $ban) {
+            $remaining = (string)ban_time($ban->time);
+
             $rows[] = [
                 (string)(int)$ban->id,
-                Html::e((string)$ban->ip),
+                '<code>' . Html::e((string)$ban->ip) . '</code>',
                 nl2br(Html::e((string)$ban->reason)),
-                Html::e(ban_time($ban->time)),
-                $this->editLink((int)$ban->id),
-                $this->deleteLink((int)$ban->id),
+                self::durationChip($remaining),
+                $this->rowActions((int)$ban->id),
             ];
         }
 
-        return Html::heading('Bans verwalten')
-            . '<div class="action-section">'
-            . Html::button('Neuer Ban', $this->url(['new' => 'yes']))
-            . '</div>'
-            . Html::table(
-                ['ID', 'IP', 'Begründung', 'Verbleibende Dauer (in Tagen)', 'Bearbeiten', 'Löschen'],
+        return Components::pageHeader(
+            'Sperrungen',
+            'Gesperrte IP-Adressen mit Begründung und verbleibender Dauer.',
+            Components::primary('Neue Sperrung', $this->url(['new' => 'yes']))
+        )
+            . Components::toolbar($this->action(), $list, [], 'IP oder Begründung suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'ip', 'label' => 'IP-Adresse', 'class' => 'cell-title'],
+                    ['label' => 'Begründung'],
+                    ['key' => 'time', 'label' => 'Verbleibende Dauer'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'Es sind keine Sperrungen eingetragen.'
-            );
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Keine Sperrung passt zur Suche.' : 'Es sind keine Sperrungen eingetragen.'
+            )
+            . Components::pagination($list, $this->action());
+    }
+
+    /**
+     * Dauerhafte Sperrungen sollen sich von befristeten unterscheiden.
+     * ban_time() liefert entweder die Zahl der Tage oder den Sprachtext
+     * für eine unbefristete Sperrung.
+     */
+    private static function durationChip(string $remaining): string
+    {
+        $remaining = trim($remaining);
+        if ($remaining === '' || !is_numeric($remaining)) {
+            return Components::chip($remaining === '' ? 'unbegrenzt' : $remaining, 'danger');
+        }
+        return Components::chip($remaining . ' Tage', 'warn');
     }
 }

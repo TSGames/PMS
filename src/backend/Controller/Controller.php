@@ -7,6 +7,7 @@ use Pms\Backend\Support\Csrf;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
 
 /**
  * Basis aller Backend-Bereiche.
@@ -38,7 +39,7 @@ abstract class Controller
         if (Auth::atLeast($this->requiredLevel())) {
             return null;
         }
-        return '<table class="info_error"><tr><td>Ihre Berechtigungen sind zu niedrig, um diesen Bereich anzuzeigen!</td></tr></table>';
+        return '<div class="notice notice-error">Ihre Berechtigungen sind zu niedrig, um diesen Bereich anzuzeigen!</div>';
     }
 
     /** Adresse innerhalb des eigenen Bereichs. */
@@ -70,20 +71,21 @@ abstract class Controller
      */
     protected function confirmDelete(int $id, string $question, string $hint = ''): string
     {
-        $html = Html::formOpen($this->action())
-            . Html::heading('Löschen bestätigen')
+        $html = Components::pageHeader('Löschen bestätigen')
+            . Html::formOpen($this->action())
             . Html::hidden('delete_id', $id)
+            . '<div class="form-card"><div class="form-section">'
             . '<p>' . Html::e($question) . '</p>';
 
         if ($hint !== '') {
-            $html .= '<div class="example">' . Html::e($hint) . '</div>';
+            $html .= '<div class="notice notice-warn">' . Html::e($hint) . '</div>';
         }
 
         return $html
-            . '<div class="action-section">'
+            . '</div><div class="form-actions">'
             . '<input type="submit" name="confirm_delete" class="danger" value="Löschen">'
-            . ' ' . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div>'
+            . Html::button('Abbrechen', $this->url(), 'btn btn-secondary')
+            . '</div></div>'
             . Html::formClose();
     }
 
@@ -109,6 +111,21 @@ abstract class Controller
     protected function deleteLink(int $id, string $label = 'Löschen'): string
     {
         return '<a href="' . Html::e($this->url(['delete' => $id])) . '">' . Html::e($label) . '</a>';
+    }
+
+    /**
+     * Aktionsspalte einer Übersicht: Bearbeiten und Löschen als Symbol,
+     * davor optional weitere Aktionen des Bereichs.
+     *
+     * @param list<string> $extra Zusätzliche Aktionen, bereits fertiges HTML
+     */
+    protected function rowActions(int $id, array $extra = []): string
+    {
+        return Components::actions(...[
+            ...$extra,
+            Components::action('edit', $this->url(['edit' => $id]), 'Bearbeiten'),
+            Components::action('trash', $this->url(['delete' => $id]), 'Löschen', 'danger'),
+        ]);
     }
 
     /** Meldung über einen erfolgreichen Vorgang. */

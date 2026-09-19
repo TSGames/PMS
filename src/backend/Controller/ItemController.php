@@ -8,8 +8,10 @@ use Pms\Backend\Support\Editor;
 use Pms\Backend\Support\EntityImage;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
+use Pms\Backend\View\Components;
 
 /**
  * Inhaltsverwaltung.
@@ -43,10 +45,6 @@ final class ItemController extends Controller
     public function handle(): string
     {
         // --- Eingaben verarbeiten ------------------------------------------
-        if (Request::submitted('item_filter')) {
-            $this->applyFilter();
-        }
-
         if (Request::submitted('item_step2')) {
             return $this->save();
         }
@@ -111,33 +109,27 @@ final class ItemController extends Controller
     // Filter
     // -----------------------------------------------------------------
 
-    private function applyFilter(): void
-    {
-        $cat = Request::int('uppcat');
-        $subcat = Request::int('uppcat2');
-
-        if ($subcat > 0) {
-            $belongs = Db::first(
-                'SELECT id FROM ' . Db::table('subcat') . ' WHERE id = :id AND cat = :cat',
-                ['id' => $subcat, 'cat' => $cat]
-            );
-            if ($belongs === null) {
-                $subcat = 0;
-            }
-        }
-
-        $_SESSION['item_filter'] = $cat;
-        $_SESSION['item_filter2'] = $subcat;
-    }
-
     private function filterCat(): int
     {
-        return (int)($_SESSION['item_filter'] ?? 0);
+        return Request::queryInt('cat');
     }
 
+    /**
+     * Die gewählte Unterkategorie, sofern sie zur gewählten Kategorie gehört.
+     */
     private function filterSubcat(): int
     {
-        return (int)($_SESSION['item_filter2'] ?? 0);
+        $subcat = Request::queryInt('subcat');
+        $cat = $this->filterCat();
+        if ($subcat <= 0 || $cat <= 0) {
+            return 0;
+        }
+
+        $belongs = Db::first(
+            'SELECT id FROM ' . Db::table('subcat') . ' WHERE id = :id AND cat = :cat',
+            ['id' => $subcat, 'cat' => $cat]
+        );
+        return $belongs === null ? 0 : $subcat;
     }
 
     // -----------------------------------------------------------------
@@ -480,9 +472,6 @@ final class ItemController extends Controller
         if ($type === self::TYPE_SPECIAL) {
             $cat = 0;
             $subcat = 0;
-        } else {
-            $_SESSION['item_filter'] = $cat;
-            $_SESSION['item_filter2'] = $subcat;
         }
 
         $name = Request::string('name');
@@ -552,7 +541,12 @@ final class ItemController extends Controller
             return $this->imagePicker($id);
         }
         if (Request::string('item_step2') === 'Übernehmen & Schließen') {
-            $this->redirect();
+            // Zurück in dieselbe Auswahl, aus der der Inhalt geöffnet wurde
+            $back = $cat > 0 ? ['cat' => $cat] : [];
+            if ($cat > 0 && $subcat > 0) {
+                $back['subcat'] = $subcat;
+            }
+            $this->redirect($back);
         }
 
         $values = $this->wizardValuesFromRequest();
@@ -914,73 +908,160 @@ final class ItemController extends Controller
 
     private function overview(): string
     {
-        $categories = $this->categoryOptions();
+        /** @var array<int, string> $contentTypes */
         $contentTypes = $GLOBALS['content_typ'] ?? [];
+        $categories = $this->categoryOptions();
         $filterCat = $this->filterCat();
         $filterSubcat = $this->filterSubcat();
+        $typ = Request::queryInt('typ', -1);
 
-        $conditions = [];
-        $params = [];
+        $list = Listing::from('item')
+            ->searchIn(['name', 'description'])
+            ->sortableBy([
+                'id' => 'id',
+                'name' => 'LOWER(name)',
+                'typ' => 'typ',
+                'sort' => 'sort',
+                'time' => 'time',
+                'available' => 'available',
+            ])
+            ->orderedBy('sort, name')
+            ->keep('cat', $filterCat > 0 ? $filterCat : '')
+            ->keep('subcat', $filterSubcat > 0 ? $filterSubcat : '')
+            ->keep('typ', $typ < 0 ? '' : (string)$typ);
+
         if ($filterCat > 0) {
-            $conditions[] = 'cat = :cat';
-            $params['cat'] = $filterCat;
+            $list->where('cat = :cat', ['cat' => $filterCat]);
         }
         if ($filterSubcat > 0) {
-            $conditions[] = 'subcat = :subcat';
-            $params['subcat'] = $filterSubcat;
+            $list->where('subcat = :subcat', ['subcat' => $filterSubcat]);
+        }
+        if ($typ >= 0) {
+            $list->where('typ = :typ', ['typ' => $typ]);
         }
 
-        $sql = 'SELECT * FROM ' . Db::table('item');
-        if ($conditions !== []) {
-            $sql .= ' WHERE ' . implode(' AND ', $conditions);
-        }
-        $items = Db::select($sql . ' ORDER BY sort, name', $params);
+        $list->load();
+
+        $subcategories = $this->subcategoryNames();
 
         $rows = [];
-        foreach ($items as $index => $item) {
-            $copyCell = (int)$item->typ === self::TYPE_SPECIAL
-                ? '<span class="disabled">Kopie erstellen</span>'
-                : '<a href="' . Html::e($this->url(['do_copy' => (int)$item->id])) . '">Kopie erstellen</a>';
+        foreach ($list->rows as $index => $item) {
+            $sort = $list->isDefaultOrder()
+                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $item, $list->rows[$index + 1] ?? null)
+                : Html::e((string)(int)$item->sort);
+
+            // Spezialseiten lassen sich nicht kopieren - es gibt sie je Art nur einmal
+            $copy = (int)$item->typ === self::TYPE_SPECIAL
+                ? []
+                : [Components::action('copy', $this->url(['do_copy' => (int)$item->id]), 'Kopie erstellen')];
 
             $rows[] = [
                 (string)(int)$item->id,
                 Html::e((string)$item->name),
-                Html::e($contentTypes[(int)$item->typ] ?? ''),
-                Html::e((string)from_db('cat', (int)$item->cat, 'name')),
-                Html::e((string)from_db('subcat', (int)$item->subcat, 'name')),
-                Sorting::cell($this->action(), $items[$index - 1] ?? null, $item, $items[$index + 1] ?? null),
+                Components::chip($contentTypes[(int)$item->typ] ?? '', 'accent'),
+                Html::e($categories[(int)$item->cat] ?? ''),
+                Html::e($subcategories[(int)$item->subcat] ?? ''),
+                $sort,
                 Html::date($item->time),
-                Html::yesNo($item->available),
-                $copyCell,
-                $this->editLink((int)$item->id),
-                $this->deleteLink((int)$item->id),
+                Components::booleanChip($item->available, 'Verfügbar', 'Entwurf'),
+                $this->rowActions((int)$item->id, $copy),
             ];
         }
 
-        $backups = get_backups();
-        $restoreButton = is_array($backups) && $backups !== []
-            ? Html::button('Gelöschten Inhalt wiederherstellen', Html::url('item_restore'))
-            : '<span class="button disabled">Gelöschten Inhalt wiederherstellen</span>';
+        $filters = [[
+            'name' => 'cat',
+            'label' => 'Kategorie',
+            'options' => [0 => 'Alle Kategorien'] + $categories,
+            'value' => $filterCat,
+        ]];
 
-        return Html::heading('Inhalte')
-            . '<div class="action-section">'
-            . Html::button('Inhalt hinzufügen', $this->url(['new' => 'yes'])) . ' ' . $restoreButton
-            . '</div>'
-            . '<div class="action-section">'
-            . Html::formOpen($this->action())
-            . 'Zeige nur Inhalte der Kategorie '
-            . Html::select('uppcat', [0 => '[Alle]'] + $categories, $filterCat)
-            . ($filterCat > 0
-                ? ' und Unterkategorie ' . Html::select('uppcat2', [0 => '[Alle]'] + $this->subcategoryOptions($filterCat), $filterSubcat)
-                : '')
-            . ' <input type="submit" name="item_filter" value="OK">'
-            . Html::formClose()
-            . '</div>'
-            . Html::table(
-                ['ID', 'Name', 'Typ', 'In Kategorie', 'In Unterkategorie', 'Sortierung', 'Erstellt am', 'Verfügbar', 'Kopie erstellen', 'Bearbeiten', 'Löschen'],
+        // Die Unterkategorie ist erst sinnvoll, wenn eine Kategorie feststeht
+        if ($filterCat > 0) {
+            $filters[] = [
+                'name' => 'subcat',
+                'label' => 'Unterkategorie',
+                'options' => [0 => 'Alle Unterkategorien'] + $this->subcategoryOptions($filterCat),
+                'value' => $filterSubcat,
+            ];
+        }
+
+        if ($contentTypes !== []) {
+            $filters[] = [
+                'name' => 'typ',
+                'label' => 'Inhaltstyp',
+                'options' => [-1 => 'Alle Typen'] + $contentTypes,
+                'value' => $typ,
+            ];
+        }
+
+        return Components::pageHeader(
+            'Inhalte',
+            'Alle Textseiten der Website.',
+            Components::primary('Inhalt hinzufügen', $this->url($this->newItemParams($filterCat, $filterSubcat)))
+            . $this->restoreAction()
+        )
+            . Components::toolbar($this->action(), $list, $filters, 'Titel oder Beschreibung suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'name', 'label' => 'Name', 'class' => 'cell-title'],
+                    ['key' => 'typ', 'label' => 'Typ'],
+                    ['label' => 'In Kategorie'],
+                    ['label' => 'In Unterkategorie'],
+                    ['key' => 'sort', 'label' => 'Sortierung'],
+                    ['key' => 'time', 'label' => 'Erstellt am'],
+                    ['key' => 'available', 'label' => 'Status'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'In dieser Auswahl sind keine Inhalte vorhanden.'
-            );
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'In dieser Auswahl sind keine Inhalte vorhanden.' : 'Es sind keine Inhalte angelegt.'
+            )
+            . Components::pagination($list, $this->action());
+    }
+
+    /**
+     * Ein neuer Inhalt startet in der Auswahl, die gerade gefiltert ist.
+     *
+     * @return array<string, string|int>
+     */
+    private function newItemParams(int $cat, int $subcat): array
+    {
+        $params = ['new' => 'yes'];
+        if ($cat > 0) {
+            $params['cat'] = $cat;
+        }
+        if ($subcat > 0) {
+            $params['subcat'] = $subcat;
+        }
+        return $params;
+    }
+
+    /** Wiederherstellen ist nur möglich, wenn es überhaupt Sicherungen gibt. */
+    private function restoreAction(): string
+    {
+        $backups = get_backups();
+        if (!is_array($backups) || $backups === []) {
+            return '<span class="btn btn-secondary disabled" title="Es liegen keine Sicherungen vor">'
+                . 'Gelöschten Inhalt wiederherstellen</span>';
+        }
+        return Components::secondary('Gelöschten Inhalt wiederherstellen', Html::url('item_restore'), 'refresh');
+    }
+
+    /**
+     * Alle Unterkategorien als id => Name, damit die Übersicht nicht je Zeile
+     * eine eigene Abfrage braucht.
+     *
+     * @return array<int, string>
+     */
+    private function subcategoryNames(): array
+    {
+        $names = [];
+        foreach (Db::select('SELECT id, name FROM ' . Db::table('subcat')) as $row) {
+            $names[(int)$row->id] = (string)$row->name;
+        }
+        return $names;
     }
 
     // -----------------------------------------------------------------

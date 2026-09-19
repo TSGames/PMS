@@ -3,6 +3,7 @@
 namespace Pms\Backend\Support;
 
 use Pms\Backend\Data\Db;
+use Pms\Backend\View\Icons;
 
 /**
  * Sortierung von Listen über Pfeil-Schalter.
@@ -44,21 +45,23 @@ final class Sorting
      */
     public static function cell(string $action, ?object $previous, object $current, ?object $next): string
     {
-        $html = Html::e((string)(int)$current->sort);
+        $html = '<span class="sort-cell"><span class="sort-value">' . Html::e((string)(int)$current->sort) . '</span>'
+            . '<span class="row-actions">';
 
         if ($previous !== null) {
-            $html .= ' ' . self::link($action, (int)$current->id, (int)$previous->sort - 1, '&uarr;', 'Nach oben');
+            $html .= self::link($action, (int)$current->id, (int)$previous->sort - 1, 'chevron-up', 'Nach oben');
         }
         if ($next !== null) {
-            $html .= ' ' . self::link($action, (int)$current->id, (int)$next->sort + 1, '&darr;', 'Nach unten');
+            $html .= self::link($action, (int)$current->id, (int)$next->sort + 1, 'chevron-down', 'Nach unten');
         }
 
-        return $html;
+        return $html . '</span></span>';
     }
 
-    private static function link(string $action, int $id, int $position, string $arrow, string $title): string
+    private static function link(string $action, int $id, int $position, string $icon, string $title): string
     {
         $url = Html::url($action, ['sort' => 'yes', 'pos' => $position, 'id' => $id] + Csrf::queryParam());
-        return '<a href="' . Html::e($url) . '" title="' . Html::e($title) . '">' . $arrow . '</a>';
+        return '<a class="icon-btn icon-btn-sm" href="' . Html::e($url) . '" title="' . Html::e($title) . '"'
+            . ' aria-label="' . Html::e($title) . '">' . Icons::render($icon, 'icon icon-sm') . '</a>';
     }
 }

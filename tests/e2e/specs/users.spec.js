@@ -6,7 +6,15 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { login, resetDatabase, expectNoPhpError, submit, tableColumn } = require('../lib/admin');
+const {
+  login,
+  resetDatabase,
+  expectNoPhpError,
+  searchList,
+  selectFilter,
+  submit,
+  tableColumn,
+} = require('../lib/admin');
 
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
@@ -16,7 +24,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('Liste zeigt alle Mock-Benutzer', async ({ page }) => {
-  expect(await tableColumn(page, 2, 'Name')).toEqual([
+  expect(await tableColumn(page, 2)).toEqual([
     'admin',
     'redakteur',
     'moderator',
@@ -30,8 +38,18 @@ test('Benutzertypen werden im Klartext angezeigt', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Moderator');
 });
 
-test('Liste nennt die Zahl der registrierten Benutzer', async ({ page }) => {
-  await expect(page.locator('body')).toContainText('5 Benutzer registriert');
+test('Werkzeugleiste nennt die Zahl der Treffer', async ({ page }) => {
+  await expect(page.locator('.toolbar-count')).toHaveText('5 Einträge');
+});
+
+test('Suche findet einen Benutzer über die Mailadresse', async ({ page }) => {
+  await searchList(page, 'redakteur@example.org');
+  expect(await tableColumn(page, 2)).toEqual(['redakteur']);
+});
+
+test('Filter nach Benutzertyp schränkt die Liste ein', async ({ page }) => {
+  await selectFilter(page, 'typ', { label: 'Moderator' });
+  expect(await tableColumn(page, 2)).toEqual(['moderator']);
 });
 
 test('Bearbeiten zeigt die gespeicherten Werte', async ({ page }) => {
@@ -77,7 +95,7 @@ test('Zu kurzer Benutzername wird abgelehnt', async ({ page }) => {
   await submit(page, 'input[name="user"]');
 
   await page.goto('admin/benutzer');
-  expect(await tableColumn(page, 2, 'Name')).toContain('gast');
+  expect(await tableColumn(page, 2)).toContain('gast');
 });
 
 test('Bereits vergebener Benutzername wird abgelehnt', async ({ page }) => {
@@ -103,12 +121,12 @@ test('Benutzer löschen fragt nach und entfernt ihn', async ({ page }) => {
 
   await expect(page.locator('body')).toContainText('erfolgreich entfernt');
   await page.goto('admin/benutzer');
-  expect(await tableColumn(page, 2, 'Name')).not.toContain('gesperrt');
+  expect(await tableColumn(page, 2)).not.toContain('gesperrt');
 });
 
 test('Eigenes Konto lässt sich nicht löschen', async ({ page }) => {
   await page.goto('admin/benutzer?delete=1');
   await expect(page.locator('body')).toContainText('nicht selbst löschen');
   await page.goto('admin/benutzer');
-  expect(await tableColumn(page, 2, 'Name')).toContain('admin');
+  expect(await tableColumn(page, 2)).toContain('admin');
 });

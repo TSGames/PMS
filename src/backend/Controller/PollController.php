@@ -5,8 +5,10 @@ namespace Pms\Backend\Controller;
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
+use Pms\Backend\View\Components;
 
 /**
  * Umfragen mit bis zu zehn Antwortmöglichkeiten.
@@ -122,26 +124,59 @@ final class PollController extends Controller
 
     private function overview(): string
     {
-        $polls = Db::select('SELECT * FROM ' . Db::table('poll') . ' ORDER BY sort, question');
+        $available = Request::queryInt('available', -1);
+
+        $list = Listing::from('poll')
+            ->searchIn(['question'])
+            ->sortableBy(['id' => 'id', 'question' => 'question', 'sort' => 'sort', 'available' => 'available'])
+            ->orderedBy('sort, question')
+            ->keep('available', $available < 0 ? '' : (string)$available);
+
+        if ($available >= 0) {
+            $list->where('available = :available', ['available' => $available]);
+        }
+
+        $list->load();
 
         $rows = [];
-        foreach ($polls as $index => $poll) {
+        foreach ($list->rows as $index => $poll) {
+            $sort = $list->isDefaultOrder()
+                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $poll, $list->rows[$index + 1] ?? null)
+                : Html::e((string)(int)$poll->sort);
+
             $rows[] = [
                 (string)(int)$poll->id,
                 Html::e((string)$poll->question),
-                Sorting::cell($this->action(), $polls[$index - 1] ?? null, $poll, $polls[$index + 1] ?? null),
-                Html::yesNo($poll->available),
-                $this->editLink((int)$poll->id),
-                $this->deleteLink((int)$poll->id),
+                $sort,
+                Components::booleanChip($poll->available, 'Aktiv', 'Inaktiv'),
+                $this->rowActions((int)$poll->id),
             ];
         }
 
-        return Html::heading('Umfragen')
-            . '<div class="action-section">' . Html::button('Neue Umfrage', $this->url(['new' => 'yes'])) . '</div>'
-            . Html::table(
-                ['ID', 'Frage', 'Sortierung', 'Verfügbar', 'Bearbeiten', 'Löschen'],
+        return Components::pageHeader(
+            'Umfragen',
+            'Fragen und Antworten für das Umfragen-Plugin.',
+            Components::primary('Neue Umfrage', $this->url(['new' => 'yes']))
+        )
+            . Components::toolbar($this->action(), $list, [[
+                'name' => 'available',
+                'label' => 'Status',
+                'options' => [-1 => 'Alle', 1 => 'Nur aktive', 0 => 'Nur inaktive'],
+                'value' => $available,
+            ]], 'Frage suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'question', 'label' => 'Frage', 'class' => 'cell-title'],
+                    ['key' => 'sort', 'label' => 'Sortierung'],
+                    ['key' => 'available', 'label' => 'Status'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'Es sind keine Umfragen angelegt.'
-            );
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Keine Frage passt zur Suche.' : 'Es sind keine Umfragen angelegt.'
+            )
+            . Components::pagination($list, $this->action());
     }
 }

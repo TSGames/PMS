@@ -58,5 +58,5 @@ test('Stylesheets und Skripte werden ausgeliefert', async ({ page }) => {
 test('Tabellen sind in einen scrollbaren Container gehüllt', async ({ page }) => {
   await login(page, 'admin');
   await page.goto('admin/kategorien');
-  await expect(page.locator('.table-responsive table.items')).toBeVisible();
+  await expect(page.locator('.table-wrap table.data-table')).toBeVisible();
 });

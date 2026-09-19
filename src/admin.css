@@ -536,6 +536,43 @@ small { font-size: var(--fs-xs); }
 
 .toolbar-spacer { flex: 1; }
 
+.toolbar-search {
+    flex: 1 1 220px;
+    min-width: 180px;
+    padding: 0 var(--s-3);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--r-sm);
+    background: var(--c-surface);
+}
+
+.toolbar-search:focus-within {
+    border-color: var(--c-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-focus) 22%, transparent);
+}
+
+.toolbar-search input[type="search"] {
+    border: none;
+    background: none;
+    box-shadow: none;
+    padding: 7px 0;
+    width: 100%;
+}
+
+.toolbar-search input[type="search"]:hover { border-color: transparent; }
+.toolbar-search input[type="search"]:focus { outline: none; box-shadow: none; }
+
+.toolbar-group select { width: auto; min-width: 140px; }
+.toolbar-count { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.toolbar a.btn-ghost {
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    font-size: var(--fs-sm);
+}
+
+.toolbar a.btn-ghost:hover { background: var(--c-surface-hover); color: var(--c-heading); text-decoration: none; }
+
 /* Karten */
 .card {
     background: var(--c-surface);
@@ -647,6 +684,11 @@ td.cell-id { color: var(--c-muted); font-variant-numeric: tabular-nums; width: 1
 td.cell-title { font-weight: 500; color: var(--c-heading); }
 
 .row-actions { display: inline-flex; gap: var(--s-1); justify-content: flex-end; }
+
+.sort-cell { display: inline-flex; align-items: center; gap: var(--s-2); }
+.sort-value { font-variant-numeric: tabular-nums; color: var(--c-muted); min-width: 2ch; }
+
+.icon-btn-sm { width: 24px; height: 24px; }
 
 /* Chips */
 .chip {
@@ -959,7 +1001,8 @@ label { color: var(--c-text); }
     color: var(--c-muted);
 }
 
-.pagination-pages { display: flex; align-items: center; gap: var(--s-1); }
+.pagination-info { white-space: nowrap; }
+.pagination-pages { display: flex; align-items: center; gap: var(--s-1); flex-wrap: wrap; }
 
 .pagination-pages a,
 .pagination-pages span {
@@ -977,6 +1020,7 @@ label { color: var(--c-text); }
 
 .pagination-pages a:hover { border-color: var(--c-accent); color: var(--c-accent); text-decoration: none; }
 .pagination-pages .current { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-accent-text); }
+.pagination-pages .pagination-gap { border-color: transparent; background: none; color: var(--c-muted); min-width: 0; }
 
 /* Dialog */
 .dialog-backdrop {
@@ -1076,36 +1120,6 @@ body.login-page {
 /* Klassen aus der alten Oberfläche. Sie verschwinden, sobald der jeweilige
    Bereich auf die neuen Komponenten umgestellt ist. */
 
-table.group, table.items {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--fs-sm);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--r);
-    overflow: hidden;
-    margin-bottom: var(--s-4);
-}
-
-table.group td, table.items td {
-    padding: var(--s-3);
-    border-bottom: 1px solid var(--c-border);
-}
-
-table.group tr:first-child td, table.items tr:first-child td {
-    font-size: var(--fs-xs);
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--c-muted);
-    background: var(--c-surface-alt);
-}
-
-table.group tr:last-child td, table.items tr:last-child td { border-bottom: none; }
-table.group tr:hover td, table.items tr:hover td { background: var(--c-surface-hover); }
-
-.table-responsive { overflow-x: auto; }
-
 .action-section {
     display: flex;
     align-items: center;
@@ -1129,7 +1143,6 @@ table.group tr:hover td, table.items tr:hover td { background: var(--c-surface-h
 .info_ok a, .info_error a, .warning a { color: inherit; text-decoration: underline; }
 
 .example, .field-example { font-size: var(--fs-xs); color: var(--c-muted); margin-top: var(--s-1); }
-.empty-hint { padding: var(--s-5); text-align: center; color: var(--c-muted); background: var(--c-surface); border: 1px dashed var(--c-border-strong); border-radius: var(--r); }
 
 .config_table { width: 100%; border-collapse: collapse; }
 .config_table td { padding: var(--s-2) var(--s-3); border-bottom: 1px solid var(--c-border); vertical-align: top; }
@@ -1192,6 +1205,12 @@ table.group tr:hover td, table.items tr:hover td { background: var(--c-surface-h
     .app-bar { gap: var(--s-2); padding-right: var(--s-3); }
     .app-search { display: none; }
     .page-header { flex-direction: column; align-items: stretch; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    /* In einer Spalte würde das Suchfeld sonst in die Höhe wachsen */
+    .toolbar-search { flex: 0 0 auto; }
+    .toolbar-group select { width: 100%; }
+    .toolbar-count { display: none; }
+    .pagination { flex-direction: column; align-items: flex-start; }
     .form-grid { grid-template-columns: 1fr; gap: var(--s-2); }
     .field-label { padding-top: 0; }
 
@@ -1221,27 +1240,9 @@ table.group tr:hover td, table.items tr:hover td { background: var(--c-surface-h
         text-transform: uppercase;
         color: var(--c-muted);
     }
-    table.data-table td.cell-title { font-size: var(--fs-md); }
+    table.data-table td.cell-title { font-size: var(--fs-md); font-weight: 600; }
     table.data-table td.cell-title::before { display: none; }
+    table.data-table td.cell-id { justify-content: flex-start; gap: var(--s-2); font-size: var(--fs-xs); }
     td.cell-actions { justify-content: flex-end; }
     td.cell-actions::before { display: none; }
-
-    /* Übergangstabellen */
-    table.items tr:first-child { display: none; }
-    table.items tr {
-        display: block;
-        margin-bottom: var(--s-3);
-        border: 1px solid var(--c-border);
-        border-radius: var(--r);
-        background: var(--c-surface);
-    }
-    table.items td { display: flex; gap: var(--s-2); border-bottom: none; padding: var(--s-1) var(--s-3); }
-    table.items td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--c-muted);
-        min-width: 120px;
-        font-size: var(--fs-xs);
-        text-transform: uppercase;
-    }
 }

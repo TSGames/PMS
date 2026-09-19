@@ -3,7 +3,15 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { login, resetDatabase, expectNoPhpError, submit, tableColumn } = require('../lib/admin');
+const {
+  login,
+  resetDatabase,
+  expectNoPhpError,
+  searchList,
+  selectFilter,
+  submit,
+  tableColumn,
+} = require('../lib/admin');
 
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
@@ -13,7 +21,7 @@ test.beforeEach(async ({ page }) => {
 
 test('Liste zeigt die Menüeinträge in Sortierreihenfolge', async ({ page }) => {
   await page.goto('admin/menue');
-  expect(await tableColumn(page, 1, 'Name')).toEqual([
+  expect(await tableColumn(page, 1)).toEqual([
     'Startseite',
     'Aktuelles',
     'Termine',
@@ -28,14 +36,26 @@ test('Liste zeigt die Menüeinträge in Sortierreihenfolge', async ({ page }) =>
 
 test('Liste benennt die Art der Verlinkung', async ({ page }) => {
   await page.goto('admin/menue');
-  const row = page.locator('table.items tr', { hasText: 'Partnerseite' });
+  const row = page.locator('table.data-table tbody tr', { hasText: 'Partnerseite' });
   await expect(row).toContainText('Link');
 });
 
 test('Unsichtbare Einträge werden gekennzeichnet', async ({ page }) => {
   await page.goto('admin/menue');
-  const row = page.locator('table.items tr', { hasText: 'Intern' });
-  await expect(row.locator('td').nth(3)).toHaveText('Nein');
+  const row = page.locator('table.data-table tbody tr', { hasText: 'Intern' });
+  await expect(row.locator('td').nth(3)).toHaveText('Verborgen');
+});
+
+test('Filter nach Verweistyp schränkt die Liste ein', async ({ page }) => {
+  await page.goto('admin/menue');
+  await selectFilter(page, 'typ', { label: 'Link-Code' });
+  expect(await tableColumn(page, 1)).toEqual(['Partnerseite']);
+});
+
+test('Suche findet einen Menüeintrag', async ({ page }) => {
+  await page.goto('admin/menue');
+  await searchList(page, 'Satzung');
+  expect(await tableColumn(page, 1)).toEqual(['Satzung']);
 });
 
 test('Menüeintrag bearbeiten zeigt die gespeicherten Werte', async ({ page }) => {
@@ -81,7 +101,7 @@ test('Neuen Menüeintrag als Link anlegen', async ({ page }) => {
 
   await expectNoPhpError(page);
   await page.goto('admin/menue');
-  await expect(page.locator('table.items')).toContainText('Testlink');
+  await expect(page.locator('table.data-table')).toContainText('Testlink');
 });
 
 test('Menüeintrag umbenennen', async ({ page }) => {
@@ -90,7 +110,7 @@ test('Menüeintrag umbenennen', async ({ page }) => {
   await submit(page, 'input[name="menu"]');
 
   await page.goto('admin/menue');
-  await expect(page.locator('table.items')).toContainText('Veranstaltungen');
+  await expect(page.locator('table.data-table')).toContainText('Veranstaltungen');
 });
 
 test('Menüeintrag löschen fragt nach und entfernt ihn', async ({ page }) => {
@@ -99,7 +119,7 @@ test('Menüeintrag löschen fragt nach und entfernt ihn', async ({ page }) => {
   await submit(page, 'input[name="confirm_delete"]');
 
   await page.goto('admin/menue');
-  expect(await tableColumn(page, 1, 'Name')).not.toContain('Intern');
+  expect(await tableColumn(page, 1)).not.toContain('Intern');
 });
 
 test('Kategorieauswahl aktualisiert die Unterkategorien', async ({ page }) => {

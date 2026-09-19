@@ -28,7 +28,7 @@ test('B1 (behoben): Benutzer lässt sich über das Formular anlegen', async ({ p
   await submit(page, 'input[name="user"]');
 
   await page.goto('admin/benutzer');
-  await expect(page.locator('table.items')).toContainText('neuerbenutzer');
+  await expect(page.locator('table.data-table')).toContainText('neuerbenutzer');
 });
 
 test('B2 (behoben): Ban ohne Dauer lässt sich speichern', async ({ page }) => {
@@ -38,7 +38,7 @@ test('B2 (behoben): Ban ohne Dauer lässt sich speichern', async ({ page }) => {
   await submit(page, 'input[name="bans"]');
 
   await page.goto('admin/sperrungen');
-  await expect(page.locator('table.items')).toContainText('192.0.2.99');
+  await expect(page.locator('table.data-table')).toContainText('192.0.2.99');
 });
 
 test('B3 (behoben): Menüeintrag lässt sich speichern', async ({ page }) => {
@@ -47,21 +47,21 @@ test('B3 (behoben): Menüeintrag lässt sich speichern', async ({ page }) => {
   await submit(page, 'input[name="menu"]');
 
   await page.goto('admin/menue');
-  await expect(page.locator('table.items')).toContainText('Veranstaltungen');
+  await expect(page.locator('table.data-table')).toContainText('Veranstaltungen');
 });
 
 test('B4a (behoben): Benutzer werden erst nach Rückfrage gelöscht', async ({ page }) => {
   await page.goto('admin/benutzer?delete=4');
   await expect(page.locator('body')).not.toContainText('erfolgreich entfernt');
   await page.goto('admin/benutzer');
-  await expect(page.locator('table.items')).toContainText('gast');
+  await expect(page.locator('table.data-table')).toContainText('gast');
 });
 
 test('B4b (behoben): Inhalte werden erst nach Rückfrage gelöscht', async ({ page }) => {
   await page.goto('admin/inhalte?delete=4');
   await expect(page.locator('body')).not.toContainText('erfolgreich entfernt');
   await page.goto('admin/inhalte');
-  await expect(page.locator('table.items')).toContainText('Jahreshauptversammlung');
+  await expect(page.locator('table.data-table')).toContainText('Jahreshauptversammlung');
 });
 
 test('B5 (behoben): Login-Maske erzeugt keine JavaScript-Fehler', async ({ page, context }) => {

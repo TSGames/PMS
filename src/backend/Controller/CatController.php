@@ -6,8 +6,10 @@ use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
+use Pms\Backend\View\Components;
 
 /**
  * Hauptkategorien.
@@ -160,26 +162,61 @@ final class CatController extends Controller
 
     private function overview(): string
     {
-        $cats = Db::select('SELECT * FROM ' . Db::table('cat') . ' ORDER BY sort, name');
+        $available = Request::queryInt('available', -1);
+
+        $list = Listing::from('cat')
+            ->searchIn(['name'])
+            ->sortableBy(['id' => 'id', 'name' => 'name', 'sort' => 'sort', 'available' => 'available'])
+            ->orderedBy('sort, name')
+            ->keep('available', $available < 0 ? '' : (string)$available);
+
+        if ($available >= 0) {
+            $list->where('available = :available', ['available' => $available]);
+        }
+
+        $list->load();
 
         $rows = [];
-        foreach ($cats as $index => $cat) {
+        foreach ($list->rows as $index => $cat) {
+            // Die Pfeile verschieben gegenüber dem Nachbarn - das ergibt nur
+            // Sinn, solange die Liste nach der Sortiernummer geordnet ist
+            $sort = $list->isDefaultOrder()
+                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $cat, $list->rows[$index + 1] ?? null)
+                : Html::e((string)(int)$cat->sort);
+
             $rows[] = [
                 (string)(int)$cat->id,
                 Html::e((string)$cat->name),
-                Sorting::cell($this->action(), $cats[$index - 1] ?? null, $cat, $cats[$index + 1] ?? null),
-                Html::yesNo($cat->available),
-                $this->editLink((int)$cat->id),
-                $this->deleteLink((int)$cat->id),
+                $sort,
+                Components::booleanChip($cat->available, 'Verfügbar', 'Versteckt'),
+                $this->rowActions((int)$cat->id),
             ];
         }
 
-        return Html::heading('Kategorien')
-            . '<div class="action-section">' . Html::button('Neue Kategorie', $this->url(['new' => 'yes'])) . '</div>'
-            . Html::table(
-                ['ID', 'Name', 'Sortierung', 'Verfügbar', 'Bearbeiten', 'Löschen'],
+        return Components::pageHeader(
+            'Kategorien',
+            'Die oberste Ebene der Website-Struktur.',
+            Components::primary('Neue Kategorie', $this->url(['new' => 'yes']))
+        )
+            . Components::toolbar($this->action(), $list, [[
+                'name' => 'available',
+                'label' => 'Verfügbarkeit',
+                'options' => [-1 => 'Alle', 1 => 'Nur verfügbare', 0 => 'Nur versteckte'],
+                'value' => $available,
+            ]], 'Kategorie suchen')
+            . Components::table(
+                [
+                    ['key' => 'id', 'label' => 'ID', 'class' => 'cell-id'],
+                    ['key' => 'name', 'label' => 'Name', 'class' => 'cell-title'],
+                    ['key' => 'sort', 'label' => 'Sortierung'],
+                    ['key' => 'available', 'label' => 'Status'],
+                    ['label' => 'Aktionen', 'class' => 'cell-actions'],
+                ],
                 $rows,
-                'Es sind keine Kategorien angelegt.'
-            );
+                $this->action(),
+                $list,
+                $list->isFiltered() ? 'Keine Kategorie passt zur Suche.' : 'Es sind keine Kategorien angelegt.'
+            )
+            . Components::pagination($list, $this->action());
     }
 }
