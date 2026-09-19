@@ -24,13 +24,13 @@ test('Ohne Anmeldung erscheint die Login-Maske', async ({ page }) => {
 test('Anmeldung als Super-Administrator führt ins Backend', async ({ page }) => {
   await login(page, 'admin');
   await expect(page.locator('.admin-sidebar')).toBeVisible();
-  await expect(page.locator('.sidebar-user')).toContainText('Hallo, admin');
+  await expect(page.locator('.user-chip')).toContainText('admin');
   await expect(page.locator('body')).toContainText('Willkommen im Admin Center!');
 });
 
 test('Anmeldung als Administrator führt ins Backend', async ({ page }) => {
   await login(page, 'redakteur');
-  await expect(page.locator('.sidebar-user')).toContainText('Hallo, redakteur');
+  await expect(page.locator('.user-chip')).toContainText('redakteur');
 });
 
 test('Falsches Passwort wird abgewiesen', async ({ page }) => {

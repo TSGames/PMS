@@ -30,7 +30,8 @@ final class Layout
             'modules' => $modules,
             'siteName' => self::siteName(),
             'userName' => Auth::userName(),
-            'navigation' => Navigation::items(),
+            'navigation' => Navigation::groups(),
+            'pageLabel' => Navigation::label($activeAction),
             'messages' => Flash::render(),
         ];
         self::template('page', $data);
@@ -82,6 +83,7 @@ final class Layout
 <script type="text/javascript" src="js/admin-tables.js"></script>
 <script type="text/javascript" src="js/admin-image.js"></script>
 <script type="text/javascript" src="js/admin-theme.js"></script>
+<script defer src="js/vendor/alpine.min.js"></script>
 </head>
 ';
     }

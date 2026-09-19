@@ -26,7 +26,7 @@ den Webserver nicht erreichbar (`.htaccess`) und wird ausschließlich von
 | `Data/` | `Db` – Datenbankzugriff mit vorbereiteten Anweisungen |
 | `Http/` | Router, Navigation, JSON-Schnittstellen, Update-Prüfung |
 | `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine |
-| `View/` | Grundgerüst und Templates |
+| `View/` | Grundgerüst, Templates und Symbole |
 
 ## Ein Controller
 
@@ -68,11 +68,37 @@ Feste Regeln:
 ## Einen neuen Bereich anlegen
 
 1. Controller unter `Controller/` anlegen, von `Controller` erben.
-2. In `Http\Router::ROUTES` eintragen.
-3. Bei Bedarf einen Navigationspunkt in `Http\Navigation::items()` ergänzen.
+2. Adresse in `Http\Routes::PATHS` und Zuordnung in
+   `Http\Kernel::CONTROLLERS` eintragen.
+3. Bei Bedarf einen Navigationspunkt in `Http\Navigation::items()` ergänzen
+   (ans Ende, siehe dort) und in `Http\Navigation::GROUPS` einsortieren.
 4. Testfälle unter `tests/e2e/specs/` ergänzen und den Bildschirm in
    `tests/e2e/lib/screens.js` aufnehmen, damit er in Smoke-Test und
    Screenshots erscheint.
+
+## Oberfläche
+
+`src/admin.css` ist die Gestaltungsgrundlage. Ganz oben stehen die Token
+(Farben, Abstände, Radien, Schrift) je einmal für hell und dunkel, darunter
+die Komponentenklassen. Eine neue Komponente nimmt ausschließlich Token,
+keine festen Farbwerte - sonst bricht der dunkle Modus.
+
+Der Abschnitt "Übergang" am Ende hält die Klassen des Altbestands
+(`.group`, `.items`, `.info_ok`, `.config_table` …) am Leben. Jede dieser
+Klassen verschwindet, sobald der zugehörige Bereich auf die neuen
+Komponenten umgestellt ist.
+
+Symbole liefert `View\Icons::render('name')` als eingebettetes SVG. Alle
+Zeichnungen sind selbst angelegt, damit keine fremde Bibliothek und keine
+Lizenzfrage dazukommt.
+
+Für Interaktion im Browser ist **Alpine.js 3.17.3** eingebunden
+(`src/js/vendor/alpine.min.js`, bezogen von
+`https://cdn.jsdelivr.net/npm/alpinejs@3.17.3/dist/cdn.min.js`). Die Datei
+liegt bewusst im Projekt statt an einem CDN: Das Backend muss auch ohne
+Internetzugang vollständig bedienbar bleiben (siehe `tests/BEFUNDE.md`, B6).
+Zum Aktualisieren die neue Fassung an dieselbe Stelle legen und die Version
+hier nachtragen.
 
 ## Was außerhalb liegt
 
