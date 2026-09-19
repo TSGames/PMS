@@ -6,6 +6,8 @@ require('functions.php');
 use Pms\Data\Db;
 use Pms\Frontend\Http\Forms;
 use Pms\Frontend\Http\Kernel;
+use Pms\Frontend\View\Sidebar;
+use Pms\Frontend\View\Template;
 use Pms\Support\Request;
 
 $template="/var/template/template.html";
@@ -1403,149 +1405,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         }
     }
     // menu
-    $link=$pms_db_connection->query(make_sql("menu","visible = 1 AND usertyp <= '$user_typ2'","sort,name"));
-    if($config_values->menu_mode)
-    {
-        $menu='<div class="menu"><ul>';
-        while($link && $a=$pms_db_connection->fetchObject($link)){
-            $menu.='<li>';
-            if($a->typ==0)
-            {
-                $class="";
-                if($a->item)
-                {
-                    if($a->item==$item)
-                    $class="menu_active";
-                }
-                else if($a->subcat)
-                {
-                    if($a->subcat==$subcat)
-                    $class="menu_active";
-                }
-                else if($a->cat)
-                {
-                    if($a->cat==$cat)
-                    $class="menu_active";
-                }
-                $menu.=make_link_mark($a->name,"",$a->cat,$a->subcat,$a->item,"",$class,0,"",0);
-                if($a->popup && !$a->item)
-                {
-                    $what="subcat";
-                    $what2="cat";
-                    $filter="available = 1 AND ";
-                    $id=$a->cat;
-                    if($a->subcat)
-                    {
-                        $id=$a->subcat;
-                        $what="item";
-                        $what2="subcat";
-                        $filter="visible = 1 AND available = 1 AND ";
-                    }
-                    if(from_db("user",$user_id,"typ")>1) unset($filter);
-                    $link2=$pms_db_connection->query(make_sql($what,$filter.$what2." = '".$id."'","sort,name"));
-                    $sub=$link2?$pms_db_connection->fetchAllObject($link2):array();
-                    if($sub)
-                    {
-                        $menu.='<!--[if IE 7]><!--></a><!--<![endif]--><ul><!--[if lte IE 6]><table class="menu_table"><tr><td><![endif]-->';
-                        foreach($sub as $b)
-                        {
-                            unset($id2);
-                            $id1=$b->id;
-                            if($a->subcat)
-                            {
-                                $id1=$a->subcat;
-                                $id2=$b->id;
-                            }
-                            $menu.='<li>'.make_link_mark($b->name,"",$a->cat,$id1,$id2,"").'</li>';
-                        }
-                    }
-                    $menu.='<!--[if lte IE 6]></td></tr></table></a><![endif]--></ul></li>';
-                }
-                else $menu.="</a></li>";
-            }
-            else if($a->typ==1)
-            {
-                $class="";
-                if(substr($plugin_intern[$a->plugin][1],0,1)!="#")
-                {
-                    if($plugin_intern[$a->plugin][1]==$action)
-                    $class="menu_active";
-                    $menu.=make_link($a->name,"action=".$plugin_intern[$a->plugin][1],0,0,0,$class)."</li>";
-                }
-                else
-                {
-                    if($a->plugin==6 && $frontpage) $class=" class=\"menu_active\"";
-                    $menu.="<a".$class." href=\"".substr($plugin_intern[$a->plugin][1],1)."\">".$a->name."</a></li>";
-                }
-            }
-            else if($a->typ==2)
-            $menu.="<".$a->extern.">".$a->name."</a></li>";
-            if($a->typ==3)
-            $menu.="<a href=\"#\">".$a->name."</a></li>";
-        }
-        $menu.='</ul></div>';
-    }
-    else
-    {
-        $break=$config_values->menubreak;
-        $vertical=$config_values->vertical;
-        $menu_height=$config_values->menu_height;
-        $menu_width=$config_values->menu_width;
-        if($vertical)
-        {
-            $menu="<table class=\"menu_outer\"><tr><td><table class=\"menu_inner\">";
-        }
-        for($i=0;$link && $a=$pms_db_connection->fetchObject($link);$i++)
-        {
-            if($break>1)
-            {
-                if($i%$break==0 && $i!=0)
-                {
-                    if(!$vertical)
-                    {
-                        $menu=$menu."</tr><tr>";
-                    }
-                    else
-                    {
-                        $menu=$menu."</table></td><td><table class=\"menu_inner\">";
-                    }
-                }
-            }
-            if($vertical)
-            {
-                $menu=$menu."<tr>";
-            }
-            $menu=$menu."<td width=\"".$menu_width."px\" height=\"".$menu_height."px\" class=\"menu\">";
-            if($a->typ==0)
-            $menu.=make_link($a->name,"",$a->cat,$a->subcat,$a->item,"menu");
-            else if($a->typ==1)
-            {
-                if(substr($plugin_intern[$a->plugin][1],0,1)!="#")
-                {
-                    $menu.=make_link($a->name,"action=".$plugin_intern[$a->plugin][1],0,0,0,"menu");
-                }
-                else
-                {
-                    $menu.="<a class=\"menu\" href=\"".substr($plugin_intern[$a->plugin][1],1)."\">".$a->name."</a>";
-                }
-            }
-            else if($a->typ==2)
-            $menu.="<".$a->extern." class=\"menu\">".$a->name."</a>";
-            if($a->typ==3)
-            $menu.=$a->name;
-            
-            $menu=$menu."</td>
-            ";
-            if($vertical)
-            {
-                $menu=$menu."</tr>";
-            }
-        }
-        if($vertical)
-        {
-            $menu=$menu."</table></td></tr></table>";
-        }
-    }
+    $menu=(new \Pms\Frontend\View\Menu($target,(int)$user_typ2,(bool)$frontpage))->render();
     
     // poll
     $link=$pms_db_connection->query(make_sql("poll","available = 1","sort,question"));
@@ -1670,55 +1530,27 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     
     if(!$login)
     {
-        if($last_login)
-        {
-            $last_login=$last_login."<br>";
-        }
-        $user_str.=$last_login.form().hidden_positions()."<table class=\"user_panel\">";
-        if($login_fail)
-        {
-            $user_str.="<tr><td colspan=\"2\"><center><div class=\"login_fail\">".$login_fail."</div></td></tr>";
-        }
-        $user_now="";
-        if($_COOKIE["login_id"])
-        {
-            $user_now=from_db("user",$_COOKIE["login_id"]*1,"name");
-        }
-        $user_str.="
-        <tr><td>".language("USER_NAME")."</td><td><input type=\"text\" name=\"name\" size=\"6\" value=\"".$user_now."\"></td></tr>
-        <tr><td>".language("USER_PW")."</td><td><input type=\"password\" name=\"password\" size=\"6\"></td></tr>
-        <tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"save_login\" value=\"1\"> ".language("USER_STAY_LOGGED_IN")."</center></td></tr>
-        <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"user_login\" value=\"".language("USER_LOGIN")."\"></center>
-        </td></tr>";
-        if($register_activated)
-        {
-            $user_str.="<tr><td colspan=\"2\"><center>".make_link_mark(language("USER_REGISTER"),"action=register",0,0,0,"","user_register")."</center></td></tr>";
-        }
-        if($password_recovery_activated)
-        {
-            $user_str.="<tr><td colspan=\"2\"><center>".make_link_mark(language("USER_PASSWORD_LOST"),"action=password_recover",0,0,0,"","user_pw_recover")."</center></td></tr>";
-        }
-        $user_str.="</table></form>";
+        if($last_login) $last_login=$last_login."<br>";
+        $user_str.=Sidebar::loginForm(
+            $_COOKIE["login_id"] ? (string)from_db("user",$_COOKIE["login_id"]*1,"name") : "",
+            $login_fail ?? "",
+            $last_login ?? "",
+            (bool)$register_activated,
+            (bool)$password_recovery_activated
+        );
     }
     else
     {
-        $user_str.="<table class=\"user_panel\"><tr><td>".str_replace("%1",from_db("user",$user_id,"name"),language("USER_ONLINE"))."</td></tr>
-        <tr><td>";
-        if(!$_SESSION['last_login'])
-        {
-            $user_str.=language("USER_FIRST_TIME_ONLINE");
-        }
-        else
-        {
-            $user_str.=str_replace("%1",make_date($_SESSION['last_login'],0,1),language("USER_LAST_TIME_ONLINE"));
-        }
-        $user_str.="</td></tr>";
-        $a=make_contentimg("user",$user_id,from_db("user",$user_id,"image"),0);
-        if($a)
-        $user_str.="<tr><td style=\"text-align:center;\">".$a."</td></tr>";
-        
-        $user_str.="<tr><td><center>(".make_link(language("USER_SETTINGS"),"action=user_panel",0,0,0,"user_settings").")</center></td></tr>
-        <tr><td><center>(".make_link(language("USER_LOGOUT"),"action=logout",$cat,$subcat,$item,"user_logout",$id).")</center></td></tr></table>";
+        $letzter=$_SESSION['last_login']
+            ? str_replace("%1",make_date($_SESSION['last_login'],0,1),language("USER_LAST_TIME_ONLINE"))
+            : language("USER_FIRST_TIME_ONLINE");
+        $user_str.=Sidebar::userPanel(
+            (string)from_db("user",$user_id,"name"),
+            $letzter,
+            (string)make_contentimg("user",$user_id,from_db("user",$user_id,"image"),0),
+            \Pms\Frontend\Http\Routes::action("logout",array("cat"=>$cat,"subcat"=>$subcat,"item"=>$item,"id"=>$id)),
+            \Pms\Frontend\Http\Routes::action("user_panel")
+        );
     }
     $title=$config_values->name;
     $con=$config_values->title;
@@ -1788,17 +1620,17 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     }
     include('counter.php');
     
-    $user_counter="
-    <div class=\"user_counter\">".language("COUNTER_OVERALL")." ".$number_visitors."<br>
-    ".language("COUNTER_ONLINE")." ".count_db_exp("visitors_counter","WHERE time>='".(time()-60*$config_values->visitors_lifetime)."'")."<br>
-    ".language("COUNTER_TODAY")." ".$config_values->visitors_today."<br>
-    ".language("COUNTER_YESTERDAY")." ".$config_values->visitors_yesterday."<br>
-    ".language("COUNTER_COMMENTS")." ".count_db("comments")."<br>
-    ".language("COUNTER_VALUES")." ".sum_db("item","numratings")."<br>
-    ".language("COUNTER_ITEMS")." ".count_db("item")."<br>
-    ".language("COUNTER_USERS")." ".count_db("user")."</div>";
-    $search_plugin=form("","get")."<table class=\"search\"><tr class=\"search\"><td class=\"search\"><center><input type=\"text\" class=\"search_field\" size=\"17\" name=\"search_query\" value=\"".str_replace('"',"&quot;",$search_query3)."\"><br>
-    <input type=\"submit\" class=\"search_button\" name=\"search\" value=\"".language("SEARCH_BUTTON")."\"></form></center></td></tr></table>";
+    $user_counter=Sidebar::counter(array(
+        language("COUNTER_OVERALL") => $number_visitors,
+        language("COUNTER_ONLINE") => count_db_exp("visitors_counter","WHERE time>='".(time()-60*$config_values->visitors_lifetime)."'"),
+        language("COUNTER_TODAY") => $config_values->visitors_today,
+        language("COUNTER_YESTERDAY") => $config_values->visitors_yesterday,
+        language("COUNTER_COMMENTS") => count_db("comments"),
+        language("COUNTER_VALUES") => sum_db("item","numratings"),
+        language("COUNTER_ITEMS") => count_db("item"),
+        language("COUNTER_USERS") => count_db("user"),
+    ));
+    $search_plugin=Sidebar::search($search_query3 ?? "");
     $poll=smileys($poll);
     // Wurde etwas abgelehnt, weil das Token fehlte, soll der Besucher das
     // sehen - sonst wirkt die Seite, als sei nichts passiert.
@@ -1822,23 +1654,24 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     
     if(file_exists($template))
     {
-        $search=get_template();
-        $out=$template_content;
-        if(!strstr($out,"#comments_list")) $out=str_replace("#content","#content#comments_list",$out);
-        $pms_styles='<link rel="stylesheet" type="text/css" href="pms.css">';
-        if(!strstr($out,"#pms_styles")) $out=str_replace("</head>","#pms_styles</head>",$out);
-        $replace=array($content,$title,$menu,$user_str,$poll,$footer,$user_counter,$birthday,$top_user,$most_discussed,$search_plugin,$position_row,$latest_comments,$comment_str,$newsletter,$pms_styles);
-        for($i=0;$i<2;$i++)
-        $out=replace_dynamic(do_check(make_dynamic(trim($out))));
-        
-        if($item_edit_mode)
-        {
-            $search[count($search)]=$search[0];
-            $replace[count($replace)]=$content;
-            unset($search[0]);
-            unset($replace[0]);
-        }
-        $out=str_replace($search,$replace,$out);
+        $out=(new Template($template_content,array(
+            "content" => $content,
+            "title" => $title,
+            "menu" => $menu,
+            "user_panel" => $user_str,
+            "poll" => $poll,
+            "footer" => $footer,
+            "counter" => $user_counter,
+            "birthday" => $birthday ?? "",
+            "topuser" => $top_user ?? "",
+            "mostdiscussed" => $most_discussed ?? "",
+            "search" => $search_plugin,
+            "position_row" => $position_row,
+            "latest_comments" => $latest_comments ?? "",
+            "comments_list" => $comment_str ?? "",
+            "newsletter" => $newsletter ?? "",
+            "pms_styles" => Template::styles($template_content),
+        )))->render((bool)$item_edit_mode);
         echo ($out);
     }
     ?>

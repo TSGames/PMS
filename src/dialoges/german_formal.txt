@@ -555,3 +555,9 @@ Die Anfrage stammt nicht von dieser Seite oder Ihre Sitzung ist abgelaufen. Bitt
 
 ##COMMENT_DELETE
 Kommentar löschen
+
+##MENU_LABEL
+Menü
+
+##COUNTER_HEADING
+Besucher

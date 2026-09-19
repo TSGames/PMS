@@ -555,3 +555,9 @@ The request did not come from this page, or your session has expired. Please rel
 
 ##COMMENT_DELETE
 Delete comment
+
+##MENU_LABEL
+Menu
+
+##COUNTER_HEADING
+Visitors
