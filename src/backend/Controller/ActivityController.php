@@ -4,13 +4,24 @@ namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Html;
+use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
+use Pms\Backend\Support\UserAgent;
+use Pms\Backend\View\Components;
 
 /**
- * Website-Status: aktuelle Besucher und deren letzte Aktionen.
+ * Website-Status: Kennzahlen und die letzten Zugriffe.
+ *
+ * Der Altbestand lud jeden Zugriff der letzten 24 Stunden und gab die rohen
+ * Browser-Kennungen aus - bei einer belebten Website mehrere hundert Zeilen.
+ * Die Liste ist jetzt durchsuchbar und seitenweise; die Kennungen werden
+ * lesbar gemacht.
  */
 final class ActivityController extends Controller
 {
+    /** Kennungen, die auf eine Suchmaschine deuten - für die Abfrage. */
+    private const BOT_PATTERNS = ['%bot%', '%crawler%', '%spider%', '%slurp%', '%monitor%'];
+
     #[\Override]
     public function action(): string
     {
@@ -20,60 +31,72 @@ final class ActivityController extends Controller
     #[\Override]
     public function handle(): string
     {
-        if (Request::submitted('send_bot_filter')) {
-            $_SESSION['filter_bot'] = Request::checkbox('filter_bot');
+        $hideBots = Request::queryInt('bots', 1) === 1;
+
+        $list = Listing::from('visitors_counter')
+            ->searchIn(['id', 'browser'])
+            ->sortableBy(['id' => 'id', 'time' => 'time'])
+            ->orderedBy('time DESC')
+            ->keep('bots', $hideBots ? '' : '0');
+
+        if ($hideBots) {
+            foreach (self::BOT_PATTERNS as $index => $pattern) {
+                $list->where('LOWER(browser) NOT LIKE :bot' . $index, ['bot' . $index => $pattern]);
+            }
         }
 
-        $filterBots = !empty($_SESSION['filter_bot']);
-        $stats = get_24_stats($filterBots);
+        $list->load();
 
-        return $this->summary(count($stats), $filterBots) . $this->visitorTable($stats);
+        return Components::pageHeader(
+            'Website-Status',
+            'Kennzahlen der Website und die zuletzt aufgezeichneten Zugriffe.',
+            Components::secondary('Aktualisieren', $this->url($list->params()), 'refresh')
+        )
+            . $this->statistics()
+            . Components::toolbar($this->action(), $list, [[
+                'name' => 'bots',
+                'label' => 'Suchmaschinen',
+                'options' => [1 => 'Suchmaschinen ausblenden', 0 => 'Suchmaschinen anzeigen'],
+                'value' => $hideBots ? 1 : 0,
+            ]], 'IP oder Browser suchen')
+            . $this->visitorTable($list)
+            . Components::pagination($list, $this->action());
     }
 
-    private function summary(int $accessCount, bool $filterBots): string
+    /** Die vier Besucherzahlen als Karten. */
+    private function statistics(): string
     {
         $config = $GLOBALS['config_values'] ?? null;
         $lifetime = (int)($config->visitors_lifetime ?? 15);
-        $onlineSince = time() - 60 * $lifetime;
+        $online = Db::count('visitors_counter', 'time >= :since', ['since' => time() - 60 * $lifetime]);
 
-        $online = Db::count('visitors_counter', 'time >= :since', ['since' => $onlineSince]);
-
-        $rows = [
-            ['Besucher Online', (string)$online],
-            ['Besucher Heute', (string)(int)($config->visitors_today ?? 0)],
-            ['Besucher Gestern', (string)(int)($config->visitors_yesterday ?? 0)],
-            ['Besucher Gesamt', (string)(int)($GLOBALS['number_visitors'] ?? 0)],
+        $cards = [
+            ['Online', $online, 'In den letzten ' . $lifetime . ' Minuten aktiv', 'pulse'],
+            ['Heute', (int)($config->visitors_today ?? 0), 'Besucher seit Mitternacht', 'globe'],
+            ['Gestern', (int)($config->visitors_yesterday ?? 0), 'Besucher am Vortag', 'clock'],
+            ['Gesamt', (int)($GLOBALS['number_visitors'] ?? 0), 'Seit Bestehen der Website', 'users'],
         ];
 
-        $sentence = $accessCount === 1
-            ? 'Innerhalb der letzten 24 Stunden war 1 Zugriff'
-            : 'Innerhalb der letzten 24 Stunden waren ' . $accessCount . ' Zugriffe';
+        $html = '<div class="stat-grid">';
+        foreach ($cards as [$label, $value, $hint, $icon]) {
+            $html .= '<div class="stat">'
+                . '<div class="stat-label">' . \Pms\Backend\View\Icons::render($icon, 'icon icon-sm')
+                . Html::e($label) . '</div>'
+                . '<div class="stat-value">' . Html::e(number_format($value, 0, ',', '.')) . '</div>'
+                . '<div class="stat-hint">' . Html::e($hint) . '</div>'
+                . '</div>';
+        }
 
-        return Html::heading('Website-Status')
-            . '<p>Sie haben auf dieser Seite die Möglichkeit, alle aktuellen Benutzer- und '
-            . 'Besucher-Aktivitäten einzusehen.</p>'
-            . Html::table(['Kennzahl', 'Wert'], array_map(
-                static fn(array $row): array => [Html::e($row[0]), Html::e($row[1])],
-                $rows
-            ))
-            . '<p>' . Html::e($sentence) . '</p>'
-            . '<div class="action-section">' . Html::button('Aktualisieren', $this->url()) . '</div>'
-            . Html::formOpen($this->action())
-            . '<div class="action-section">'
-            . Html::checkbox('filter_bot', $filterBots, 'Suchmaschinen filtern')
-            . ' <input type="submit" name="send_bot_filter" value="Speichern">'
-            . '</div>'
-            . Html::formClose();
+        return $html . '</div>';
     }
 
-    /** @param list<object> $stats */
-    private function visitorTable(array $stats): string
+    private function visitorTable(Listing $list): string
     {
         $rows = [];
-        foreach ($stats as $visitor) {
-            $user = 'Keiner / Gast';
+        foreach ($list->rows as $visitor) {
+            $user = 'Gast';
             if ($visitor->user) {
-                $user = make_link(
+                $user = (string)make_link(
                     (string)from_db('user', (int)$visitor->user, 'name'),
                     'action=user&id=' . (int)$visitor->user,
                     0,
@@ -85,20 +108,33 @@ final class ActivityController extends Controller
                 );
             }
 
+            $agent = (string)$visitor->browser;
             $rows[] = [
-                Html::e((string)$visitor->id),
-                Html::e(browser($visitor->browser)),
+                '<code>' . Html::e((string)$visitor->id) . '</code>',
+                // Die rohe Kennung bleibt als Tooltip erreichbar
+                '<span title="' . Html::e($agent) . '">' . Html::e(UserAgent::describe($agent)) . '</span>'
+                . (UserAgent::isBot($agent) ? ' ' . Components::chip('Suchmaschine', 'warn') : ''),
                 $user,
-                'Vor ' . Html::e(time_diff($visitor->time)),
+                'vor ' . Html::e((string)time_diff($visitor->time)),
                 // convert_action liefert bereits fertiges HTML mit Verlinkung
                 (string)convert_action($visitor->typ, $visitor->content),
             ];
         }
 
-        return Html::table(
-            ['IP', 'Browser', 'Benutzer', 'Letzte Aktivität', 'Typ der letzten Aktion'],
+        return Components::table(
+            [
+                ['key' => 'id', 'label' => 'Kennung', 'class' => 'cell-id'],
+                ['label' => 'Browser', 'class' => 'cell-title'],
+                ['label' => 'Benutzer'],
+                ['key' => 'time', 'label' => 'Letzte Aktivität'],
+                ['label' => 'Letzte Aktion'],
+            ],
             $rows,
-            'In den letzten 24 Stunden wurden keine Zugriffe aufgezeichnet.'
+            $this->action(),
+            $list,
+            $list->isFiltered()
+                ? 'Kein Zugriff passt zur Suche.'
+                : 'Es wurden noch keine Zugriffe aufgezeichnet.'
         );
     }
 }

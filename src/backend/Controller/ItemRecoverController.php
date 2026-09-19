@@ -7,6 +7,8 @@ use Pms\Backend\Support\Csrf;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
+use Pms\Backend\View\Icons;
 
 /**
  * Frühere Fassung eines vorhandenen Inhalts aus einer Sicherung einspielen.
@@ -69,30 +71,44 @@ final class ItemRecoverController extends Controller
     {
         $name = (string)from_db('item', $itemId, 'name');
         $versions = recover_item($itemId);
+        $versions = is_array($versions) ? $versions : [];
 
-        $rows = [];
-        foreach (is_array($versions) ? $versions : [] as $index => $version) {
+        $warning = '<div class="notice notice-warn">' . Icons::render('warning')
+            . '<span>Die aktuelle Fassung wird dabei verworfen. Legen Sie vorher eine '
+            . '<a href="' . Html::e(Html::url('backup')) . '">Sicherung</a> an, wenn Sie sie behalten möchten.'
+            . '</span></div>';
+
+        $header = Components::pageHeader(
+            'Frühere Fassung einspielen',
+            'Gesicherte Fassungen von "' . $name . '", die neueste zuerst.',
+            Components::secondary('Zurück zum Inhalt', Html::url('item', ['edit' => $itemId]), 'chevron-left')
+        );
+
+        if ($versions === []) {
+            return $header . Components::emptyState(
+                'Keine gesicherte Fassung',
+                'Für diesen Inhalt liegt in den Sicherungen nichts vor.'
+            );
+        }
+
+        $html = '<div class="card"><div class="card-body"><ol class="timeline">';
+        foreach ($versions as $index => $version) {
             $url = Html::url('item_recover', [
                 'item' => $itemId,
                 'do_recover' => 'yes',
                 'recover_id' => $index,
             ] + Csrf::queryParam());
 
-            $rows[] = [
-                Html::e((string)$version[0]),
-                '<a href="' . Html::e($url) . '">Wiederherstellen</a>',
-            ];
+            $html .= '<li>'
+                . '<div class="timeline-head">'
+                . '<strong>' . Html::e((string)$version[0]) . '</strong>'
+                . ($index === 0 ? Components::chip('Neueste', 'ok') : '')
+                . '<span class="timeline-actions">'
+                . '<a class="btn btn-secondary" href="' . Html::e($url) . '">Diese Fassung einspielen</a>'
+                . '</span></div>'
+                . '</li>';
         }
 
-        return Html::heading('Inhalt wiederherstellen')
-            . '<p>Wählen Sie aus der Liste unten eine Backup-Version für den Inhalt "'
-            . '<a href="' . Html::e(Html::url('item', ['edit' => $itemId])) . '">' . Html::e($name) . '</a>" aus.</p>'
-            . '<p><strong>Achtung!</strong> Die aktuelle Version wird verworfen! Falls Sie dies nicht möchten, '
-            . 'legen Sie bitte vorher ein <a href="' . Html::e(Html::url('backup')) . '">Backup</a> an.</p>'
-            . Html::table(
-                ['Datum - Uhrzeit', 'Wiederherstellen'],
-                $rows,
-                'Für diesen Inhalt liegen keine gesicherten Fassungen vor.'
-            );
+        return $header . $warning . $html . '</ol></div></div>';
     }
 }

@@ -69,6 +69,20 @@ Ersatzzeichen statt Umlauten ("Gï¿½stebuch"). Betroffen war auch die
 Ersetzungstabelle in `link_name()`, die Umlaute in Dateinamen ersetzen
 soll und dafür ebenfalls nur Ersatzzeichen enthielt.
 
+### B10 – Die Zuschneide-Schnittstelle lieferte HTML statt JSON
+Mit den sprechenden Adressen aus Phase 1 landete `admin.php?action=crop_image_ajax`
+in der Zuordnung der Bereiche, fand dort keinen Controller und bekam die
+Startseite zurück. Der Zuschneide-Dialog scheiterte an der Antwort, ohne
+eine Meldung zu zeigen. `Kernel::ENDPOINTS` beantwortet die Schnittstellen
+jetzt auch über die frühere Adresse; `specs/security.spec.js` prüft, dass
+`Content-Type: application/json` zurückkommt.
+
+### B11 – `browser()` gab die rohe Kennung zurück
+Die Funktion in `functions_utility.php` begann mit `return $a;`, gefolgt von
+totem Code für Firefox. Der Website-Status zeigte deshalb mehrere hundert
+Zeilen voller `Mozilla/5.0 (…) AppleWebKit/537.36 …`. `Support\UserAgent`
+macht daraus "Chrome 120 auf Windows 10/11" und erkennt Suchmaschinen.
+
 ### Weitere Kleinigkeiten
 * Die Benutzerliste erzeugte eine mehrdeutige Abfrage
   (`ambiguous column name: id`).

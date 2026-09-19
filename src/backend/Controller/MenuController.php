@@ -203,7 +203,7 @@ final class MenuController extends Controller
         $items = $values['subcat'] > 0 ? $this->options('item', 'subcat', $values['subcat']) : [];
 
         $state = [
-            'url' => Routes::basePath() . Routes::path('options_ajax'),
+            'url' => Routes::path('options_ajax'),
             'typ' => $values['typ'],
             'cat' => $values['cat'],
             'subcat' => $values['subcat'],

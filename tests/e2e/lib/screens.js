@@ -307,7 +307,7 @@ const SCREENS = [
     title: 'Inhalt aus Version wiederherstellen',
     role: 'admin',
     url: 'admin/inhalte/versionen?item=2',
-    heading: 'Inhalt wiederherstellen',
+    heading: 'Frühere Fassung einspielen',
   },
 
   // ------------------------------------------------------------- Variablen

@@ -25,7 +25,7 @@ den Webserver nicht erreichbar (`.htaccess`) und wird ausschließlich von
 | `Controller/` | Je ein Controller pro Bereich des Backends |
 | `Data/` | `Db` – Datenbankzugriff mit vorbereiteten Anweisungen |
 | `Http/` | Routen, Navigation, JSON-Schnittstellen, Update-Prüfung |
-| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen, Feldfehler |
+| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen, Feldfehler, Browser-Kennungen |
 | `View/` | Grundgerüst, Templates, Symbole, Listen- und Formularbausteine |
 
 ## Ein Controller
@@ -148,6 +148,21 @@ ganze Formular, nicht einzelne Abschnitte. Abhängige Auswahlfelder
 (Kategorie - Unterkategorie - Inhalt) laden ihre Einträge über
 `Http\OptionsEndpoint` nach; ihr Ausgangsbestand steht im Zustand, den
 `linkedSelects()` bekommt, und deshalb nicht zusätzlich im Markup.
+
+## Dialoge statt Seitenwechsel
+
+Der Bild-Dialog im Inhaltseditor ist das Muster für alles, was früher eine
+eigene Seite war: `View`-Markup mit `x-show`, eine Alpine-Komponente unter
+`src/js/` und eine JSON-Schnittstelle unter `Http/`. Hochladen, auswählen,
+skalieren und einfügen laufen über `Http\ImageEndpoint`, ohne dass der
+Editor verlassen wird - bisher ging dabei jede ungespeicherte Änderung am
+Text verloren.
+
+Eine Schnittstelle prüft immer selbst: `Auth::isLoggedIn()` und, sobald sie
+etwas verändert, `Csrf::check()`. `Kernel::ENDPOINTS` nimmt sie von der
+CSRF-Middleware aus, damit sie mit JSON antworten kann statt mit einer
+Weiterleitung auf eine HTML-Seite, und beantwortet sie auch über die frühere
+Adresse `admin.php?action=...`.
 
 ## Oberfläche
 

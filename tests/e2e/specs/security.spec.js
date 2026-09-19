@@ -89,3 +89,38 @@ test('Frühere Adressen leiten auf die neuen Pfade um', async ({ request }) => {
     expect(response.headers()['location'], from).toBe(to);
   }
 });
+
+test('Die JSON-Schnittstellen antworten mit JSON, nicht mit der Startseite', async ({ page }) => {
+  await login(page, 'admin');
+
+  // Auch über die frühere Adresse admin.php?action=... - dort meldet sich
+  // der Zuschneide-Dialog (crop_modal.js) an
+  const result = await page.evaluate(async () => {
+    const body = new FormData();
+    body.append('action', 'crop_image_ajax');
+    body.append('pms_token', window.PMS_TOKEN || '');
+    const response = await fetch('admin.php', { method: 'POST', body, credentials: 'same-origin' });
+    return { type: response.headers.get('content-type'), text: (await response.text()).slice(0, 200) };
+  });
+
+  expect(result.type).toContain('application/json');
+  expect(result.text).not.toContain('<!DOCTYPE');
+});
+
+test('Die Bild-Schnittstelle weist eine Anfrage ohne Anmeldung ab', async ({ page, context }) => {
+  await context.clearCookies();
+  const response = await page.request.get('admin/api/bilder?do=list');
+  expect(response.status()).toBe(401);
+});
+
+test('Die Bild-Schnittstelle weist Schreibzugriffe ohne Token ab', async ({ page }) => {
+  await login(page, 'admin');
+  const result = await page.evaluate(async () => {
+    const body = new FormData();
+    body.append('do', 'delete');
+    body.append('name', 'beliebig.png');
+    const response = await fetch('admin/api/bilder', { method: 'POST', body, credentials: 'same-origin' });
+    return response.status;
+  });
+  expect(result).toBe(403);
+});

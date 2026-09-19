@@ -31,7 +31,6 @@ final class Kernel
         'item' => \Pms\Backend\Controller\ItemController::class,
         'item_restore' => \Pms\Backend\Controller\ItemRestoreController::class,
         'item_recover' => \Pms\Backend\Controller\ItemRecoverController::class,
-        'add_image' => \Pms\Backend\Controller\ItemController::class,
         'var' => \Pms\Backend\Controller\VarController::class,
         'poll' => \Pms\Backend\Controller\PollController::class,
         'bans' => \Pms\Backend\Controller\BansController::class,
@@ -58,27 +57,37 @@ final class Kernel
         $app->run();
     }
 
+    /**
+     * Schnittstellen, die JSON liefern: Aktion => Klasse mit handle().
+     *
+     * @var array<string, class-string>
+     */
+    private const ENDPOINTS = [
+        'xlsx_import_ajax' => XlsxEndpoint::class,
+        'crop_image_ajax' => CropEndpoint::class,
+        'options_ajax' => OptionsEndpoint::class,
+        'image_ajax' => ImageEndpoint::class,
+    ];
+
+    /** Beantwortet diese Aktion eine Schnittstelle statt einer Seite? */
+    public static function isEndpoint(string $action): bool
+    {
+        return isset(self::ENDPOINTS[$action]);
+    }
+
     /** @param list<array{action: string, label: string}> $modules */
     private static function registerRoutes(App $app, array $modules, string $moduleContent): void
     {
         $methods = ['GET', 'POST'];
 
         // Schnittstellen ohne Seitenausgabe
-        $app->map($methods, Routes::all()['xlsx_import_ajax'], static function (ServerRequestInterface $request, ResponseInterface $response) {
-            Request::bind($request, 'xlsx_import_ajax');
-            XlsxEndpoint::handle();
-            return $response;
-        });
-        $app->map($methods, Routes::all()['crop_image_ajax'], static function (ServerRequestInterface $request, ResponseInterface $response) {
-            Request::bind($request, 'crop_image_ajax');
-            CropEndpoint::handle();
-            return $response;
-        });
-        $app->map($methods, Routes::all()['options_ajax'], static function (ServerRequestInterface $request, ResponseInterface $response) {
-            Request::bind($request, 'options_ajax');
-            OptionsEndpoint::handle();
-            return $response;
-        });
+        foreach (self::ENDPOINTS as $action => $endpoint) {
+            $app->map($methods, Routes::all()[$action], static function (ServerRequestInterface $request, ResponseInterface $response) use ($action, $endpoint) {
+                Request::bind($request, $action);
+                $endpoint::handle();
+                return $response;
+            });
+        }
 
         // Abmelden und offene Vorgänge wurden bereits beim Start verarbeitet
         foreach (['logout', 'load_last', 'update'] as $action) {
@@ -109,6 +118,14 @@ final class Kernel
                 unset($query['action']);
                 $target = Routes::path($action) . ($query === [] ? '' : '?' . http_build_query($query));
                 return $response->withStatus(301)->withHeader('Location', $target);
+            }
+
+            // Eine Schnittstelle muss auch über die alte Adresse JSON liefern
+            // und nicht die Startseite - sonst bekommt das Skript HTML zurück
+            if (self::isEndpoint($action)) {
+                Request::bind($request, $action);
+                self::ENDPOINTS[$action]::handle();
+                return $response;
             }
 
             return self::page($request, $response, $action, $modules, $moduleContent);

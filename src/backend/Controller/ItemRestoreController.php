@@ -6,6 +6,8 @@ use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Wiederherstellung gelöschter Inhalte aus den Sicherungen.
@@ -73,24 +75,37 @@ final class ItemRestoreController extends Controller
 
         $found = recover_item(0, 1, $existing);
 
-        $html = Html::heading('Gelöschten Inhalt wiederherstellen');
+        $header = Components::pageHeader(
+            'Gelöschten Inhalt wiederherstellen',
+            'Inhalte, die es in den Sicherungen noch gibt, in der Website aber nicht mehr.',
+            Components::secondary('Zurück zur Übersicht', Html::url('item'), 'chevron-left')
+        );
+
         if (!is_array($found) || $found === []) {
-            return $html . '<p>In den Backups wurden keine Inhalte gefunden, welche gelöscht wurden!</p>';
+            return $header . Components::emptyState(
+                'Nichts zum Wiederherstellen',
+                'In den Sicherungen findet sich kein Inhalt, der gelöscht wurde.'
+            );
         }
 
         $options = [];
         foreach ($found as $entry) {
             $id = (int)$entry[2];
             if (!isset($options[$id])) {
-                $options[$id] = '(ID: ' . $id . ') ' . (string)$entry[3];
+                $options[$id] = (string)$entry[3] . ' (ID ' . $id . ')';
             }
         }
 
-        return $html
-            . '<p>Bitte wählen Sie aus der folgenden Liste das Inhaltsobjekt:</p>'
+        return $header
             . Html::formOpen($this->action())
-            . Html::select('item_select', $options)
-            . ' <input type="submit" name="item_restore" value="Weiter">'
+            . Form::card(
+                Form::section('Schritt 1 von 2', Form::field(
+                    'Gelöschter Inhalt',
+                    Html::select('item_select', $options, null, ['id' => 'item_select']),
+                    ['name' => 'item_select', 'hint' => 'Danach wählen Sie den Zeitpunkt der Sicherung.']
+                )),
+                Form::actions('item_restore', 'Weiter', Html::url('item'))
+            )
             . Html::formClose();
     }
 
@@ -99,9 +114,13 @@ final class ItemRestoreController extends Controller
     {
         $versions = recover_item($itemId, 0);
 
-        $html = Html::heading('Gelöschten Inhalt wiederherstellen');
+        $header = Components::pageHeader('Gelöschten Inhalt wiederherstellen');
+
         if (!is_array($versions) || $versions === []) {
-            return $html . '<p>Es ist ein Fehler aufgetreten.</p>';
+            return $header . Components::emptyState(
+                'Keine Sicherung gefunden',
+                'Zu diesem Inhalt liegt keine Fassung vor.'
+            );
         }
 
         $options = [];
@@ -109,15 +128,22 @@ final class ItemRestoreController extends Controller
             $options[$index] = (string)$version[0];
         }
 
-        return $html
-            . '<p>Bitte wählen Sie ein Datum aus, um das Inhaltsobjekt <strong>'
-            . Html::e((string)$versions[0][3]) . '</strong> (ID: ' . (int)$versions[0][2]
-            . ') wiederherzustellen:</p>'
+        $name = (string)$versions[0][3];
+
+        return Components::pageHeader(
+            'Gelöschten Inhalt wiederherstellen',
+            'Aus welcher Sicherung soll "' . $name . '" (ID ' . (int)$versions[0][2] . ') zurückkommen?'
+        )
             . Html::formOpen($this->action())
             . Html::hidden('item_select', $itemId)
-            . Html::hidden('do_restore', 1)
-            . Html::select('date_select', $options)
-            . ' <input type="submit" name="do_restore" value="Wiederherstellen">'
+            . Form::card(
+                Form::section('Schritt 2 von 2', Form::field(
+                    'Zeitpunkt der Sicherung',
+                    Html::select('date_select', $options, null, ['id' => 'date_select']),
+                    ['name' => 'date_select', 'hint' => 'Die neueste Fassung steht oben.']
+                )),
+                Form::actions('do_restore', 'Wiederherstellen', $this->url())
+            )
             . Html::formClose();
     }
 }

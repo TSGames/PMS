@@ -1041,14 +1041,36 @@ td.cell-check, th.cell-check { text-align: center; width: 1%; }
     content: "";
     position: absolute;
     left: -5px;
-    top: 6px;
+    top: 8px;
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--c-accent);
 }
 
+/* Datumstrenner: kein Punkt, dafür eine Überschrift */
+.timeline li.timeline-day {
+    padding-top: var(--s-3);
+    padding-bottom: var(--s-2);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+}
+
+.timeline li.timeline-day::before { display: none; }
+.timeline li.timeline-day:first-child { padding-top: 0; }
+
+.timeline-head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin-bottom: 2px;
+}
+
 .timeline-time { font-size: var(--fs-xs); color: var(--c-muted); }
+.timeline-text { font-size: var(--fs-sm); }
 
 /* Seitenaufteilung */
 .pagination {
@@ -1112,7 +1134,103 @@ td.cell-check, th.cell-check { text-align: center; width: 1%; }
     border-bottom: 1px solid var(--c-border);
 }
 
+.dialog-wide { max-width: 880px; }
 .dialog-body { padding: var(--s-4); }
+.dialog-header h3 { font-size: var(--fs-md); }
+
+.dialog-upload {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--s-4);
+}
+
+.dialog-upload .drop_zone { flex: 1 1 260px; padding: var(--s-3); }
+
+.dialog-size {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    flex-wrap: wrap;
+    margin-top: var(--s-4);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--c-border);
+}
+
+.dialog-size .field-label { padding-top: 0; }
+.dialog-size input[type="number"] { width: 6.5rem; }
+
+/* Vorhandene Bilder */
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--s-3);
+}
+
+.image-tile {
+    position: relative;
+    border: 2px solid var(--c-border);
+    border-radius: var(--r);
+    background: var(--c-surface-alt);
+    overflow: hidden;
+}
+
+.image-tile.selected { border-color: var(--c-accent); }
+
+.image-tile-button {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    color: var(--c-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.image-tile-button:hover {
+    background: var(--c-surface-hover);
+    border: none;
+    /* Ohne die Farbe würde die allgemeine Regel für button:hover greifen */
+    color: var(--c-heading);
+}
+
+.image-tile-button img {
+    display: block;
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    background: var(--c-surface);
+}
+
+.image-tile-name {
+    display: block;
+    padding: var(--s-2) var(--s-2) 0;
+    color: inherit;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    word-break: break-all;
+}
+
+.image-tile-size {
+    display: block;
+    padding: 0 var(--s-2) var(--s-2);
+    font-size: var(--fs-xs);
+    color: var(--c-muted);
+}
+
+.image-tile-delete {
+    position: absolute;
+    top: var(--s-1);
+    right: var(--s-1);
+    background: var(--c-surface);
+    border-color: var(--c-border);
+}
+
+/* Aktionen am rechten Rand eines Zeitstrahl-Eintrags */
+.timeline-actions { margin-left: auto; display: inline-flex; gap: var(--s-1); align-items: center; }
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
@@ -1274,6 +1392,10 @@ body.login-page {
     .toolbar-group select { width: 100%; }
     .toolbar-count { display: none; }
     .pagination { flex-direction: column; align-items: flex-start; }
+    .dialog { max-height: 92vh; }
+    .image-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .timeline-head { flex-wrap: wrap; }
+    .timeline-actions { margin-left: 0; }
     .field-row { grid-template-columns: 1fr; gap: var(--s-1); }
     .field-label { padding-top: 0; }
     .field-control { max-width: none; }

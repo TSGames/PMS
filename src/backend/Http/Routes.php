@@ -22,7 +22,6 @@ final class Routes
         'item' => '/admin/inhalte',
         'item_restore' => '/admin/inhalte/wiederherstellen',
         'item_recover' => '/admin/inhalte/versionen',
-        'add_image' => '/admin/inhalte/bild',
         'var' => '/admin/variablen',
         'poll' => '/admin/umfragen',
         'bans' => '/admin/sperrungen',
@@ -35,6 +34,7 @@ final class Routes
         'xlsx_import_ajax' => '/admin/api/xlsx-import',
         'crop_image_ajax' => '/admin/api/bild-zuschneiden',
         'options_ajax' => '/admin/api/auswahl',
+        'image_ajax' => '/admin/api/bilder',
     ];
 
     /** Pfad des Einstiegsskripts, das die Module anzeigt. */

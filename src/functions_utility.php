@@ -512,12 +512,12 @@ function header_def()
 	 */
 	function browser($a)
 	{
-		return $a;
-		if(strstr($a,"Firefox"))
+		// Die Auswertung gehört zum Backend; im Frontend bleibt die Kennung roh
+		if(class_exists('\\Pms\\Backend\\Support\\UserAgent'))
 			{
-			$b=explode("Firefox/",$a);
-			return "Firefox ".$b[1];
+			return \Pms\Backend\Support\UserAgent::describe($a);
 		}
+		return $a;
 	}
 
 	/**

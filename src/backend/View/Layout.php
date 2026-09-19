@@ -51,9 +51,11 @@ final class Layout
     public static function head(string $title): string
     {
         $tinymce = self::tinymceRequested() ? get_tinymce() : '';
-        // Token für Anfragen, die das Skript selbst absetzt (Zuschneiden, Import)
+        // Token und Adressen für Anfragen, die die Skripte selbst absetzen
+        // (Zuschneiden, Tabellenimport)
         $token = Auth::isLoggedIn()
-            ? '<script>window.PMS_TOKEN=' . json_encode(\Pms\Backend\Support\Csrf::token()) . ';</script>'
+            ? '<script>window.PMS_TOKEN=' . json_encode(\Pms\Backend\Support\Csrf::token()) . ';'
+            . 'window.PMS_CROP_URL=' . json_encode(\Pms\Backend\Http\Routes::path('crop_image_ajax')) . ';</script>'
             : '';
 
         return '<!DOCTYPE html>

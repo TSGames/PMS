@@ -36,9 +36,6 @@ final class ItemController extends Controller
 
     private const UPLOAD_DIR = 'images/uploads/';
 
-    /** Bildpfad, der beim Rendern in den Inhalt eingesetzt wird. */
-    private string $insertImage = '';
-
     #[\Override]
     public function action(): string
     {
@@ -53,14 +50,6 @@ final class ItemController extends Controller
             return $this->save();
         }
 
-        if (Request::submitted('add_image')) {
-            return $this->receiveUpload();
-        }
-
-        if (Request::submitted('add_image2') || Request::submitted('add_image2_abort')) {
-            return $this->finishImageInsert();
-        }
-
         if (Request::queryInt('do_copy') > 0) {
             $this->copy(Request::queryInt('do_copy'));
         }
@@ -68,11 +57,6 @@ final class ItemController extends Controller
         $confirmed = $this->confirmedDeleteId();
         if ($confirmed > 0) {
             $this->delete($confirmed);
-        }
-
-        // --- Bildauswahl ----------------------------------------------------
-        if (Request::string('action') === 'add_image') {
-            return $this->imageAction();
         }
 
         // --- Anzeige entscheiden -------------------------------------------
@@ -218,16 +202,7 @@ final class ItemController extends Controller
             }
         }
 
-        // Ein gerade ausgewähltes Bild ersetzt den Platzhalter im Inhalt
-        if ($this->insertImage !== '') {
-            $content = str_replace(
-                '<img id="##pms_replace_image_temp"',
-                '<img src="' . $this->insertImage . '"',
-                $content
-            );
-        } else {
-            $content = cleanup_content($content);
-        }
+        $content = cleanup_content($content);
 
         $body = Form::section('Einordnung', $this->placementFields($values))
             . Form::section('Inhalt', $this->contentSection($name, $description, $content, $link, $type))
@@ -339,7 +314,7 @@ final class ItemController extends Controller
         }
 
         return 'linkedSelects(' . (string)json_encode([
-            'url' => Routes::basePath() . Routes::path('options_ajax'),
+            'url' => Routes::path('options_ajax'),
             'typ' => $values['typ'],
             'typ2' => $values['typ2'],
             'cat' => $values['cat'],
@@ -425,11 +400,7 @@ final class ItemController extends Controller
                 . '</div>';
         }
 
-        if (Editor::isEnabled() && $isEdit) {
-            $html .= Form::wide($this->imageInsertBlock((int)$item->id));
-        }
-
-        return $html;
+        return $html . Form::wide($this->imageDialog($isEdit ? (int)$item->id : 0));
     }
 
     /** Sortierung, Autor, Datum und die Schalter für die Veröffentlichung. */
@@ -556,20 +527,110 @@ final class ItemController extends Controller
     }
 
     /** Bereich zum Einfügen eines Bildes in den Text (nur mit TinyMCE). */
-    private function imageInsertBlock(int $itemId): string
+    /**
+     * Der Bild-Dialog über dem Editor.
+     *
+     * Hochladen, ein vorhandenes Bild wählen, Größe festlegen, einfügen -
+     * alles ohne die Seite zu verlassen. Bisher führte jeder dieser Schritte
+     * über eine eigene Seite, wobei der ungespeicherte Text verloren ging.
+     */
+    private function imageDialog(int $itemId): string
     {
-        return Html::hidden('next', '')
-            . Html::hidden('add_image', '')
-            . Html::hidden('item', $itemId)
+        $state = (string)json_encode([
+            'url' => Routes::path('image_ajax'),
+        ]);
+
+        return '<div x-data="imageDialog(' . Html::e($state) . ')">'
+            . '<button type="button" class="btn-secondary" @click="show()">'
+            . Icons::render('image', 'icon icon-sm') . 'Bild in den Text einfügen</button>'
+            . '<div class="dialog-backdrop" x-show="open" x-cloak @keydown.escape.window="close()">'
+            . '<div class="dialog dialog-wide" @click.outside="close()" role="dialog" aria-modal="true">'
+            . '<div class="dialog-header">'
+            . '<h3>Bild einfügen</h3>'
+            . '<button type="button" class="icon-btn" @click="close()" aria-label="Schließen">'
+            . Icons::render('close') . '</button>'
+            . '</div>'
+            . '<div class="dialog-body">'
+            . '<template x-if="error">'
+            . '<div class="notice notice-error" x-text="error"></div>'
+            . '</template>'
+            . $this->dialogUpload($itemId)
+            . $this->dialogGrid()
+            . $this->dialogSize()
+            . '</div>'
+            . '<div class="dialog-footer">'
+            . '<button type="button" class="btn-secondary" @click="close()">Abbrechen</button>'
+            . '<button type="button" @click="insert()" :disabled="!selected">Einfügen</button>'
+            . '</div>'
+            . '</div></div></div>';
+    }
+
+    /**
+     * Zwei Wege ins Bild: direkt hochladen oder vorher zuschneiden.
+     *
+     * Die Kennung image_file_picker gehört drag.js und öffnet den
+     * Zuschneide-Dialog; der direkte Upload braucht deshalb eine eigene.
+     */
+    private function dialogUpload(int $itemId): string
+    {
+        $crop = '<input type="file" id="image_file_picker" accept="image/*" class="visually-hidden">'
+            . '<button type="button" class="btn-secondary"'
+            . ' onclick="document.getElementById(\'image_file_picker\').click()">'
+            . Icons::render('image', 'icon icon-sm') . 'Zuschneiden und hochladen</button>'
+            . '<div class="drop_zone" id="drop_zone">oder eine Bilddatei hierher ziehen</div>'
+            . '<span id="image_status"></span>'
             . Html::hidden('drag_name', '')
             . Html::hidden('drag_data', '')
-            . '<fieldset class="import-box"><legend>Bild in den Text einfügen</legend>'
-            . '<input type="file" id="image_file_picker" accept=".jpg,.jpeg,.png,.gif" style="display:none">'
-            . '<button type="button" class="btn-secondary"'
-            . ' onclick="document.getElementById(\'image_file_picker\').click()">Bild auswählen</button>'
-            . '<span id="image_status"></span>'
-            . '<div class="drop_zone" id="drop_zone">oder eine Bilddatei hierher ziehen</div>'
-            . '</fieldset>';
+            . Html::hidden('item', $itemId);
+
+        return '<div class="dialog-upload">'
+            . '<input type="file" id="image_upload_picker" accept="image/*" class="visually-hidden"'
+            . ' @change="upload($event)">'
+            . '<button type="button"'
+            . ' onclick="document.getElementById(\'image_upload_picker\').click()"'
+            . ' :disabled="uploading">'
+            . '<span x-show="!uploading">Bild hochladen</span>'
+            . '<span x-show="uploading" x-cloak>Wird hochgeladen…</span>'
+            . '</button>'
+            . $crop
+            . '</div>';
+    }
+
+    /** Die vorhandenen Bilder als Raster mit Vorschau. */
+    private function dialogGrid(): string
+    {
+        return '<div class="image-grid" x-show="!loading">'
+            . '<template x-for="image in images" :key="image.name">'
+            . '<div class="image-tile" :class="selected && selected.name === image.name ? \'selected\' : \'\'">'
+            . '<button type="button" class="image-tile-button" @click="select(image)">'
+            . '<img :src="image.url" :alt="image.name" loading="lazy">'
+            . '<span class="image-tile-name" x-text="image.name"></span>'
+            . '<span class="image-tile-size" x-text="image.width + \' x \' + image.height + \' px\'"></span>'
+            . '</button>'
+            . '<button type="button" class="icon-btn icon-btn-danger image-tile-delete"'
+            . ' @click="remove(image)" title="Bild löschen" aria-label="Bild löschen">'
+            . Icons::render('trash', 'icon icon-sm') . '</button>'
+            . '</div>'
+            . '</template>'
+            . '<template x-if="images.length === 0">'
+            . '<div class="empty-state"><div class="empty-state-title">Noch kein Bild hochgeladen</div></div>'
+            . '</template>'
+            . '</div>'
+            . '<p class="field-hint" x-show="loading" x-cloak>Bilder werden geladen…</p>';
+    }
+
+    /** Größe des gewählten Bildes. */
+    private function dialogSize(): string
+    {
+        return '<template x-if="selected">'
+            . '<div class="dialog-size">'
+            . '<label class="field-label" for="dialog-width">Breite</label>'
+            . '<input type="number" id="dialog-width" min="1" x-model.number="width" @input="widthChanged()">'
+            . '<label class="field-label" for="dialog-height">Höhe</label>'
+            . '<input type="number" id="dialog-height" min="1" x-model.number="height" @input="heightChanged()">'
+            . '<label class="field-check"><input type="checkbox" x-model="keepRatio"> Seitenverhältnis halten</label>'
+            . '</div>'
+            . '</template>';
     }
 
     // -----------------------------------------------------------------
@@ -666,10 +727,7 @@ final class ItemController extends Controller
 
         Flash::success('Inhalt erfolgreich gespeichert! <a href="index.php?item=' . $id . '">Inhalt anzeigen</a>');
 
-        // Nach dem Speichern zum Bild-Dialog, zurück in den Editor oder zur Liste
-        if (Request::string('next') === 'image') {
-            return $this->imagePicker($id);
-        }
+        // Zurück in den Editor oder zur Liste
         if (Request::string('item_step2') === 'Übernehmen & Schließen') {
             // Zurück in dieselbe Auswahl, aus der der Inhalt geöffnet wurde
             $back = $cat > 0 ? ['cat' => $cat] : [];
@@ -755,232 +813,6 @@ final class ItemController extends Controller
         }
 
         Db::update('item', $id, ['image' => $extension]);
-    }
-
-    // -----------------------------------------------------------------
-    // Bilder für den Inhalt
-    // -----------------------------------------------------------------
-
-    /** Aktionen der Bildauswahl (Adresse action=add_image). */
-    private function imageAction(): string
-    {
-        $itemId = Request::queryInt('item');
-
-        $delete = Request::string('delete');
-        if ($delete !== '') {
-            $file = self::UPLOAD_DIR . basename($delete);
-            if (@unlink($file)) {
-                Flash::success('Bild wurde entfernt');
-            } else {
-                Flash::error('Bild konnte nicht entfernt werden');
-            }
-            return $this->imagePicker($itemId);
-        }
-
-        $image = Request::string('image');
-        if ($image !== '') {
-            // Vorhandenes Bild übernehmen
-            $this->insertImage = self::UPLOAD_DIR . basename($image);
-            return $this->editorForItem($itemId);
-        }
-
-        if (Request::string('abort') !== '') {
-            return $this->editorForItem($itemId);
-        }
-
-        return $this->imagePicker($itemId);
-    }
-
-    /** Nimmt ein hochgeladenes oder gezogenes Bild entgegen. */
-    private function receiveUpload(): string
-    {
-        if (!$this->checkToken()) {
-            return $this->overview();
-        }
-
-        $itemId = Request::int('item');
-        if ($itemId <= 0) {
-            Flash::error('Ungültige Element-ID');
-            return $this->overview();
-        }
-
-        // Aus dem Zuschneide-Dialog kommt bereits eine fertige Datei
-        $alreadyUploaded = Request::string('already_uploaded');
-        if ($alreadyUploaded !== '') {
-            $name = basename($alreadyUploaded);
-            if (!file_exists(self::UPLOAD_DIR . $name)) {
-                Flash::error('Bilddatei nicht gefunden');
-                return $this->imagePicker($itemId);
-            }
-            return $this->imageScale($itemId, $name);
-        }
-
-        $name = Request::string('drag_name');
-        $data = $name !== '' ? rawurldecode(Request::text('drag_data')) : '';
-        if ($name === '') {
-            $name = (string)($_FILES['image']['name'] ?? '');
-        }
-
-        if ($name === '') {
-            Flash::error('Keine Datei ausgewählt');
-            return $this->imagePicker($itemId);
-        }
-
-        $cleanName = link_name($name, '.');
-        $extension = strtolower((string)pathinfo($cleanName, PATHINFO_EXTENSION));
-        if (!in_array($extension, EntityImage::supportedTypes(), true)) {
-            Flash::error('Nicht unterstütztes Dateiformat');
-            return $this->imagePicker($itemId);
-        }
-
-        $target = $this->uniqueUploadName($cleanName, $extension);
-        @mkdir(self::UPLOAD_DIR, 0755, true);
-
-        $stored = $data !== ''
-            ? (bool)@file_put_contents(self::UPLOAD_DIR . $target, $data)
-            : @copy($_FILES['image']['tmp_name'], self::UPLOAD_DIR . $target);
-
-        if (!$stored) {
-            Flash::error('Fehler beim Anlegen der Datei');
-            return $this->imagePicker($itemId);
-        }
-
-        return $this->imageScale($itemId, $target);
-    }
-
-    private function uniqueUploadName(string $name, string $extension): string
-    {
-        $base = substr($name, 0, strlen($name) - strlen($extension) - 1);
-        $candidate = $name;
-        for ($i = 1; file_exists(self::UPLOAD_DIR . $candidate); $i++) {
-            $candidate = $base . $i . '.' . $extension;
-        }
-        return $candidate;
-    }
-
-    /** Größe festlegen und Bild in den Inhalt einfügen. */
-    private function finishImageInsert(): string
-    {
-        if (!$this->checkToken()) {
-            return $this->overview();
-        }
-
-        $itemId = Request::int('item');
-        $image = basename(Request::string('image'));
-        $file = self::UPLOAD_DIR . $image;
-
-        if (Request::submitted('add_image2_abort')) {
-            @unlink($file);
-            return $this->editorForItem($itemId);
-        }
-
-        $width = Request::int('image_width');
-        $height = Request::int('image_height');
-        if ($width < 1 || $height < 1) {
-            Flash::error('Ungültige Bildgröße');
-            return $this->imageScale($itemId, $image);
-        }
-
-        create_img($file, $width, $height, 0);
-        $this->insertImage = $file;
-
-        return $this->editorForItem($itemId);
-    }
-
-    /** Öffnet den Editor eines gespeicherten Inhalts. */
-    private function editorForItem(int $itemId): string
-    {
-        $item = $this->find($itemId);
-        if ($item === null) {
-            Flash::error('Der Inhalt wurde nicht gefunden.');
-            return $this->overview();
-        }
-        return $this->editor($this->valuesFromItem($item));
-    }
-
-    /** Auswahl eines vorhandenen oder neuen Bildes. */
-    private function imagePicker(int $itemId): string
-    {
-        $html = Html::heading('Bild einfügen')
-            . Html::formOpen($this->action(), [], ['upload' => true])
-            . Html::hidden('item', $itemId)
-            . '<table>'
-            . Html::field('Bilddatei wählen (jpg, png, gif)', '<input type="file" name="image">')
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="add_image" value="Bild hinzufügen"> '
-            . Html::button('Abbrechen', Html::url('add_image', ['item' => $itemId, 'abort' => 'yes']), 'button button-secondary')
-            . '</div></td></tr></table>'
-            . Html::formClose();
-
-        $files = $this->uploadedImages();
-        $rows = [];
-        foreach ($files as $file) {
-            $size = @getimagesize(self::UPLOAD_DIR . $file);
-            $width = get_size($size, 320, 240, 1);
-            $height = get_size($size, 320, 240, 2);
-
-            $rows[] = [
-                '<a href="' . Html::e(Html::url('add_image', ['image' => $file, 'item' => $itemId])) . '"'
-                . ' data-preview-image="' . Html::e($file) . '"'
-                . ' data-preview-width="' . (int)$width . '"'
-                . ' data-preview-height="' . (int)$height . '">' . Html::e($file) . '</a>',
-                '<a href="' . Html::e(Html::url('add_image', ['item' => $itemId, 'delete' => $file]))
-                . '" data-delete-image="' . Html::e($file) . '">Löschen</a>',
-            ];
-        }
-
-        return $html
-            . Html::heading('Existierendes Bild verwenden')
-            . '<p>Klicken Sie auf den Namen eines Bildes, um es zu verwenden.</p>'
-            . '<div id="image_preview_div" style="display:none;position:absolute;background:#fff;border:1px solid #aaa;">'
-            . '<img id="image_preview" alt=""></div>'
-            . Html::table(['Bild', 'Löschen'], $rows, 'Es wurden noch keine Bilder hochgeladen.')
-            . '<script type="text/javascript" src="js/admin-item-editor.js"></script>';
-    }
-
-    /** @return list<string> */
-    private function uploadedImages(): array
-    {
-        $files = [];
-        foreach (glob(self::UPLOAD_DIR . '*') ?: [] as $path) {
-            if (is_file($path)) {
-                $files[] = basename($path);
-            }
-        }
-        usort($files, 'strcasecmp');
-        return $files;
-    }
-
-    /** Größe des Bildes festlegen, bevor es eingefügt wird. */
-    private function imageScale(int $itemId, string $image): string
-    {
-        $size = @getimagesize(self::UPLOAD_DIR . $image);
-        $width = (int)($size[0] ?? 0);
-        $height = (int)($size[1] ?? 0);
-        $ratio = $height > 0 ? $width / $height : 1;
-
-        return Html::heading('Bild anpassen')
-            . Html::formOpen($this->action())
-            . Html::hidden('item', $itemId)
-            . Html::hidden('image', $image)
-            . '<table>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . 'Breite: ' . Html::input('image_width', $width, ['size' => 3, 'id' => 'image_width'])
-            . ' px - Höhe: ' . Html::input('image_height', $height, ['size' => 3, 'id' => 'image_height']) . ' px'
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<label><input type="checkbox" id="image_pro" value="1" checked> Proportionen beibehalten</label>'
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="add_image2" value="Speichern &amp; Einfügen"> '
-            . '<input type="submit" name="add_image2_abort" value="Abbrechen" class="secondary">'
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<img id="image_scale" data-ratio="' . Html::e((string)$ratio) . '"'
-            . ' src="' . Html::e(self::UPLOAD_DIR . $image) . '" alt="">'
-            . '</div></td></tr></table>'
-            . Html::formClose()
-            . '<script type="text/javascript" src="js/admin-item-editor.js"></script>';
     }
 
     // -----------------------------------------------------------------

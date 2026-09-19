@@ -7,6 +7,8 @@ use Pms\Backend\Support\Csrf;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
+use Pms\Backend\View\Icons;
 
 /**
  * Backup-Manager: Sicherungen anlegen, schützen und löschen.
@@ -126,54 +128,97 @@ final class BackupController extends Controller
         $this->redirect();
     }
 
-    /** @param list<string> $backups */
+    /**
+     * Die Sicherungen als Zeitstrahl - die jüngste oben.
+     *
+     * @param list<string> $backups
+     */
     private function overview(array $backups): string
     {
-        $rows = [];
+        return Components::pageHeader(
+            'Backup-Manager',
+            'Sicherungen der Datenbank und der Bilder, die neueste zuerst.',
+            Html::formOpen($this->action())
+            . '<input type="submit" name="backup" value="Neues Backup erstellen">'
+            . Html::formClose()
+        )
+            . $this->hints()
+            . ($backups === []
+                ? Components::emptyState(
+                    'Noch keine Sicherung',
+                    'Klicken Sie auf "Neues Backup erstellen", um die erste anzulegen.'
+                )
+                : $this->timeline($backups));
+    }
+
+    /** @param list<string> $backups */
+    private function timeline(array $backups): string
+    {
+        $html = '<div class="card"><div class="card-body"><ol class="timeline">';
+
         foreach ($backups as $position => $name) {
             $isProtected = file_exists($this->folder($name) . '/saved');
+            $isRecent = $position < self::PROTECTED_RECENT;
+            [$date, $time] = self::parseName($name);
+            $size = round(get_filesize($this->folder($name)) / 1024 / 1024, 2);
 
-            $protectCell = $isProtected
-                ? '<span class="disabled">Geschützt</span>'
-                : '<a href="' . Html::e($this->url(['save' => $name] + Csrf::queryParam())) . '">Schützen</a>';
-
-            $deleteCell = '<span class="disabled">Nicht möglich</span>';
-            if ($position >= self::PROTECTED_RECENT && !$isProtected) {
-                $deleteCell = '<a href="' . Html::e($this->url(['delete' => $name] + Csrf::queryParam())) . '">Löschen</a>';
+            $actions = '';
+            if ($isProtected) {
+                $actions .= Components::chip('Geschützt', 'ok');
+            } else {
+                $actions .= Components::action(
+                    'shield',
+                    $this->url(['save' => $name] + Csrf::queryParam()),
+                    'Vor dem Löschen schützen'
+                );
+            }
+            if (!$isRecent && !$isProtected) {
+                $actions .= Components::action(
+                    'trash',
+                    $this->url(['delete' => $name] + Csrf::queryParam()),
+                    'Sicherung löschen',
+                    'danger'
+                );
             }
 
-            $parts = explode('_', $name);
-            $date = count($parts) >= 5 ? $parts[2] . '.' . $parts[1] . '.' . $parts[0] : 'Nicht auslesbar';
-            $time = count($parts) >= 5 ? $parts[3] . ':' . $parts[4] : '';
-
-            $rows[] = [
-                Html::e($name),
-                Html::e($date),
-                Html::e($time),
-                (string)round(get_filesize($this->folder($name)) / 1024 / 1024, 2),
-                $deleteCell,
-                $protectCell,
-            ];
+            $html .= '<li>'
+                . '<div class="timeline-head">'
+                . '<strong>' . Html::e($date) . ($time === '' ? '' : ', ' . Html::e($time) . ' Uhr') . '</strong>'
+                . Components::chip($size . ' MB')
+                . ($isRecent && !$isProtected ? Components::chip('Zu aktuell zum Löschen', 'warn') : '')
+                . '<span class="timeline-actions">' . $actions . '</span>'
+                . '</div>'
+                . '<div class="timeline-text"><code>' . Html::e($name) . '</code></div>'
+                . '</li>';
         }
 
-        return Html::heading('Backup-Manager')
-            . '<p>Aus Sicherheitsgründen können Sie nicht die ' . self::PROTECTED_RECENT
-            . ' aktuellsten Backups löschen, bitte erledigen Sie dies auf Wunsch über FTP.<br>'
-            . 'Sie finden alle Backups im Ordner "backup".</p>'
-            . '<p>Das System speichert alle Kategorien, Inhalte, Variablen, Benutzer, Kommentare und Bewertungen '
-            . 'sowie alle Bilder von Kategorien, Nutzern und Inhalten.<br>'
-            . 'Manuell eingefügte Bilder, Dateien oder Download-Links werden nicht gesichert - sichern Sie diese '
-            . 'gegebenenfalls von Hand.</p>'
-            . '<p>Es wird empfohlen, wichtige Backups vor dem Löschen zu schützen. Diese lassen sich dann nur noch '
-            . 'über FTP entfernen.</p>'
-            . Html::table(
-                ['Name', 'Datum', 'Uhrzeit', 'Größe (in MB)', 'Löschen', 'Schützen'],
-                $rows,
-                'Es wurden noch keine Backups angelegt. Klicken Sie auf "Neues Backup erstellen", um eines anzulegen.'
-            )
-            . Html::formOpen($this->action())
-            . '<div class="action-section"><input type="submit" name="backup" value="Neues Backup erstellen"></div>'
-            . '<p>Hinweis: Das Erzeugen eines Backups kann, abhängig vom Umfang der Website, mehrere Minuten dauern!</p>'
-            . Html::formClose();
+        return $html . '</ol></div></div>';
     }
+
+    /**
+     * Datum und Uhrzeit aus dem Ordnernamen (JJJJ_MM_TT_HH_MM).
+     *
+     * @return array{0: string, 1: string}
+     */
+    private static function parseName(string $name): array
+    {
+        $parts = explode('_', $name);
+        if (count($parts) < 5) {
+            return [$name, ''];
+        }
+        return [$parts[2] . '.' . $parts[1] . '.' . $parts[0], $parts[3] . ':' . $parts[4]];
+    }
+
+    /** Was gesichert wird und was nicht. */
+    private function hints(): string
+    {
+        return '<div class="notice notice-warn">' . Icons::render('info')
+            . '<span>Gesichert werden Kategorien, Inhalte, Variablen, Benutzer, Kommentare und Bewertungen '
+            . 'sowie die Bilder von Kategorien, Nutzern und Inhalten. '
+            . 'Von Hand eingefügte Bilder, Dateien und Download-Ziele sind nicht enthalten. '
+            . 'Die ' . self::PROTECTED_RECENT . ' neuesten Sicherungen lassen sich hier nicht löschen; '
+            . 'geschützte Sicherungen nur noch über FTP. Alle liegen im Ordner "backup". '
+            . 'Das Anlegen kann je nach Umfang mehrere Minuten dauern.</span></div>';
+    }
+
 }

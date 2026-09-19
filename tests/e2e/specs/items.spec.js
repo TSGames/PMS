@@ -13,6 +13,12 @@ const {
   tableColumn,
 } = require('../lib/admin');
 
+/** Ein gültiges 1x1-PNG für den Bild-Upload. */
+const PNG_PIXEL = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64'
+);
+
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
   resetDatabase();
@@ -121,8 +127,50 @@ test('Wiederherstellungsseite ist erreichbar', async ({ page }) => {
 
 test('Versionsverwaltung eines Inhalts ist erreichbar', async ({ page }) => {
   await page.goto('admin/inhalte/versionen?item=2');
-  await expect(page.locator('body')).toContainText('Inhalt wiederherstellen');
+  await expect(page.locator('body')).toContainText('Frühere Fassung einspielen');
   await expectNoPhpError(page);
+});
+
+test('Der Bild-Dialog öffnet sich über dem Editor', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=0');
+  const dialog = page.locator('.dialog-backdrop');
+  await expect(dialog).toBeHidden();
+
+  await page.click('button:has-text("Bild in den Text einfügen")');
+  await expect(dialog).toBeVisible();
+  await expect(page.locator('.dialog-header')).toContainText('Bild einfügen');
+
+  // Der Editor bleibt stehen, die Seite wird nicht gewechselt
+  await expect(page.locator('textarea[name="content"]')).toHaveValue(/Sommerfest/);
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+});
+
+test('Bild hochladen, einfügen und wieder entfernen', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=0');
+  await page.click('button:has-text("Bild in den Text einfügen")');
+
+  // Ein winziges gültiges PNG genügt, um den Weg zu prüfen
+  await page.setInputFiles('#image_upload_picker', {
+    name: 'testbild.png',
+    mimeType: 'image/png',
+    buffer: PNG_PIXEL,
+  });
+
+  const tile = page.locator('.image-tile', { hasText: 'testbild' });
+  await expect(tile).toHaveCount(1);
+  await expect(tile).toHaveClass(/selected/);
+
+  await page.click('.dialog-footer button:has-text("Einfügen")');
+  await expect(page.locator('.dialog-backdrop')).toBeHidden();
+  await expect(page.locator('textarea[name="content"]')).toHaveValue(/<img src="images\/uploads\/testbild/);
+
+  // Aufräumen, damit der nächste Lauf denselben Ausgangszustand vorfindet
+  page.on('dialog', (dialog) => dialog.accept());
+  await page.click('button:has-text("Bild in den Text einfügen")');
+  await tile.locator('.image-tile-delete').click();
+  await expect(tile).toHaveCount(0);
 });
 
 test('Spezialseiten zeigen die Art statt Kategorie und Unterkategorie', async ({ page }) => {

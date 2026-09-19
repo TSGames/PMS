@@ -2,6 +2,7 @@
 
 namespace Pms\Backend\Http\Middleware;
 
+use Pms\Backend\Http\Kernel;
 use Pms\Backend\Http\Routes;
 use Pms\Backend\Support\Csrf;
 use Pms\Backend\Support\Flash;
@@ -28,6 +29,12 @@ final class CsrfMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($request->getMethod() !== 'POST' || Csrf::check()) {
+            return $handler->handle($request);
+        }
+
+        // Die JSON-Schnittstellen prüfen selbst und antworten mit JSON; eine
+        // Weiterleitung auf eine HTML-Seite wäre für sie unbrauchbar
+        if (Kernel::isEndpoint(Routes::currentAction())) {
             return $handler->handle($request);
         }
 

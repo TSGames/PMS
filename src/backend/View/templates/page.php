@@ -95,5 +95,6 @@ echo Layout::head(Layout::title());
 <script type="text/javascript" src="js/admin-sidebar.js"></script>
 <script type="text/javascript" src="js/admin-linked-select.js"></script>
 <script type="text/javascript" src="js/admin-config.js"></script>
+<script type="text/javascript" src="js/admin-image-dialog.js"></script>
 </body>
 </html>
