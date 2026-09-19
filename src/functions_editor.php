@@ -19,11 +19,15 @@
 	 */
 	function get_tinymceinit($match,$height)
 	{
+		// Die Breite kommt aus dem Umfeld: 640 Pixel liessen im Backend
+		// zwei Drittel der Karte leer stehen und sprengten im Frontend
+		// die schmale Spalte. Ziehen laesst sich nur noch die Hoehe -
+		// die Breite bestimmt die Spalte.
 		return 'tinymce.init({
     selector: "#'.$match.'",
-    width: 640,
+    width: "100%",
     height: "'.$height.'",
-    resize: "both",
+    resize: true,
     language: "de",
     plugins: "advlist autolink lists link image charmap preview anchor \
               searchreplace visualblocks code fullscreen insertdatetime media \

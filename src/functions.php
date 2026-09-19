@@ -201,9 +201,3 @@ if(stristr(substr($cookie_domain,0,7),"://"))
 	}
 	
 	$str.=make_imgalt("rate".$b.".gif",0,$alt,"template_files/","rate");
-	
-	
-	
-				
-				?>
-				

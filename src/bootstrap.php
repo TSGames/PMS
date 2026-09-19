@@ -16,6 +16,22 @@ if (!defined('PMS_FRONTEND') && !defined('PMS_BACKEND')) {
     exit('Direct access not allowed');
 }
 
+// Ausgabe puffern, bis die Antwort fertig ist.
+//
+// Sobald das erste Byte den Server verlässt, sind die Kopfzeilen raus -
+// ein "Location" danach kommt nie beim Browser an. Genau das passierte
+// nach jedem Speichern im Backend: Eine eingebundene Datei gab hinter
+// ihrem schließenden Tag vier Tabulatoren aus, die Weiterleitung fiel
+// weg, und der Browser blieb auf einer leeren Seite stehen - obwohl die
+// Aktion längst ausgeführt war.
+//
+// Die Tabulatoren sind weg. Der Puffer sorgt dafür, dass ein einzelnes
+// Leerzeichen in einem Modul oder einem Template das nicht wieder
+// auslösen kann.
+if (!ini_get('output_buffering')) {
+    ob_start();
+}
+
 // Composer-Abhängigkeiten (Slim). Im Image liegt vendor/ außerhalb des
 // Webroots, weil dieser bei der Entwicklung überlagert wird.
 $pms_autoload_paths = [

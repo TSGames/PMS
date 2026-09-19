@@ -186,6 +186,19 @@ test('Spezialseiten zeigen die Art statt Kategorie und Unterkategorie', async ({
   expect(options).toContain('Gästebuch');
 });
 
+test('Die Art einer Spezialseite bleibt beim Oeffnen und Speichern erhalten', async ({ page }) => {
+  // Alpine schreibt seinen Zustand ins Auswahlfeld, nicht umgekehrt.
+  // Fehlt typ2 dort, springt das Feld auf "Bitte wählen" und die Art
+  // geht beim Speichern verloren.
+  await page.goto('admin/inhalte?edit=11&editor=0');
+  await expect(page.locator('select[name="typ2"]')).toHaveValue('3');
+
+  await submit(page, page.locator('input[name="item_step2"]').first());
+
+  await page.goto('admin/inhalte?edit=11&editor=0');
+  await expect(page.locator('select[name="typ2"]')).toHaveValue('3');
+});
+
 test('Ohne Unterkategorie meldet der Editor den Fehler am Feld', async ({ page }) => {
   await page.goto('admin/inhalte?new=yes&editor=0');
   await page.fill('input[name="name"]', 'Inhalt ohne Einordnung');

@@ -133,7 +133,14 @@ function convert_action($typ,$con)
 		return "Plugin: ".$name;
 	}
 	if($typ==4)
-		return 'PMS Administration (<a href="'.admin_url($action_list[$con]).'">'.$action_name[$con].'</a>)';
+		{
+		// Der Besucher kann auf einem Bereich gewesen sein, den die Liste
+		// nicht kennt - dann bleibt es beim Namen, ohne Verweis.
+		$action=isset($action_list[$con]) ? $action_list[$con] : "";
+		if($action=="") return "PMS Administration";
+		$name=isset($action_name[$con]) ? $action_name[$con] : $action;
+		return 'PMS Administration (<a href="'.admin_url($action).'">'.$name.'</a>)';
+	}
 }
 
 /**

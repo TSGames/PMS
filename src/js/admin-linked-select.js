@@ -13,6 +13,13 @@ document.addEventListener('alpine:init', function () {
         return {
             url: config.url,
             typ: config.typ || 0,
+            // Ohne diese Zeile war typ2 im Alpine-Zustand undefiniert.
+            // x-model schreibt den Zustand ins Auswahlfeld, nicht
+            // umgekehrt: "Art des Spezialinhalts" sprang beim Oeffnen
+            // auf "Bitte waehlen" zurueck und ging beim Speichern
+            // verloren. Die Bloecke, die mit x-show auf typ2 schauen,
+            // blieben aus demselben Grund stumm.
+            typ2: config.typ2 || 0,
             cat: config.cat || 0,
             subcat: config.subcat || 0,
             item: config.item || 0,

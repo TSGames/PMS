@@ -38,7 +38,8 @@ test('Website-Status benennt die zuletzt besuchte Backend-Seite', async ({ page 
 
   const row = page.locator('table.data-table tr', { hasText: 'admin' }).first();
   await expect(row).toContainText('PMS Administration');
-  await expect(row.locator('a[href*="action="]').last()).toHaveText(/Benutzerverwaltung|Website-Status/);
+  // Der Verweis traegt den sprechenden Pfad, nicht mehr action=...
+  await expect(row.locator('a[href*="/admin/"]').last()).toHaveText(/Benutzerverwaltung|Website-Status/);
 });
 
 test('Update-Modul ist erreichbar', async ({ page }) => {
