@@ -2,12 +2,13 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Csrf;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Request;
 use Pms\Backend\View\Components;
+use Pms\Data\Db;
+use Pms\Support\Auth;
+use Pms\Support\Csrf;
+use Pms\Support\Flash;
+use Pms\Support\Html;
+use Pms\Support\Request;
 
 /**
  * Basis aller Backend-Bereiche.
@@ -55,6 +56,30 @@ abstract class Controller
     protected function redirect(array $params = []): never
     {
         throw new \Pms\Backend\Http\RedirectSignal($this->url($params));
+    }
+
+    /**
+     * Führt eine über die Pfeile angeforderte Verschiebung aus.
+     *
+     * @param string $table Tabelle ohne Präfix
+     * @return bool true, wenn sortiert wurde
+     */
+    protected function handleSorting(string $table): bool
+    {
+        if (Request::string('sort') === '') {
+            return false;
+        }
+        if (!Csrf::check()) {
+            Flash::error('Die Sortierung konnte nicht übernommen werden (ungültiges Sicherheitstoken).');
+            return false;
+        }
+
+        $id = Request::queryInt('id');
+        if ($id <= 0) {
+            return false;
+        }
+
+        return Db::update($table, $id, ['sort' => Request::queryInt('pos')]);
     }
 
     /** Prüft das CSRF-Token einer verändernden Anfrage. */

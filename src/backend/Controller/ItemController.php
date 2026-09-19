@@ -2,20 +2,19 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\Db;
 use Pms\Backend\Http\Routes;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Editor;
-use Pms\Backend\Support\EntityImage;
-use Pms\Backend\Support\Errors;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Listing;
-use Pms\Backend\Support\Request;
-use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
 use Pms\Backend\View\Form;
 use Pms\Backend\View\Icons;
+use Pms\Data\Db;
+use Pms\Support\Auth;
+use Pms\Support\Editor;
+use Pms\Support\EntityImage;
+use Pms\Support\Errors;
+use Pms\Support\Flash;
+use Pms\Support\Html;
+use Pms\Support\Listing;
+use Pms\Support\Request;
 
 /**
  * Inhaltsverwaltung.
@@ -79,7 +78,7 @@ final class ItemController extends Controller
             return $this->editor($this->valuesForNew());
         }
 
-        Sorting::handleRequest('item');
+        $this->handleSorting('item');
 
         return $this->overview();
     }
@@ -520,7 +519,7 @@ final class ItemController extends Controller
             . '<input type="file" id="xlsx_file_picker" accept=".xlsx" style="display:none">'
             . '<button type="button" class="btn-secondary"'
             . ' onclick="document.getElementById(\'xlsx_file_picker\').click()">XLSX-Inhalt importieren</button>'
-            . '<span id="xlsx_status" data-token="' . Html::e(\Pms\Backend\Support\Csrf::token()) . '"></span>'
+            . '<span id="xlsx_status" data-token="' . Html::e(\Pms\Support\Csrf::token()) . '"></span>'
             . '<div class="field-hint">Die Tabelle wird als Rohtext eingefügt, Spalten durch Leerzeichen getrennt.</div>'
             . '</fieldset>'
             . '<script type="text/javascript" src="js/admin-xlsx-import.js"></script>';
@@ -922,7 +921,7 @@ final class ItemController extends Controller
         $rows = [];
         foreach ($list->rows as $index => $item) {
             $sort = $list->isDefaultOrder()
-                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $item, $list->rows[$index + 1] ?? null)
+                ? Components::sortCell($this->action(), $list->rows[$index - 1] ?? null, $item, $list->rows[$index + 1] ?? null)
                 : Html::e((string)(int)$item->sort);
 
             // Spezialseiten lassen sich nicht kopieren - es gibt sie je Art nur einmal

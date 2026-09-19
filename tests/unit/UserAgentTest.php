@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pms\Tests\Unit;
 
-use Pms\Backend\Support\UserAgent;
+use Pms\Support\UserAgent;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

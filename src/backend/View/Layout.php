@@ -3,9 +3,9 @@
 namespace Pms\Backend\View;
 
 use Pms\Backend\Http\Navigation;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
+use Pms\Support\Auth;
+use Pms\Support\Flash;
+use Pms\Support\Html;
 
 /**
  * Das Grundgerüst des Backends: Kopfbereich, Seitenleiste, Inhaltsbereich.
@@ -54,7 +54,7 @@ final class Layout
         // Token und Adressen für Anfragen, die die Skripte selbst absetzen
         // (Zuschneiden, Tabellenimport)
         $token = Auth::isLoggedIn()
-            ? '<script>window.PMS_TOKEN=' . json_encode(\Pms\Backend\Support\Csrf::token()) . ';'
+            ? '<script>window.PMS_TOKEN=' . json_encode(\Pms\Support\Csrf::token()) . ';'
             . 'window.PMS_CROP_URL=' . json_encode(\Pms\Backend\Http\Routes::path('crop_image_ajax')) . ';</script>'
             : '';
 

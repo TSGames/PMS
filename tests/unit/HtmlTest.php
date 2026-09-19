@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Pms\Tests\Unit;
 
-use Pms\Backend\Support\Html;
+use Pms\Support\Html;
+use Pms\Support\Url;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -15,6 +16,22 @@ use PHPUnit\Framework\TestCase;
  */
 final class HtmlTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        // Html::url() fragt Support\Url; welche Adresse zu einer Aktion
+        // gehört, hinterlegt sonst der Einstiegspunkt
+        Url::resolveWith(static fn(string $action): string => match ($action) {
+            'cat' => '/admin/kategorien',
+            'item' => '/admin/inhalte',
+            default => '/admin',
+        });
+    }
+
+    protected function tearDown(): void
+    {
+        Url::reset();
+    }
+
     public function testMaskiertJedenWert(): void
     {
         self::assertSame('&lt;script&gt;', Html::e('<script>'));

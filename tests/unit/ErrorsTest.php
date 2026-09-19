@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pms\Tests\Unit;
 
-use Pms\Backend\Support\Errors;
+use Pms\Support\Errors;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Pms\Backend\Support;
+namespace Pms\Support;
 
 /**
  * Macht eine User-Agent-Zeichenkette lesbar.

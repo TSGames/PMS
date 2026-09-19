@@ -2,9 +2,9 @@
 
 namespace Pms\Backend\Http;
 
-use Pms\Backend\Data\Db;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Request;
+use Pms\Data\Db;
+use Pms\Support\Auth;
+use Pms\Support\Request;
 
 /**
  * Liefert die Einträge abhängiger Auswahlfelder als JSON.

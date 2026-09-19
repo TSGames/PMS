@@ -4,9 +4,9 @@ namespace Pms\Backend\Http;
 
 use Pms\Backend\Controller\Controller;
 use Pms\Backend\Http\Middleware\CsrfMiddleware;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Request;
 use Pms\Backend\View\Layout;
+use Pms\Support\Auth;
+use Pms\Support\Request;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\App;
@@ -149,7 +149,7 @@ final class Kernel
         if (!Auth::isLoggedIn()) {
             // Ohne gültige Sitzung wird nichts verarbeitet
             if ($request->getMethod() === 'POST' && !Request::submitted('login')) {
-                \Pms\Backend\Support\Flash::error(
+                \Pms\Support\Flash::error(
                     'Aus Sicherheitsgründen wurde die Sitzung beendet.<br>'
                     . 'Bitte geben Sie Ihre Zugangsdaten erneut ein'
                 );

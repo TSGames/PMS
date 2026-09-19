@@ -1,6 +1,6 @@
 <?php
 
-namespace Pms\Backend\Support;
+namespace Pms\Support;
 
 /**
  * Anmeldung und Rechte im Backend.
@@ -25,12 +25,16 @@ final class Auth
     /**
      * Verarbeitet Abmeldung, Formular- und Cookie-Anmeldung.
      * Muss vor jeder Ausgabe laufen, weil Cookies gesetzt werden.
+     *
+     * @param string $action Die aufgelöste Aktion der Anfrage. Sie kommt von
+     *                       außen, weil Frontend und Backend sie
+     *                       unterschiedlich ermitteln.
      */
-    public static function handleRequest(): void
+    public static function handleRequest(string $action = ''): void
     {
         $cookieDomain = $GLOBALS['cookie_domain'] ?? '';
 
-        if (\Pms\Backend\Http\Routes::currentAction('') === 'logout') {
+        if ($action === 'logout') {
             delete_sessions();
             Flash::success('Logout erfolgreich!');
             return;
@@ -69,10 +73,14 @@ final class Auth
         $_SESSION['reload_check'] = 1;
     }
 
-    /** Nimmt einen bei der letzten Abmeldung gespeicherten Vorgang wieder auf. */
-    public static function resumePendingAction(): void
+    /**
+     * Nimmt einen bei der letzten Abmeldung gespeicherten Vorgang wieder auf.
+     *
+     * @param string $action Die aufgelöste Aktion der Anfrage
+     */
+    public static function resumePendingAction(string $action = ''): void
     {
-        if (\Pms\Backend\Http\Routes::currentAction('') === 'load_last') {
+        if ($action === 'load_last') {
             unset($_SESSION['reload_check']);
             reload_all(1);
             return;
@@ -137,8 +145,8 @@ final class Auth
             return null;
         }
         if (self::$user === null || (int)self::$user->id !== $id) {
-            self::$user = \Pms\Backend\Data\Db::first(
-                'SELECT * FROM ' . \Pms\Backend\Data\Db::table('user') . ' WHERE id = :id',
+            self::$user = \Pms\Data\Db::first(
+                'SELECT * FROM ' . \Pms\Data\Db::table('user') . ' WHERE id = :id',
                 ['id' => $id]
             );
         }

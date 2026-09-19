@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pms\Tests\Unit;
 
-use Pms\Backend\Support\Request;
+use Pms\Support\Request;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\ServerRequestFactory;
 

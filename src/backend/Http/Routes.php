@@ -2,6 +2,8 @@
 
 namespace Pms\Backend\Http;
 
+use Pms\Support\Url;
+
 /**
  * Adressen des Backends.
  *
@@ -106,22 +108,15 @@ final class Routes
         return is_string($legacy) ? $legacy : '';
     }
 
-    /**
-     * Basispfad der Installation.
-     *
-     * Liegt PMS in einem Unterverzeichnis (z.B. /pms/admin.php), liefert
-     * diese Methode "/pms"; im Wurzelverzeichnis eine leere Zeichenkette.
-     */
+    /** Basispfad der Installation; teilen sich Frontend und Backend. */
     public static function basePath(): string
     {
-        $script = (string)($_SERVER['SCRIPT_NAME'] ?? '/admin.php');
-        $directory = rtrim(str_replace('\\', '/', dirname($script)), '/');
-        return $directory === '/' ? '' : $directory;
+        return Url::base();
     }
 
     /** Basis für relative Verweise im HTML-Kopf. */
     public static function baseHref(): string
     {
-        return self::basePath() . '/';
+        return Url::baseHref();
     }
 }

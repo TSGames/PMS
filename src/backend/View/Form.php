@@ -2,8 +2,8 @@
 
 namespace Pms\Backend\View;
 
-use Pms\Backend\Support\Errors;
-use Pms\Backend\Support\Html;
+use Pms\Support\Errors;
+use Pms\Support\Html;
 
 /**
  * @psalm-type FieldOptions = array{

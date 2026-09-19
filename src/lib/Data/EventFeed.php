@@ -1,8 +1,8 @@
 <?php
 
-namespace Pms\Backend\Data;
+namespace Pms\Data;
 
-use Pms\Backend\Support\Html;
+use Pms\Support\Html;
 
 /**
  * Die Ereignisse der Website in zeitlicher Reihenfolge.

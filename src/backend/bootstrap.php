@@ -1,9 +1,12 @@
 <?php
 /**
- * Startpunkt des neuen Backend-Codes.
+ * Einstieg in den Backend-Code.
  *
- * Registriert den Autoloader für den Namensraum Pms\Backend und stellt
- * sicher, dass nur admin.php diesen Code laden kann.
+ * Der eigentliche Autoloader steht eine Ebene höher, weil Frontend und
+ * Backend sich Pms\Support und Pms\Data teilen. Diese Datei sorgt nur
+ * dafür, dass der Backend-Code nicht ohne admin.php geladen werden kann -
+ * sie liegt wie alles unter src/ im Webroot und wäre sonst direkt
+ * aufrufbar.
  */
 
 if (!defined('PMS_ADMIN_ENTRY')) {
@@ -11,29 +14,4 @@ if (!defined('PMS_ADMIN_ENTRY')) {
     exit('Direct access not allowed');
 }
 
-define('PMS_BACKEND_DIR', __DIR__);
-
-// Composer-Abhängigkeiten (Slim). Im Image liegt vendor/ außerhalb des
-// Webroots, weil dieser bei der Entwicklung überlagert wird.
-foreach ([
-    dirname(__DIR__, 2) . '/vendor/autoload.php',
-    '/var/composer/vendor/autoload.php',
-    dirname(__DIR__) . '/vendor/autoload.php',
-] as $autoload) {
-    if (is_file($autoload)) {
-        require_once $autoload;
-        break;
-    }
-}
-
-spl_autoload_register(static function (string $class): void {
-    $prefix = 'Pms\\Backend\\';
-    if (!str_starts_with($class, $prefix)) {
-        return;
-    }
-    $relative = substr($class, strlen($prefix));
-    $file = PMS_BACKEND_DIR . '/' . str_replace('\\', '/', $relative) . '.php';
-    if (is_file($file)) {
-        require $file;
-    }
-});
+require_once dirname(__DIR__) . '/bootstrap.php';

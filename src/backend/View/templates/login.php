@@ -7,7 +7,7 @@
  * @var string $messages       Fertig gerendertes HTML der Meldungen
  */
 
-use Pms\Backend\Support\Html;
+use Pms\Support\Html;
 use Pms\Backend\View\Layout;
 
 echo Layout::head(Layout::title());

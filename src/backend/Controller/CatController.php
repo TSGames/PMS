@@ -2,16 +2,15 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\Db;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Errors;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Listing;
-use Pms\Backend\Support\Request;
-use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
 use Pms\Backend\View\Form;
+use Pms\Data\Db;
+use Pms\Support\Auth;
+use Pms\Support\Errors;
+use Pms\Support\Flash;
+use Pms\Support\Html;
+use Pms\Support\Listing;
+use Pms\Support\Request;
 
 /**
  * Hauptkategorien.
@@ -50,7 +49,7 @@ final class CatController extends Controller
             return $this->form($this->find(Request::queryInt('edit')));
         }
 
-        Sorting::handleRequest('cat');
+        $this->handleSorting('cat');
 
         return $this->overview();
     }
@@ -198,7 +197,7 @@ final class CatController extends Controller
             // Die Pfeile verschieben gegenüber dem Nachbarn - das ergibt nur
             // Sinn, solange die Liste nach der Sortiernummer geordnet ist
             $sort = $list->isDefaultOrder()
-                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $cat, $list->rows[$index + 1] ?? null)
+                ? Components::sortCell($this->action(), $list->rows[$index - 1] ?? null, $cat, $list->rows[$index + 1] ?? null)
                 : Html::e((string)(int)$cat->sort);
 
             $rows[] = [

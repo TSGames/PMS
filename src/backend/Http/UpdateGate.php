@@ -2,10 +2,10 @@
 
 namespace Pms\Backend\Http;
 
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Request;
+use Pms\Support\Auth;
+use Pms\Support\Flash;
+use Pms\Support\Html;
+use Pms\Support\Request;
 
 /**
  * Datenbank-Updates.

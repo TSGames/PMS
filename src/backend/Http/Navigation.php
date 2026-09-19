@@ -2,7 +2,7 @@
 
 namespace Pms\Backend\Http;
 
-use Pms\Backend\Support\Auth;
+use Pms\Support\Auth;
 
 /**
  * Die Navigationspunkte des Backends.

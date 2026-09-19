@@ -2,16 +2,15 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\Db;
 use Pms\Backend\Http\Routes;
-use Pms\Backend\Support\Errors;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Listing;
-use Pms\Backend\Support\Request;
-use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
 use Pms\Backend\View\Form;
+use Pms\Data\Db;
+use Pms\Support\Errors;
+use Pms\Support\Flash;
+use Pms\Support\Html;
+use Pms\Support\Listing;
+use Pms\Support\Request;
 
 /**
  * Menüeinträge der Website.
@@ -70,7 +69,7 @@ final class MenuController extends Controller
             return $this->form($this->find(Request::queryInt('edit')));
         }
 
-        Sorting::handleRequest('menu');
+        $this->handleSorting('menu');
 
         return $this->overview();
     }
@@ -415,7 +414,7 @@ final class MenuController extends Controller
         $rows = [];
         foreach ($list->rows as $index => $entry) {
             $sort = $list->isDefaultOrder()
-                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $entry, $list->rows[$index + 1] ?? null)
+                ? Components::sortCell($this->action(), $list->rows[$index - 1] ?? null, $entry, $list->rows[$index + 1] ?? null)
                 : Html::e((string)(int)$entry->sort);
 
             $rows[] = [

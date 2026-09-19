@@ -2,17 +2,16 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\Db;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\EntityImage;
-use Pms\Backend\Support\Errors;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Listing;
-use Pms\Backend\Support\Request;
-use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
 use Pms\Backend\View\Form;
+use Pms\Data\Db;
+use Pms\Support\Auth;
+use Pms\Support\EntityImage;
+use Pms\Support\Errors;
+use Pms\Support\Flash;
+use Pms\Support\Html;
+use Pms\Support\Listing;
+use Pms\Support\Request;
 
 /**
  * Unterkategorien.
@@ -49,7 +48,7 @@ final class SubcatController extends Controller
             return $this->form($this->find(Request::queryInt('edit')));
         }
 
-        Sorting::handleRequest('subcat');
+        $this->handleSorting('subcat');
 
         return $this->overview();
     }
@@ -271,7 +270,7 @@ final class SubcatController extends Controller
         $rows = [];
         foreach ($list->rows as $index => $subcat) {
             $sort = $list->isDefaultOrder()
-                ? Sorting::cell($this->action(), $list->rows[$index - 1] ?? null, $subcat, $list->rows[$index + 1] ?? null)
+                ? Components::sortCell($this->action(), $list->rows[$index - 1] ?? null, $subcat, $list->rows[$index + 1] ?? null)
                 : Html::e((string)(int)$subcat->sort);
 
             $rows[] = [

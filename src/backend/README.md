@@ -20,13 +20,28 @@ den Webserver nicht erreichbar (`.htaccess`) und wird ausschließlich von
 
 ## Verzeichnisse
 
+Unter `src/backend/` liegt, was nur das Backend angeht:
+
 | Verzeichnis | Inhalt |
 | --- | --- |
 | `Controller/` | Je ein Controller pro Bereich des Backends |
-| `Data/` | `Db` – Datenbankzugriff mit vorbereiteten Anweisungen |
 | `Http/` | Routen, Navigation, JSON-Schnittstellen, Update-Prüfung |
-| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen, Feldfehler, Browser-Kennungen |
 | `View/` | Grundgerüst, Templates, Symbole, Listen- und Formularbausteine |
+
+Unter `src/lib/` liegt, was Frontend und Backend sich teilen (Namensraum
+`Pms\`, ohne `Backend`):
+
+| Verzeichnis | Inhalt |
+| --- | --- |
+| `Data/` | `Db` – Datenbankzugriff mit vorbereiteten Anweisungen, `EventFeed` |
+| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen, Feldfehler, Adressen, Browser-Kennungen |
+
+Die Richtung ist festgelegt: `Pms\Backend\*` darf `Pms\Support` und
+`Pms\Data` benutzen, nie umgekehrt. Wo eine geteilte Klasse etwas braucht,
+das nur der jeweilige Bereich weiß, bekommt sie es übergeben -
+`Support\Url` etwa lässt sich vom Einstiegspunkt sagen, wie eine Aktion zu
+ihrem Pfad kommt, und `Auth::handleRequest()` bekommt die Aktion als
+Parameter.
 
 ## Ein Controller
 

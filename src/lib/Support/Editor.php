@@ -1,6 +1,6 @@
 <?php
 
-namespace Pms\Backend\Support;
+namespace Pms\Support;
 
 /**
  * Merkt sich, ob der grafische Editor (TinyMCE) benutzt werden soll.

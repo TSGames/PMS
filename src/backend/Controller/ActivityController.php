@@ -2,12 +2,12 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\Db;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Listing;
-use Pms\Backend\Support\Request;
-use Pms\Backend\Support\UserAgent;
 use Pms\Backend\View\Components;
+use Pms\Data\Db;
+use Pms\Support\Html;
+use Pms\Support\Listing;
+use Pms\Support\Request;
+use Pms\Support\UserAgent;
 
 /**
  * Website-Status: Kennzahlen und die letzten Zugriffe.

@@ -2,11 +2,11 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\EventFeed;
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Request;
 use Pms\Backend\View\Components;
 use Pms\Backend\View\Icons;
+use Pms\Data\EventFeed;
+use Pms\Support\Html;
+use Pms\Support\Request;
 
 /**
  * Ereignisse der Website: Anmeldungen, Registrierungen, Kommentare,

@@ -12,16 +12,27 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
-const PMS_BACKEND_DIR = __DIR__ . '/../../src/backend';
+/**
+ * Namensraum-Präfix => Verzeichnis, wie in src/bootstrap.php.
+ * Der längste passende Präfix gewinnt.
+ *
+ * @var array<string, string>
+ */
+const PMS_NAMESPACES = [
+    'Pms\\Backend\\' => __DIR__ . '/../../src/backend/',
+    'Pms\\' => __DIR__ . '/../../src/lib/',
+];
 
 spl_autoload_register(static function (string $class): void {
-    $prefix = 'Pms\\Backend\\';
-    if (!str_starts_with($class, $prefix)) {
+    foreach (PMS_NAMESPACES as $prefix => $directory) {
+        if (!str_starts_with($class, $prefix)) {
+            continue;
+        }
+        $file = $directory . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+        if (is_file($file)) {
+            require $file;
+        }
         return;
-    }
-    $file = PMS_BACKEND_DIR . '/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
-    if (is_file($file)) {
-        require $file;
     }
 });
 

@@ -2,8 +2,9 @@
 
 namespace Pms\Backend\View;
 
-use Pms\Backend\Support\Html;
-use Pms\Backend\Support\Listing;
+use Pms\Support\Csrf;
+use Pms\Support\Html;
+use Pms\Support\Listing;
 
 /**
  * Wiederkehrende Bausteine der Oberfläche.
@@ -191,6 +192,39 @@ final class Components
         return '<a class="' . Html::e($class) . '" href="' . Html::e($href) . '"'
             . ' title="' . Html::e($title) . '" aria-label="' . Html::e($title) . '">'
             . Icons::render($icon) . '</a>';
+    }
+
+    /**
+     * Die Sortiernummer einer Zeile mit Pfeilen zum Verschieben.
+     *
+     * Ein Klick setzt die Nummer des Eintrags knapp vor bzw. hinter seinen
+     * Nachbarn. Nur sinnvoll, solange die Liste nach der Nummer geordnet ist.
+     *
+     * @param object|null $previous Vorheriger Eintrag der Liste
+     * @param object      $current  Aktueller Eintrag
+     * @param object|null $next     Nächster Eintrag der Liste
+     */
+    public static function sortCell(string $action, ?object $previous, object $current, ?object $next): string
+    {
+        $html = '<span class="sort-cell"><span class="sort-value">'
+            . Html::e((string)(int)$current->sort) . '</span><span class="row-actions">';
+
+        if ($previous !== null) {
+            $html .= self::sortLink($action, (int)$current->id, (int)$previous->sort - 1, 'chevron-up', 'Nach oben');
+        }
+        if ($next !== null) {
+            $html .= self::sortLink($action, (int)$current->id, (int)$next->sort + 1, 'chevron-down', 'Nach unten');
+        }
+
+        return $html . '</span></span>';
+    }
+
+    private static function sortLink(string $action, int $id, int $position, string $icon, string $title): string
+    {
+        $url = Html::url($action, ['sort' => 'yes', 'pos' => $position, 'id' => $id] + Csrf::queryParam());
+
+        return '<a class="icon-btn icon-btn-sm" href="' . Html::e($url) . '" title="' . Html::e($title) . '"'
+            . ' aria-label="' . Html::e($title) . '">' . Icons::render($icon, 'icon icon-sm') . '</a>';
     }
 
     /** Sammelt die Aktionen einer Zeile. */

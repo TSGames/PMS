@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pms\Tests\Unit;
 
-use Pms\Backend\Data\Db;
+use Pms\Data\Db;
 
 /**
  * Data\Db - Datenbankzugriff mit vorbereiteten Anweisungen.

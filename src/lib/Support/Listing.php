@@ -1,8 +1,8 @@
 <?php
 
-namespace Pms\Backend\Support;
+namespace Pms\Support;
 
-use Pms\Backend\Data\Db;
+use Pms\Data\Db;
 
 /**
  * Suche, Sortierung und Seitenaufteilung einer Übersicht.

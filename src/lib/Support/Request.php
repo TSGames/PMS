@@ -1,6 +1,6 @@
 <?php
 
-namespace Pms\Backend\Support;
+namespace Pms\Support;
 
 use Psr\Http\Message\ServerRequestInterface;
 

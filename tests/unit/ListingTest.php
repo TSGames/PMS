@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pms\Tests\Unit;
 
-use Pms\Backend\Support\Listing;
-use Pms\Backend\Support\Request;
+use Pms\Support\Listing;
+use Pms\Support\Request;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 /**

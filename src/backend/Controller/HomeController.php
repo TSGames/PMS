@@ -2,12 +2,12 @@
 
 namespace Pms\Backend\Controller;
 
-use Pms\Backend\Data\Db;
-use Pms\Backend\Data\EventFeed;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Html;
 use Pms\Backend\View\Components;
 use Pms\Backend\View\Icons;
+use Pms\Data\Db;
+use Pms\Data\EventFeed;
+use Pms\Support\Auth;
+use Pms\Support\Html;
 
 /**
  * Startseite des Backends.

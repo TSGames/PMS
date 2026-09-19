@@ -44,7 +44,7 @@ abstract class DatabaseTestCase extends TestCase
     {
         $ids = [];
         foreach ($rows as $row) {
-            $ids[] = \Pms\Backend\Data\Db::insert('cat', $row);
+            $ids[] = \Pms\Data\Db::insert('cat', $row);
         }
         return $ids;
     }

@@ -515,7 +515,7 @@ function header_def()
 		// Die Auswertung gehört zum Backend; im Frontend bleibt die Kennung roh
 		if(class_exists('\\Pms\\Backend\\Support\\UserAgent'))
 			{
-			return \Pms\Backend\Support\UserAgent::describe($a);
+			return \Pms\Support\UserAgent::describe($a);
 		}
 		return $a;
 	}

@@ -2,9 +2,9 @@
 
 namespace Pms\Backend\Http;
 
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Csrf;
-use Pms\Backend\Support\Request;
+use Pms\Support\Auth;
+use Pms\Support\Csrf;
+use Pms\Support\Request;
 
 /**
  * Schnittstelle des Zuschneide-Dialogs.

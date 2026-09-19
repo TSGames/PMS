@@ -1,6 +1,6 @@
 <?php
 
-namespace Pms\Backend\Data;
+namespace Pms\Data;
 
 use SQLite3Result;
 use SQLite3Stmt;

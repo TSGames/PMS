@@ -23,12 +23,18 @@ require 'backend/bootstrap.php';
 use Pms\Backend\Http\Kernel;
 use Pms\Backend\Http\Navigation;
 use Pms\Backend\Http\Routes;
-use Pms\Backend\Support\Auth;
-use Pms\Backend\Support\Editor;
+use Pms\Support\Auth;
+use Pms\Support\Editor;
+use Pms\Support\Url;
+
+// Ab hier weiß Support\Url, wie eine Aktion des Backends zu ihrem Pfad
+// kommt; Html::url() und alles darunter bauen ihre Adressen darüber.
+Url::resolveWith(static fn(string $action): string => Routes::path($action));
 
 // 2. Anmeldung, Abmeldung, offener Vorgang aus einer beendeten Sitzung
-Auth::handleRequest();
-Auth::resumePendingAction();
+$action = Routes::currentAction('');
+Auth::handleRequest($action);
+Auth::resumePendingAction($action);
 Auth::enforceBackendAccess();
 
 $modul_name = [];
@@ -50,7 +56,7 @@ if (Auth::isLoggedIn()) {
     require 'backend/modules.php';
 } else {
     // Angefangenen Vorgang merken, damit er nach der Anmeldung weitergeht
-    if (!\Pms\Backend\Support\Request::submitted('login')) {
+    if (!\Pms\Support\Request::submitted('login')) {
         store_all();
     }
 }

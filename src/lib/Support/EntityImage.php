@@ -1,6 +1,6 @@
 <?php
 
-namespace Pms\Backend\Support;
+namespace Pms\Support;
 
 /**
  * Bilder, die zu einem Datensatz gehören (Unterkategorie, Inhalt, Benutzer).
