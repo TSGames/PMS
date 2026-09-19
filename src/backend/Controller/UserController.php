@@ -4,11 +4,13 @@ namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Benutzerkonten.
@@ -28,7 +30,10 @@ final class UserController extends Controller
     public function handle(): string
     {
         if (Request::submitted('user')) {
-            $this->save();
+            $entered = $this->save();
+            if ($entered !== null) {
+                return $this->form($entered);
+            }
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -63,16 +68,17 @@ final class UserController extends Controller
         return (int)from_db('user', $id, 'typ') <= Auth::userType();
     }
 
-    private function save(): void
+    /** @return object|null Die eingegebenen Werte, wenn nicht gespeichert wurde */
+    private function save(): ?object
     {
         if (!$this->checkToken()) {
-            return;
+            return null;
         }
 
         $id = Request::int('id');
         if ($id > 0 && !$this->mayEdit($id)) {
             Flash::error('Sie können keine Benutzer bearbeiten, die höhere Berechtigungen als Sie selbst haben!');
-            return;
+            return null;
         }
 
         $type = Request::int('typ');
@@ -85,9 +91,17 @@ final class UserController extends Controller
         }
 
         $active = Request::checkbox('active');
+        $entered = $this->enteredValues($id, $type, $active);
+
         if ($id === Auth::userId() && !$active) {
-            Flash::error('Sie können nicht Ihren aktuellen Account sperren.');
-            return;
+            Errors::add('active', 'Sie können nicht Ihren aktuellen Account sperren.');
+            return $entered;
+        }
+
+        // Die Prüfungen stehen hier und nicht nur in make_user(), damit die
+        // Meldung am betroffenen Feld erscheint statt am Seitenkopf
+        if (!$this->validate($id)) {
+            return $entered;
         }
 
         $result = make_user(
@@ -116,11 +130,100 @@ final class UserController extends Controller
                 $this->redirect();
             }
             Flash::error($result[0]);
-            return;
+            return $entered;
         }
 
-        // make_user liefert bei Eingabefehlern die Meldung als Zeichenkette
+        // make_user liefert bei Eingabefehlern die Meldung als Zeichenkette;
+        // was hier noch ankommt, hat validate() nicht abgedeckt
         Flash::error((string)$result);
+        return $entered;
+    }
+
+    /**
+     * Prüft die Eingaben und legt die Meldungen am jeweiligen Feld ab.
+     *
+     * @return bool true, wenn nichts zu beanstanden ist
+     */
+    private function validate(int $id): bool
+    {
+        $name = Request::string('name');
+        $password = Request::text('password');
+        $isNew = $id <= 0;
+
+        if (mb_strlen($name) < 3) {
+            Errors::add('name', 'Der Benutzername muss mindestens 3 Zeichen lang sein.');
+        } elseif (!name_condition($name)) {
+            Errors::add('name', 'Der Benutzername enthält unzulässige Zeichen.');
+        } elseif ($this->nameTaken($name, $id)) {
+            Errors::add('name', 'Dieser Benutzername ist bereits vorhanden.');
+        }
+
+        if ($isNew || $password !== '') {
+            if ($password !== Request::text('passwordr')) {
+                Errors::add('passwordr', 'Die beiden Passwörter stimmen nicht überein.');
+            } elseif (strlen($password) < 3) {
+                Errors::add('password', 'Das Passwort muss mindestens 3 Zeichen lang sein.');
+            }
+        }
+
+        if (!check_mail(Request::string('mail'))) {
+            Errors::add('mail', 'Das ist keine gültige E-Mail-Adresse.');
+        }
+
+        $birthday = Request::string('bday');
+        if ($birthday !== '' && !$this->isValidBirthday($birthday)) {
+            Errors::add('bday', 'Bitte geben Sie das Geburtsdatum als TT.MM.JJJJ an.');
+        }
+
+        return !Errors::has();
+    }
+
+    private function nameTaken(string $name, int $id): bool
+    {
+        $found = Db::first(
+            'SELECT id FROM ' . Db::table('user') . ' WHERE LOWER(name) = LOWER(:name) AND id <> :id',
+            ['name' => $name, 'id' => $id]
+        );
+        return $found !== null;
+    }
+
+    /** Ein Geburtsdatum liegt zwischen 200 Jahren und einem Jahr zurück. */
+    private function isValidBirthday(string $value): bool
+    {
+        $parts = explode('.', $value);
+        if (count($parts) !== 3) {
+            return false;
+        }
+        [$day, $month, $year] = array_map('intval', $parts);
+        if (!checkdate($month, $day, $year)) {
+            return false;
+        }
+        $timestamp = mktime(0, 0, 0, $month, $day, $year);
+        return $timestamp !== false
+            && $timestamp <= time() - 365 * 86400
+            && $timestamp >= time() - 200 * 365 * 86400;
+    }
+
+    /**
+     * Die abgeschickten Werte als Datensatz, damit das Formular sie nach
+     * einem Fehler wieder anzeigt.
+     */
+    private function enteredValues(int $id, int $type, bool $active): object
+    {
+        return (object)[
+            'id' => $id,
+            'name' => Request::string('name'),
+            'mail' => Request::string('mail'),
+            'website' => Request::string('website'),
+            'signatur' => Request::text('signatur'),
+            'typ' => $type,
+            'bday' => 0,
+            'image' => '',
+            'showmail' => Request::checkbox('showmail'),
+            'top' => Request::checkbox('top'),
+            'active' => $active ? 1 : 0,
+            'bday_text' => Request::string('bday'),
+        ];
     }
 
     private function delete(int $id): never
@@ -199,44 +302,96 @@ final class UserController extends Controller
         $isEdit = $user !== null;
         $id = $isEdit ? (int)$user->id : 0;
 
-        $birthday = '';
-        if ($isEdit && (int)$user->bday > 0) {
+        $birthday = $isEdit ? (string)($user->bday_text ?? '') : '';
+        if ($birthday === '' && $isEdit && (int)$user->bday > 0) {
             $birthday = date('d.m.Y', (int)$user->bday);
         }
 
-        $html = Html::formOpen($this->action(), [], ['upload' => true])
-            . Html::heading($isEdit ? 'Benutzer bearbeiten' : 'Benutzer erstellen')
-            . Html::hidden('id', $id)
-            . '<table>'
-            . Html::field('Name', Html::input('name', $isEdit ? $user->name : ''))
-            . Html::field('Neues Passwort', Html::input('password', '', ['type' => 'password', 'autocomplete' => 'new-password']))
-            . Html::field('Passwort wiederholen', Html::input('passwordr', '', ['type' => 'password', 'autocomplete' => 'new-password']))
-            . Html::field('EMail-Adresse', Html::input('mail', $isEdit ? $user->mail : ''))
-            . Html::field('Website', Html::input('website', $isEdit ? $user->website : '', ['maxlength' => 128]))
-            . Html::field('Signatur', Html::textarea('signatur', $isEdit ? my_stripslashes((string)$user->signatur) : '', 3, 30))
-            . Html::field('Benutzertyp', Html::select('typ', $this->typeOptions($id === Auth::userId()), $isEdit ? (int)$user->typ : 0))
-            . Html::field('Geburtsdatum (z.B. 15.03.1985)', Html::input('bday', $birthday))
-            . Html::field('Avatar wählen (jpg, gif, png)', '<input type="file" name="image">');
+        $account = Form::field(
+            'Name',
+            Html::input('name', $isEdit ? $user->name : '', ['id' => 'name']),
+            ['name' => 'name', 'required' => true, 'hint' => 'Mindestens 3 Zeichen.']
+        )
+            . Form::field(
+                'E-Mail-Adresse',
+                Html::input('mail', $isEdit ? $user->mail : '', ['id' => 'mail', 'type' => 'email']),
+                ['name' => 'mail', 'required' => true]
+            )
+            . Form::field(
+                'Benutzertyp',
+                Html::select('typ', $this->typeOptions($id === Auth::userId()), $isEdit ? (int)$user->typ : 0, ['id' => 'typ']),
+                ['name' => 'typ', 'hint' => 'Höher als die eigene Stufe lässt sich niemand einstufen.']
+            );
+
+        $password = Form::field(
+            $isEdit ? 'Neues Passwort' : 'Passwort',
+            Html::input('password', '', ['id' => 'password', 'type' => 'password', 'autocomplete' => 'new-password']),
+            [
+                'name' => 'password',
+                'required' => !$isEdit,
+                'hint' => $isEdit ? 'Leer lassen, um das bisherige Passwort zu behalten.' : 'Mindestens 3 Zeichen.',
+            ]
+        )
+            . Form::field(
+                'Passwort wiederholen',
+                Html::input('passwordr', '', ['id' => 'passwordr', 'type' => 'password', 'autocomplete' => 'new-password']),
+                ['name' => 'passwordr', 'required' => !$isEdit]
+            );
+
+        $profile = Form::field(
+            'Website',
+            Html::input('website', $isEdit ? $user->website : '', ['id' => 'website', 'maxlength' => 128]),
+            ['name' => 'website']
+        )
+            . Form::field(
+                'Signatur',
+                Html::textarea('signatur', $isEdit ? my_stripslashes((string)$user->signatur) : '', 3, 30),
+                ['name' => 'signatur', 'for' => '']
+            )
+            . Form::field(
+                'Geburtsdatum',
+                Html::input('bday', $birthday, ['id' => 'bday', 'placeholder' => 'TT.MM.JJJJ']),
+                ['name' => 'bday', 'hint' => 'Zum Beispiel 15.03.1985.']
+            )
+            . Form::field(
+                'Avatar',
+                '<input type="file" name="image" id="image" accept="image/*">',
+                ['name' => 'image', 'for' => 'image', 'hint' => 'JPG, GIF oder PNG.']
+            );
 
         if ($isEdit && $user->image) {
-            $html .= '<tr><td>' . make_contentimg('user', $id, $user->image, 0) . '</td><td>'
-                . Html::checkbox('image_delete', false, 'Aktuelles Bild löschen') . '</td></tr>';
+            $profile .= Form::field(
+                'Aktueller Avatar',
+                (string)make_contentimg('user', $id, $user->image, 0)
+                . '<label class="field-check">' . Html::checkbox('image_delete', false) . ' Aktuelles Bild löschen</label>',
+                ['for' => '']
+            );
         }
 
-        return $html
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('showmail', !$isEdit || (bool)$user->showmail, 'Die E-Mailadresse des Benutzers anzeigen')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('top', !$isEdit || (bool)$user->top, 'Benutzer ist in Top-Liste sichtbar')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('active', !$isEdit || (bool)$user->active, 'Benutzer ist aktiviert')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="user" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        $options = Form::check(
+            Html::checkbox('showmail', !$isEdit || (bool)$user->showmail),
+            'E-Mail-Adresse öffentlich anzeigen'
+        )
+            . Form::check(
+                Html::checkbox('top', !$isEdit || (bool)$user->top),
+                'In der Top-Liste sichtbar'
+            )
+            . Form::check(
+                Html::checkbox('active', !$isEdit || (bool)$user->active),
+                'Konto ist freigeschaltet',
+                ['name' => 'active']
+            );
+
+        return Components::pageHeader($id > 0 ? 'Benutzer bearbeiten' : 'Benutzer erstellen')
+            . Html::formOpen($this->action(), [], ['upload' => true])
+            . Html::hidden('id', $id)
+            . Form::card(
+                Form::section('Konto', $account)
+                . Form::section('Passwort', $password)
+                . Form::section('Profil', $profile)
+                . Form::section('Einstellungen', $options),
+                Form::actions('user', 'Speichern', $this->url())
+            )
             . Html::formClose();
     }
 

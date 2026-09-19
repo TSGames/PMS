@@ -4,12 +4,14 @@ namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Hauptkategorien.
@@ -26,7 +28,12 @@ final class CatController extends Controller
     public function handle(): string
     {
         if (Request::submitted('cat')) {
-            $this->save();
+            // save() leitet bei Erfolg weiter; sonst kommen die eingegebenen
+            // Werte zurück und das Formular zeigt sie samt Fehlern erneut
+            $entered = $this->save();
+            if ($entered !== null) {
+                return $this->form($entered);
+            }
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -48,24 +55,25 @@ final class CatController extends Controller
         return $this->overview();
     }
 
-    private function save(): void
+    /** @return object|null Die eingegebenen Werte, wenn nicht gespeichert wurde */
+    private function save(): ?object
     {
         if (!$this->checkToken()) {
-            return;
-        }
-
-        $name = Request::string('name');
-        if ($name === '') {
-            Flash::error('Bitte geben Sie einen Kategorienamen an.');
-            return;
+            return null;
         }
 
         $data = [
-            'name' => $name,
+            'name' => Request::string('name'),
             'sort' => Request::int('sort', 1000),
             'available' => Request::checkbox('available'),
             'list' => Request::string('list'),
         ];
+        $entered = (object)($data + ['id' => Request::int('id')]);
+
+        if ($data['name'] === '') {
+            Errors::add('name', 'Bitte geben Sie einen Kategorienamen an.');
+            return $entered;
+        }
 
         $id = Request::int('id');
         $success = $id > 0 ? Db::update('cat', $id, $data) : Db::insert('cat', $data) > 0;
@@ -74,7 +82,9 @@ final class CatController extends Controller
             Flash::success('Kategorie erfolgreich gespeichert!');
             $this->redirect();
         }
+
         Flash::error('Fehler beim Speichern der Kategorie!');
+        return $entered;
     }
 
     /**
@@ -136,27 +146,34 @@ final class CatController extends Controller
     private function form(?object $cat): string
     {
         $isEdit = $cat !== null;
+        $id = $isEdit ? (int)$cat->id : 0;
 
-        $html = Html::formOpen($this->action())
-            . Html::heading($isEdit ? 'Kategorie bearbeiten' : 'Kategorie erstellen')
-            . Html::hidden('id', $isEdit ? (int)$cat->id : 0)
-            . '<table>'
-            . Html::field('Kategoriename', Html::input('name', $isEdit ? $cat->name : ''))
-            . Html::field('Sortierung', Html::input('sort', $isEdit ? (int)$cat->sort : 1000));
+        $fields = Form::field(
+            'Kategoriename',
+            Html::input('name', $isEdit ? $cat->name : '', ['id' => 'name']),
+            ['name' => 'name', 'required' => true]
+        )
+            . Form::field(
+                'Sortierung',
+                Html::input('sort', $isEdit ? (int)$cat->sort : 1000, ['id' => 'sort', 'type' => 'number']),
+                ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen in der Navigation weiter oben.']
+            );
 
         $lists = get_lists($isEdit ? $cat->list : '');
         if ($lists) {
-            $html .= Html::field('Listenansicht', $lists);
+            $fields .= Form::field('Listenansicht', (string)$lists, ['name' => 'list']);
         }
 
-        return $html
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('available', !$isEdit || (bool)$cat->available, 'Kategorie verfügbar')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="cat" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        $fields .= Form::check(
+            Html::checkbox('available', !$isEdit || (bool)$cat->available),
+            'Kategorie verfügbar',
+            ['hint' => 'Versteckte Kategorien erscheinen im Frontend nicht.']
+        );
+
+        return Components::pageHeader($id > 0 ? 'Kategorie bearbeiten' : 'Kategorie erstellen')
+            . Html::formOpen($this->action())
+            . Html::hidden('id', $id)
+            . Form::card(Form::section('', $fields), Form::actions('cat', 'Speichern', $this->url()))
             . Html::formClose();
     }
 

@@ -3,22 +3,26 @@
 namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
+use Pms\Backend\Http\Routes;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Editor;
 use Pms\Backend\Support\EntityImage;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
+use Pms\Backend\View\Icons;
 
 /**
  * Inhaltsverwaltung.
  *
- * Der Bereich führt durch zwei Schritte: In der Vorauswahl werden Typ,
- * Kategorie und Unterkategorie festgelegt, danach folgt der eigentliche
- * Editor. Zusätzlich verwaltet er die Bilder eines Inhalts.
+ * Typ, Kategorie und Unterkategorie stehen im Kopf des Editors und sind
+ * dort änderbar; die frühere Vorauswahl als eigener Schritt entfällt.
+ * Zusätzlich verwaltet der Bereich die Bilder eines Inhalts.
  */
 final class ItemController extends Controller
 {
@@ -77,15 +81,6 @@ final class ItemController extends Controller
             return $this->deleteConfirmation($delete);
         }
 
-        if (Request::submitted('item_refresh')) {
-            return $this->wizard($this->wizardValuesFromRequest());
-        }
-
-        if (Request::submitted('item_step1')) {
-            $values = $this->wizardValuesFromRequest();
-            return $this->selectionIsValid($values) ? $this->editor($values) : $this->wizard($values);
-        }
-
         $edit = Request::queryInt('edit');
         if ($edit > 0) {
             $item = $this->find($edit);
@@ -93,11 +88,11 @@ final class ItemController extends Controller
                 Flash::error('Der Inhalt wurde nicht gefunden.');
                 return $this->overview();
             }
-            return $this->wizard($this->wizardValuesFromItem($item));
+            return $this->editor($this->valuesFromItem($item));
         }
 
         if (Request::string('new') !== '') {
-            return $this->wizard($this->wizardValuesForNew());
+            return $this->editor($this->valuesForNew());
         }
 
         Sorting::handleRequest('item');
@@ -133,13 +128,13 @@ final class ItemController extends Controller
     }
 
     // -----------------------------------------------------------------
-    // Vorauswahl
+    // Einordnung: Typ, Kategorie, Unterkategorie
     // -----------------------------------------------------------------
 
     /**
      * @return array{id: int, typ: int, typ2: int, cat: int, subcat: int, sort: int, name: string}
      */
-    private function wizardValuesForNew(): array
+    private function valuesForNew(): array
     {
         $cat = Request::queryInt('cat', $this->filterCat());
         $subcat = Request::queryInt('subcat', $this->filterSubcat());
@@ -158,7 +153,7 @@ final class ItemController extends Controller
         ];
     }
 
-    private function wizardValuesFromItem(object $item): array
+    private function valuesFromItem(object $item): array
     {
         return [
             'id' => (int)$item->id,
@@ -171,7 +166,7 @@ final class ItemController extends Controller
         ];
     }
 
-    private function wizardValuesFromRequest(): array
+    private function valuesFromRequest(): array
     {
         return [
             'id' => Request::int('id'),
@@ -182,84 +177,6 @@ final class ItemController extends Controller
             'sort' => Request::int('sort'),
             'name' => Request::string('name'),
         ];
-    }
-
-    /** Passen Typ, Kategorie und Unterkategorie zusammen? */
-    private function selectionIsValid(array $values): bool
-    {
-        if ($values['typ'] === self::TYPE_SPECIAL) {
-            return $values['typ2'] > 0;
-        }
-
-        return Db::first(
-            'SELECT id FROM ' . Db::table('subcat') . ' WHERE id = :id AND cat = :cat',
-            ['id' => $values['subcat'], 'cat' => $values['cat']]
-        ) !== null;
-    }
-
-    private function wizard(array $values): string
-    {
-        $isEdit = $values['id'] > 0;
-        $contentTypes = $GLOBALS['content_typ'] ?? [];
-        $specialTypes = $GLOBALS['special_typ'] ?? [];
-
-        $html = Html::formOpen($this->action())
-            . Html::heading('Inhalt ' . ($isEdit ? 'bearbeiten' : 'hinzufügen') . ' - Vorauswahl')
-            . Html::hidden('id', $values['id'])
-            . Html::hidden('sort', $values['sort'])
-            . Html::hidden('name', $values['name'])
-            . '<table>'
-            . Html::field('Typ des Inhalts', Html::select('typ', $contentTypes, $values['typ']));
-
-        $categories = $this->categoryOptions();
-        $selectable = false;
-
-        if ($values['typ'] === self::TYPE_SPECIAL) {
-            $html .= Html::field(
-                'Art des Spezialinhalts',
-                Html::select('typ2', $specialTypes, $values['typ2'])
-                . ' <input type="submit" name="item_refresh" value="Aktualisieren">'
-            );
-            $selectable = true;
-        } elseif ($categories === []) {
-            $html .= '<tr><td colspan="2">' . warning_box(
-                'Sie können keinen Inhalt erstellen, da noch keine Kategorien existieren.<br>'
-                . 'Wählen Sie als Typ "Spezialseite" oder <a href="' . Html::e(Html::url('cat', ['new' => 'yes']))
-                . '">erstellen Sie eine Kategorie</a>.'
-            ) . '</td></tr>';
-        } else {
-            $html .= Html::field(
-                'In Kategorie',
-                Html::select('cat', $categories, $values['cat'])
-                . ' <input type="submit" name="item_refresh" value="Aktualisieren">'
-            );
-
-            $subcats = $this->subcategoryOptions($values['cat'] > 0 ? $values['cat'] : (int)array_key_first($categories));
-            if ($subcats !== []) {
-                $html .= Html::field('In Unterkategorie', Html::select('subcat', $subcats, $values['subcat']));
-                $selectable = true;
-            } else {
-                $catName = (string)from_db('cat', $values['cat'], 'name');
-                $html .= '<tr><td colspan="2">' . warning_box(
-                    'Sie können in der Kategorie ' . Html::e($catName) . ' keinen Inhalt hinzufügen, da es noch '
-                    . 'keine Unterkategorien gibt.<br>Wählen Sie eine andere Kategorie und klicken Sie auf '
-                    . '"Aktualisieren", oder <a href="' . Html::e(Html::url('subcat', ['cat' => $values['cat'], 'new' => 'yes']))
-                    . '">legen Sie eine neue Unterkategorie an</a>.'
-                ) . '</td></tr>';
-            }
-        }
-
-        if ($selectable) {
-            $html .= '<tr><td colspan="2"><div class="action-section">'
-                . Html::hidden('tinymce_vis', 1)
-                . Html::checkbox('tinymce', Editor::isEnabled(), 'Grafischen HTML-Editor (TinyMCE) verwenden')
-                . '</div></td></tr>'
-                . '<tr><td colspan="2"><div class="action-section">'
-                . '<input type="submit" name="item_step1" value="Weiter">'
-                . '</div></td></tr>';
-        }
-
-        return $html . '</table>' . Html::formClose();
     }
 
     // -----------------------------------------------------------------
@@ -312,145 +229,347 @@ final class ItemController extends Controller
             $content = cleanup_content($content);
         }
 
-        $html = Html::formOpen($this->action(), [], ['upload' => true])
-            . Html::heading('Inhalt ' . ($isEdit ? 'bearbeiten' : 'erstellen'))
+        $body = Form::section('Einordnung', $this->placementFields($values))
+            . Form::section('Inhalt', $this->contentSection($name, $description, $content, $link, $type))
+            . Form::section('Bild', $this->imageSection($item, $image, $type))
+            . Form::section('Veröffentlichung', $this->publishingSection(
+                $sort,
+                $author,
+                $created,
+                $isEdit,
+                $special,
+                $available,
+                $visible,
+                $showuser,
+                $rate,
+                $comments
+            ));
+
+        $actions = '<div class="form-actions">'
+            . '<input type="submit" id="item_button1" name="item_step2" value="Übernehmen" data-hide-on-submit>'
+            . '<input type="submit" id="item_button2" name="item_step2" value="Übernehmen &amp; Schließen"'
+            . ' class="btn-secondary" data-hide-on-submit>'
+            . Html::button('Abbrechen', $this->url(), 'btn btn-secondary')
+            . '<span id="item_save" class="form-actions-end" style="display:none;">'
+            . 'Bitte warten, Inhalt wird gespeichert…</span>'
+            . '</div>';
+
+        return Components::pageHeader(
+            $isEdit ? 'Inhalt bearbeiten' : 'Inhalt erstellen',
+            $isEdit ? (string)$item->name : '',
+            $this->editorActions($item)
+        )
+            . $this->missingStructureNotice()
+            . Html::formOpen($this->action(), [], ['upload' => true])
             . Html::hidden('action', 'item')
             . Html::hidden('id', $isEdit ? (int)$item->id : 0)
-            . Html::hidden('cat', $values['cat'])
-            . Html::hidden('subcat', $values['subcat'])
-            . Html::hidden('typ', $type)
-            . Html::hidden('typ2', $special)
             . $imageHidden
-            . '<table>';
-
-        if ($isEdit) {
-            $html .= '<tr><td colspan="2" class="action-section">'
-                . '<a href="index.php?item=' . (int)$item->id . '" target="_blank" rel="noopener">Seite in neuem Fenster anzeigen</a>';
-            if (recover_item((int)$item->id)) {
-                $html .= ' | <a href="' . Html::e(Html::url('item_recover', ['item' => (int)$item->id]))
-                    . '">Version wiederherstellen...</a>';
-            }
-            $html .= '</td></tr>';
-        }
-
-        $html .= Html::field('Titel', Html::input('name', $name, ['size' => 36]))
-            . Html::field('Kurzbeschreibung (Optional)', Html::textarea('description', $description, 5, 35))
-            . Html::field('Erstellungsdatum', $this->createdAtFields($created, $isEdit));
-
-        if ($special === self::SPECIAL_DOWNLOAD || $special === self::SPECIAL_BANNED) {
-            $placeholders = $special === self::SPECIAL_DOWNLOAD
-                ? '#id (ID des Downloads), #file (Name des Downloads), #button (Download-Button)'
-                : '#ip (IP-Adresse des Nutzers), #reason (Begründung des Bans), #time (Zeitlimit des Bans)';
-            $html .= Html::field('Folgende Platzhalter sind möglich', Html::e($placeholders));
-        }
-
-        if ($type === self::TYPE_DOWNLOAD) {
-            $html .= Html::field('Download-Link', Html::input('link', $link, ['size' => 36]));
-        }
-
-        $html .= Html::field('Bild (optional)', '<input type="file" size="36" name="image">');
-
-        if ($type !== self::TYPE_NEWS) {
-            $html .= '<tr><td colspan="2">Mit #item_picture können Sie das gewählte Bild einfügen, '
-                . 'andernfalls wird die Position automatisch bestimmt.</td></tr>'
-                . '<tr><td></td><td><a href="#" id="pic_extended_toggle">Weitere Bild-Optionen</a>'
-                . '<div id="pic_extended" style="display:none;">'
-                . Html::checkbox('full_image', false, 'Originalbild speichern und verlinken')
-                . '</div></td></tr>';
-        }
-
-        if ($image !== '' && $isEdit) {
-            $html .= '<tr><td>' . make_contentimg('item', (int)$item->id, $image, 0) . '</td><td>'
-                . Html::checkbox('image_delete', false, 'Aktuelles Bild löschen') . '</td></tr>';
-        }
-
-        $html .= Html::field('Sortierung', Html::input('sort', $sort, ['size' => 7]));
-
-        if ($special !== self::SPECIAL_GUESTBOOK) {
-            $html .= Html::field('Autor', Html::select('user', $this->userOptions(), $author));
-        }
-
-        $html .= '<tr><td colspan="2">Inhalt:</td></tr>'
-            . '<tr><td colspan="2">'
-            . '<textarea rows="22" cols="95" id="content" name="content">' . Html::e($content) . '</textarea>'
-            . '</td></tr>'
-            . $this->xlsxImportBlock();
-
-        if (Editor::isEnabled() && $isEdit) {
-            $html .= $this->imageInsertBlock((int)$item->id);
-        }
-
-        $html .= '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('available', $available, 'Inhalt verfügbar (Zugriff erlaubt, Administratoren haben immer Zugriff)')
-            . '</div></td></tr>';
-
-        if ($type !== self::TYPE_SPECIAL) {
-            $html .= '<tr><td colspan="2"><div class="action-section">'
-                . Html::checkbox('visible', $visible, 'Inhalt ist sichtbar (Inhalt wird in Liste gezeigt, Administratoren sehen alle Inhalte)')
-                . '</div></td></tr>';
-        }
-
-        if ($special !== self::SPECIAL_GUESTBOOK) {
-            $html .= '<tr><td colspan="2"><div class="action-section">'
-                . Html::checkbox('showuser', $showuser, '"Geschrieben von..." anzeigen')
-                . '</div></td></tr>';
-
-            if ($special !== self::SPECIAL_BANNED) {
-                $html .= '<tr><td colspan="2"><div class="action-section">'
-                    . Html::checkbox('rate', $rate, 'Inhalt darf bewertet werden')
-                    . '</div></td></tr>'
-                    . '<tr><td colspan="2"><div class="action-section">'
-                    . Html::checkbox('comments', $comments, 'Inhalt darf kommentiert werden')
-                    . '</div></td></tr>';
-            }
-        }
-
-        return $html
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" id="item_button1" name="item_step2" value="Übernehmen" data-hide-on-submit> '
-            . '<input type="submit" id="item_button2" name="item_step2" value="Übernehmen &amp; Schließen" data-hide-on-submit>'
-            . '<div id="item_save" style="display:none;font-weight:bold;">Bitte warten, Inhalt wird gespeichert...</div>'
-            . '</div></td></tr></table>'
+            // Typ und Einordnung steuern, welche Felder sichtbar sind -
+            // deshalb umschließt der Zustand das gesamte Formular
+            . '<div x-data="' . Html::e($this->placementState($values)) . '">'
+            . Form::card($body, $actions)
+            . '</div>'
             . Html::formClose()
             . '<script type="text/javascript" src="js/admin-item-editor.js"></script>';
     }
 
+    /**
+     * Die Felder, die den Inhalt einordnen. Typ, Kategorie und
+     * Unterkategorie standen früher in einem eigenen Schritt davor.
+     *
+     * @param array{id: int, typ: int, typ2: int, cat: int, subcat: int, sort: int, name: string} $values
+     */
+    private function placementFields(array $values): string
+    {
+        /** @var array<int, string> $contentTypes */
+        $contentTypes = $GLOBALS['content_typ'] ?? [];
+        /** @var array<int, string> $specialTypes */
+        $specialTypes = $GLOBALS['special_typ'] ?? [];
+
+        $html = Form::field(
+            'Typ des Inhalts',
+            Form::segmented('typ', $contentTypes, $values['typ'], 'typ'),
+            ['for' => '', 'name' => 'typ']
+        );
+
+        $html .= '<div class="field-group" x-show="typ === ' . self::TYPE_SPECIAL . '" x-cloak>'
+            . Form::field(
+                'Art des Spezialinhalts',
+                Html::select('typ2', [0 => 'Bitte wählen'] + $specialTypes, $values['typ2'], [
+                    'id' => 'typ2',
+                    'x-model.number' => 'typ2',
+                ]),
+                ['name' => 'typ2', 'hint' => 'Jede Art gibt es genau einmal.']
+            )
+            . '</div>';
+
+        $html .= '<div class="field-group" x-show="typ !== ' . self::TYPE_SPECIAL . '" x-cloak>'
+            . Form::field(
+                'Kategorie',
+                Html::select('cat', $this->categoryOptions(), $values['cat'], [
+                    'id' => 'cat',
+                    'x-model.number' => 'cat',
+                    '@change' => 'catChanged()',
+                ]),
+                ['name' => 'cat', 'required' => true]
+            )
+            . Form::field(
+                'Unterkategorie',
+                self::subcatSelect(),
+                ['name' => 'subcat', 'required' => true]
+            )
+            . '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Ausgangszustand für das Skript, das Kategorie und Unterkategorie
+     * verknüpft.
+     *
+     * @param array{typ: int, typ2: int, cat: int, subcat: int} $values
+     */
+    private function placementState(array $values): string
+    {
+        $subcats = [];
+        if ($values['cat'] > 0) {
+            foreach ($this->subcategoryOptions($values['cat']) as $id => $label) {
+                $subcats[] = ['value' => (int)$id, 'label' => $label];
+            }
+        }
+
+        return 'linkedSelects(' . (string)json_encode([
+            'url' => Routes::basePath() . Routes::path('options_ajax'),
+            'typ' => $values['typ'],
+            'typ2' => $values['typ2'],
+            'cat' => $values['cat'],
+            'subcat' => $values['subcat'],
+            'subcats' => $subcats,
+        ]) . ')';
+    }
+
+    /**
+     * Die Unterkategorien steuert das Skript bei; der Ausgangsbestand steht
+     * im Zustand, den linkedSelects() bekommt.
+     */
+    private static function subcatSelect(): string
+    {
+        return '<select name="subcat" id="subcat" x-model.number="subcat">'
+            . '<option value="0">Bitte wählen</option>'
+            . '<template x-for="option in subcats" :key="option.value">'
+            . '<option :value="option.value" x-text="option.label"></option>'
+            . '</template>'
+            . '</select>';
+    }
+
+    /** Titel, Kurzbeschreibung, Download-Link und der eigentliche Text. */
+    private function contentSection(string $name, string $description, string $content, string $link, int $type): string
+    {
+        $html = Form::field(
+            'Titel',
+            Html::input('name', $name, ['id' => 'name']),
+            ['name' => 'name', 'required' => true]
+        )
+            . Form::field(
+                'Kurzbeschreibung',
+                Html::textarea('description', $description, 4, 35),
+                ['name' => 'description', 'for' => '', 'hint' => 'Optional. Erscheint in Listen und Suchergebnissen.']
+            );
+
+        $html .= '<div class="field-group" x-show="typ === ' . self::TYPE_DOWNLOAD . '" x-cloak>'
+            . Form::field('Download-Link', Html::input('link', $link, ['id' => 'link']), ['name' => 'link'])
+            . '</div>';
+
+        $html .= '<div class="field-group" x-show="typ === ' . self::TYPE_SPECIAL
+            . ' && (typ2 === ' . self::SPECIAL_DOWNLOAD . ' || typ2 === ' . self::SPECIAL_BANNED . ')" x-cloak>'
+            . Form::wide(
+                '<div class="notice notice-warn">'
+                . '<span>Platzhalter für Download-Seiten: <code>#id</code>, <code>#file</code>, <code>#button</code>.'
+                . ' Für Sperr-Seiten: <code>#ip</code>, <code>#reason</code>, <code>#time</code>.</span></div>'
+            )
+            . '</div>';
+
+        return $html . Form::wide(
+            '<label class="field-label" for="content">Inhalt</label>'
+            . '<textarea rows="22" cols="95" id="content" name="content">' . Html::e($content) . '</textarea>'
+            . $this->xlsxImportBlock()
+        );
+    }
+
+    /** Bild des Inhalts: hochladen, einfügen, entfernen. */
+    private function imageSection(?object $item, string $image, int $type): string
+    {
+        $isEdit = $item !== null;
+
+        $html = Form::field(
+            'Bild hochladen',
+            '<input type="file" name="image" id="image" accept="image/*">',
+            ['name' => 'image', 'for' => 'image', 'hint' => 'Mit #item_picture bestimmen Sie die Position im Text.']
+        );
+
+        if ($image !== '' && $isEdit) {
+            $html .= Form::field(
+                'Aktuelles Bild',
+                (string)make_contentimg('item', (int)$item->id, $image, 0)
+                . '<label class="field-check">' . Html::checkbox('image_delete', false) . ' Aktuelles Bild löschen</label>',
+                ['for' => '']
+            );
+        }
+
+        if ($type !== self::TYPE_NEWS) {
+            $html .= '<div class="field-group" x-show="typ !== ' . self::TYPE_NEWS . '" x-cloak>'
+                . Form::check(
+                    Html::checkbox('full_image', false),
+                    'Originalbild zusätzlich speichern und verlinken'
+                )
+                . '</div>';
+        }
+
+        if (Editor::isEnabled() && $isEdit) {
+            $html .= Form::wide($this->imageInsertBlock((int)$item->id));
+        }
+
+        return $html;
+    }
+
+    /** Sortierung, Autor, Datum und die Schalter für die Veröffentlichung. */
+    private function publishingSection(
+        int $sort,
+        int $author,
+        int $created,
+        bool $isEdit,
+        int $special,
+        bool $available,
+        bool $visible,
+        bool $showuser,
+        bool $rate,
+        bool $comments
+    ): string {
+        $html = Form::field(
+            'Sortierung',
+            Html::input('sort', $sort, ['id' => 'sort', 'type' => 'number', 'style' => 'width:8rem']),
+            ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen weiter oben.']
+        )
+            . Form::field('Erstellungsdatum', $this->createdAtFields($created, $isEdit), ['for' => ''])
+            . '<div class="field-group" x-show="typ2 !== ' . self::SPECIAL_GUESTBOOK . '" x-cloak>'
+            . Form::field(
+                'Autor',
+                Html::select('user', $this->userOptions(), $author, ['id' => 'user']),
+                ['name' => 'user']
+            )
+            . '</div>';
+
+        $html .= Form::check(
+            Html::checkbox('available', $available),
+            'Inhalt ist verfügbar',
+            ['hint' => 'Administratoren haben auch ohne Freigabe Zugriff.']
+        )
+            . '<div class="field-group" x-show="typ !== ' . self::TYPE_SPECIAL . '" x-cloak>'
+            . Form::check(
+                Html::checkbox('visible', $visible),
+                'Inhalt erscheint in Listen'
+            )
+            . '</div>'
+            . '<div class="field-group" x-show="typ2 !== ' . self::SPECIAL_GUESTBOOK . '" x-cloak>'
+            . Form::check(Html::checkbox('showuser', $showuser), '"Geschrieben von ..." anzeigen')
+            . '<div class="field-group" x-show="typ2 !== ' . self::SPECIAL_BANNED . '" x-cloak>'
+            . Form::check(Html::checkbox('rate', $rate), 'Inhalt darf bewertet werden')
+            . Form::check(Html::checkbox('comments', $comments), 'Inhalt darf kommentiert werden')
+            . '</div></div>';
+
+        return $html;
+    }
+
+    /** Aktionen im Kopf des Editors: Ansehen, Versionen, Editor umschalten. */
+    private function editorActions(?object $item): string
+    {
+        $html = '';
+
+        if ($item !== null) {
+            $html .= Components::secondary('Seite ansehen', 'index.php?item=' . (int)$item->id, 'eye');
+            if (recover_item((int)$item->id)) {
+                $html .= Components::secondary(
+                    'Frühere Fassungen',
+                    Html::url('item_recover', ['item' => (int)$item->id]),
+                    'clock'
+                );
+            }
+        }
+
+        // Der grafische Editor wird über die Adresse umgeschaltet, damit der
+        // Kopfbereich die passenden Skripte lädt
+        $params = $item !== null ? ['edit' => (int)$item->id] : ['new' => 'yes'];
+        $params['editor'] = Editor::isEnabled() ? 0 : 1;
+
+        return $html . Components::secondary(
+            Editor::isEnabled() ? 'Grafischen Editor ausschalten' : 'Grafischen Editor einschalten',
+            $this->url($params),
+            'edit'
+        );
+    }
+
+    /** Hinweis, wenn die Struktur für einen Inhalt noch fehlt. */
+    private function missingStructureNotice(): string
+    {
+        if ($this->categoryOptions() !== []) {
+            return '';
+        }
+
+        return '<div class="notice notice-warn">' . Icons::render('warning')
+            . '<span>Es gibt noch keine Kategorie. Wählen Sie als Typ "Spezialseite" oder '
+            . '<a href="' . Html::e(Html::url('cat', ['new' => 'yes'])) . '">legen Sie zuerst eine Kategorie an</a>.'
+            . '</span></div>';
+    }
+
     private function createdAtFields(int $timestamp, bool $isEdit): string
     {
-        return Html::input('create_at_date', date('d.m.Y', $timestamp), ['size' => 7, 'maxlength' => 10, 'id' => 'create_at_date', 'disabled' => 'disabled'])
-            . ' '
-            . Html::input('create_at_time', date('H:i', $timestamp), ['size' => 3, 'maxlength' => 5, 'id' => 'create_at_time', 'disabled' => 'disabled'])
-            . ' <label><input type="checkbox" onclick="refresh_create()" id="create_at_use" name="create_at_use" value="1" checked> '
-            . ($isEdit ? 'Nicht verändern' : 'Automatisch') . '</label>';
+        return '<span class="field-inline">'
+            . Html::input('create_at_date', date('d.m.Y', $timestamp), [
+                'id' => 'create_at_date',
+                'maxlength' => 10,
+                'style' => 'width:8rem',
+                'disabled' => 'disabled',
+            ])
+            . Html::input('create_at_time', date('H:i', $timestamp), [
+                'id' => 'create_at_time',
+                'maxlength' => 5,
+                'style' => 'width:6rem',
+                'disabled' => 'disabled',
+            ])
+            . '<label class="field-check">'
+            . '<input type="checkbox" onclick="refresh_create()" id="create_at_use" name="create_at_use" value="1" checked> '
+            . ($isEdit ? 'Nicht verändern' : 'Automatisch') . '</label>'
+            . '</span>';
     }
 
     private function xlsxImportBlock(): string
     {
-        return '<tr><td colspan="2"><fieldset class="import-box">'
-            . '<legend>XLSX Datei importieren</legend>'
+        return '<fieldset class="import-box">'
+            . '<legend>Tabelle übernehmen</legend>'
             . '<input type="file" id="xlsx_file_picker" accept=".xlsx" style="display:none">'
-            . '<button type="button" onclick="document.getElementById(\'xlsx_file_picker\').click()">XLSX Inhalt importieren</button>'
+            . '<button type="button" class="btn-secondary"'
+            . ' onclick="document.getElementById(\'xlsx_file_picker\').click()">XLSX-Inhalt importieren</button>'
             . '<span id="xlsx_status" data-token="' . Html::e(\Pms\Backend\Support\Csrf::token()) . '"></span>'
-            . '<br><small>Zeichentabelle wird als Rohtext mit Leerzeichen als Trennzeichen eingefügt</small>'
-            . '</fieldset></td></tr>'
+            . '<div class="field-hint">Die Tabelle wird als Rohtext eingefügt, Spalten durch Leerzeichen getrennt.</div>'
+            . '</fieldset>'
             . '<script type="text/javascript" src="js/admin-xlsx-import.js"></script>';
     }
 
     /** Bereich zum Einfügen eines Bildes in den Text (nur mit TinyMCE). */
     private function imageInsertBlock(int $itemId): string
     {
-        return '<tr><td colspan="2">'
-            . Html::hidden('next', '')
+        return Html::hidden('next', '')
             . Html::hidden('add_image', '')
             . Html::hidden('item', $itemId)
             . Html::hidden('drag_name', '')
             . Html::hidden('drag_data', '')
-            . '<fieldset class="import-box"><legend>Bild einfügen</legend>'
+            . '<fieldset class="import-box"><legend>Bild in den Text einfügen</legend>'
             . '<input type="file" id="image_file_picker" accept=".jpg,.jpeg,.png,.gif" style="display:none">'
-            . '<button type="button" onclick="document.getElementById(\'image_file_picker\').click()">Bild auswählen</button>'
-            . '<span id="image_status"></span><br>'
-            . '<div class="drop_zone" id="drop_zone">oder ziehen Sie eine Bild-Datei von Ihrem Explorer in dieses Feld</div>'
-            . '</fieldset></td></tr>';
+            . '<button type="button" class="btn-secondary"'
+            . ' onclick="document.getElementById(\'image_file_picker\').click()">Bild auswählen</button>'
+            . '<span id="image_status"></span>'
+            . '<div class="drop_zone" id="drop_zone">oder eine Bilddatei hierher ziehen</div>'
+            . '</fieldset>';
     }
 
     // -----------------------------------------------------------------
@@ -476,8 +595,19 @@ final class ItemController extends Controller
 
         $name = Request::string('name');
         if ($name === '') {
-            Flash::error('Bitte geben Sie einen Titel an.');
-            return $this->editor($this->wizardValuesFromRequest());
+            Errors::add('name', 'Bitte geben Sie einen Titel an.');
+        }
+
+        if ($type === self::TYPE_SPECIAL) {
+            if ($special <= 0) {
+                Errors::add('typ2', 'Bitte wählen Sie die Art des Spezialinhalts.');
+            }
+        } elseif (!$this->placementIsValid($cat, $subcat)) {
+            Errors::add('subcat', 'Bitte wählen Sie eine Unterkategorie dieser Kategorie.');
+        }
+
+        if (Errors::has()) {
+            return $this->editor($this->valuesFromRequest());
         }
 
         $data = [
@@ -529,7 +659,7 @@ final class ItemController extends Controller
 
         if (!$saved) {
             Flash::error('Fehler beim Speichern des Inhalts!');
-            return $this->editor($this->wizardValuesFromRequest());
+            return $this->editor($this->valuesFromRequest());
         }
 
         $this->storeImage($id, $type);
@@ -549,12 +679,25 @@ final class ItemController extends Controller
             $this->redirect($back);
         }
 
-        $values = $this->wizardValuesFromRequest();
+        $values = $this->valuesFromRequest();
         $values['id'] = $id;
         return $this->editor($values);
     }
 
     /** Vom Benutzer gesetztes Erstellungsdatum, sonst null. */
+    /** Gehört die Unterkategorie zur gewählten Kategorie? */
+    private function placementIsValid(int $cat, int $subcat): bool
+    {
+        if ($cat <= 0 || $subcat <= 0) {
+            return false;
+        }
+
+        return Db::first(
+            'SELECT id FROM ' . Db::table('subcat') . ' WHERE id = :id AND cat = :cat',
+            ['id' => $subcat, 'cat' => $cat]
+        ) !== null;
+    }
+
     private function requestedCreationTime(): ?int
     {
         if (Request::checkbox('create_at_use')) {
@@ -752,7 +895,7 @@ final class ItemController extends Controller
             Flash::error('Der Inhalt wurde nicht gefunden.');
             return $this->overview();
         }
-        return $this->editor($this->wizardValuesFromItem($item));
+        return $this->editor($this->valuesFromItem($item));
     }
 
     /** Auswahl eines vorhandenen oder neuen Bildes. */

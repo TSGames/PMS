@@ -94,7 +94,7 @@ test('Neuen Menüeintrag als Link anlegen', async ({ page }) => {
   await page.goto('admin/menue?new=yes');
   await page.fill('input[name="name"]', 'Testlink');
   await page.fill('input[name="sort"]', '95');
-  await page.check('input[name="typ"][value="2"]');
+  await page.click('label[for="typ-2"]');
   await page.fill('textarea[name="extern"]', '<a href="https://test.example.org">Test</a>');
   await page.check('input[name="visible"]');
   await submit(page, 'input[name="menu"]');
@@ -122,12 +122,30 @@ test('Menüeintrag löschen fragt nach und entfernt ihn', async ({ page }) => {
   expect(await tableColumn(page, 1)).not.toContain('Intern');
 });
 
-test('Kategorieauswahl aktualisiert die Unterkategorien', async ({ page }) => {
+test('Kategorieauswahl lädt die Unterkategorien nach', async ({ page }) => {
   await page.goto('admin/menue?new=yes');
   await page.selectOption('select[name="cat"]', { label: 'Dokumente' });
-  await submit(page, 'input[name="menu_refresh"]');
 
-  const options = await page.locator('select[name="subcat"] option').allTextContents();
-  expect(options).toContain('Formulare');
-  expect(options).not.toContain('Neuigkeiten');
+  const subcats = page.locator('select[name="subcat"] option');
+  await expect(subcats.filter({ hasText: 'Formulare' })).toHaveCount(1);
+  await expect(subcats.filter({ hasText: 'Neuigkeiten' })).toHaveCount(0);
+});
+
+test('Unterkategorie lädt die Inhalte nach', async ({ page }) => {
+  await page.goto('admin/menue?new=yes');
+  await page.selectOption('select[name="cat"]', { label: 'Dokumente' });
+  await page.selectOption('select[name="subcat"]', { label: 'Formulare' });
+
+  const items = page.locator('select[name="item"] option');
+  await expect(items.filter({ hasText: 'Aufnahmeantrag' })).toHaveCount(1);
+});
+
+test('Nur die Felder des gewählten Verweistyps sind sichtbar', async ({ page }) => {
+  await page.goto('admin/menue?new=yes');
+  await expect(page.locator('select[name="cat"]')).toBeVisible();
+  await expect(page.locator('textarea[name="extern"]')).toBeHidden();
+
+  await page.click('label[for="typ-2"]');
+  await expect(page.locator('textarea[name="extern"]')).toBeVisible();
+  await expect(page.locator('select[name="cat"]')).toBeHidden();
 });

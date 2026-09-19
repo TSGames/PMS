@@ -3,12 +3,15 @@
 namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
+use Pms\Backend\Http\Routes;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Menüeinträge der Website.
@@ -41,12 +44,6 @@ final class MenuController extends Controller
     {
         if (Request::submitted('menu')) {
             $this->save();
-        }
-
-        // Die Auswahllisten hängen voneinander ab: erst Kategorie wählen,
-        // dann "Aktualisieren", dann Unterkategorie und Inhalt
-        if (Request::submitted('menu_refresh')) {
-            return $this->form(null, true);
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -202,83 +199,166 @@ final class MenuController extends Controller
             ];
         }
 
-        $html = Html::formOpen($this->action())
-            . Html::heading($isEdit ? 'Menüeintrag bearbeiten' : 'Menüeintrag erstellen')
-            . Html::hidden('id', $values['id'])
-            . '<table>'
-            . Html::field('Name', Html::input('name', $values['name']))
-            . Html::field('Sortierung', Html::input('sort', $values['sort']))
-            . Html::field('Sichtbar für', Html::select('usertyp', $this->userTypeOptions(), $values['usertyp']));
+        $subcats = $values['cat'] > 0 ? $this->options('subcat', 'cat', $values['cat']) : [];
+        $items = $values['subcat'] > 0 ? $this->options('item', 'subcat', $values['subcat']) : [];
 
-        // Verweis auf Kategorie/Unterkategorie/Inhalt
-        $html .= '<tr><td colspan="2">' . $this->radio('typ', self::TYPE_CONTENT, $values['typ'])
-            . ' Verlinkung zu Kategorie/Inhalt-Liste</td></tr>'
-            . Html::field(
-                'Kategorie',
-                Html::select('cat', $this->options('cat'), $values['cat'], ['onclick' => "check_radio('typ', 0)"])
-                . ' <input type="submit" onclick="check_radio(\'typ\', 0)" name="menu_refresh" value="Aktualisieren">'
+        $state = [
+            'url' => Routes::basePath() . Routes::path('options_ajax'),
+            'typ' => $values['typ'],
+            'cat' => $values['cat'],
+            'subcat' => $values['subcat'],
+            'item' => $values['item'],
+            'subcats' => self::optionList($subcats),
+            'items' => self::optionList($items),
+        ];
+
+        $general = Form::field(
+            'Name',
+            Html::input('name', $values['name'], ['id' => 'name']),
+            ['name' => 'name', 'required' => true]
+        )
+            . Form::field(
+                'Sortierung',
+                Html::input('sort', $values['sort'], ['id' => 'sort', 'type' => 'number']),
+                ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen weiter vorne.']
             )
-            . Html::field(
-                'Unterkategorie',
-                Html::select(
-                    'subcat',
-                    [0 => '[Keine]'] + $this->options('subcat', 'cat', $values['cat']),
-                    $values['subcat'],
-                    ['onclick' => "check_radio('typ', 0)"]
-                )
+            . Form::field(
+                'Sichtbar für',
+                Html::select('usertyp', $this->userTypeOptions(), $values['usertyp'], ['id' => 'usertyp']),
+                ['name' => 'usertyp']
             );
 
-        if ($values['subcat'] > 0) {
-            $html .= Html::field(
-                'Inhalt-Objekt',
-                Html::select(
-                    'item',
-                    [0 => '[Keins]'] + $this->options('item', 'subcat', $values['subcat']),
-                    $values['item'],
-                    ['onclick' => "check_radio('typ', 0)"]
-                )
-            );
-        }
+        $target = Form::field(
+            'Verweist auf',
+            Form::segmented('typ', self::TYPE_LABELS, $values['typ'], 'typ'),
+            ['for' => '', 'name' => 'typ']
+        )
+            . $this->contentFields($values)
+            . $this->pluginField($values)
+            . $this->linkField($values)
+            . '<div class="field-row field-row-wide" x-show="typ === ' . self::TYPE_PLACEHOLDER . '" x-cloak>'
+            . '<p class="field-hint">Ein Platzhalter erscheint im Menü, lässt sich aber nicht anklicken.</p>'
+            . '</div>';
 
+        $options = Form::check(Html::checkbox('visible', (bool)$values['visible']), 'Eintrag ist sichtbar');
         if (!empty($GLOBALS['config_values']->menu_mode)) {
-            $html .= '<tr><td></td><td>'
-                . Html::checkbox('popup', (bool)$values['popup'], 'Aufklappen ermöglichen')
-                . '</td></tr>';
+            $options .= Form::check(
+                Html::checkbox('popup', (bool)$values['popup']),
+                'Aufklappen ermöglichen',
+                ['attributes' => ['x-show' => 'typ === ' . self::TYPE_CONTENT, 'x-cloak' => '']]
+            );
         }
 
-        // Verweis auf ein Plugin
-        $html .= '<tr><td colspan="2">' . $this->radio('typ', self::TYPE_PLUGIN, $values['typ'])
-            . ' Auf integriertes Plugin verweisen</td></tr>'
-            . Html::field('Plugin', Html::select('plugin', $this->pluginOptions(), $values['plugin'], ['onclick' => "check_radio('typ', 1)"]));
-
-        // Freier Link-Code
-        $html .= '<tr><td colspan="2">' . $this->radio('typ', self::TYPE_LINK, $values['typ'])
-            . ' Link-Code verwenden</td></tr>'
-            . '<tr><td>Link-Code:</td><td>'
-            . '<textarea onclick="check_radio(\'typ\', 2)" name="extern" rows="2" cols="60">'
-            . Html::e(my_stripslashes($values['extern'])) . '</textarea>'
-            . '<div class="example">Beispiel: a href="http://www.beispiel.de/" target="_blank"</div>'
-            . '</td></tr>';
-
-        // Platzhalter ohne Funktion
-        $html .= '<tr><td colspan="2">' . $this->radio('typ', self::TYPE_PLACEHOLDER, $values['typ'])
-            . ' Nur Platzhalter (Keine Link-Funktion)</td></tr>';
-
-        return $html
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('visible', (bool)$values['visible'], 'Eintrag ist sichtbar')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="menu" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        return Components::pageHeader($isEdit ? 'Menüeintrag bearbeiten' : 'Menüeintrag erstellen')
+            . Html::formOpen($this->action())
+            . Html::hidden('id', $values['id'])
+            . '<div x-data="linkedSelects(' . Html::e((string)json_encode($state)) . ')">'
+            . Form::card(
+                Form::section('Allgemein', $general)
+                . Form::section('Ziel', $target)
+                . Form::section('Anzeige', $options),
+                Form::actions('menu', 'Speichern', $this->url())
+            )
+            . '</div>'
             . Html::formClose();
     }
 
-    private function radio(string $name, int $value, int $current): string
+    /**
+     * Die Felder für den Verweis auf Kategorie, Unterkategorie und Inhalt.
+     *
+     * Die beiden unteren Ebenen werden nachgeladen, sobald die darüber
+     * gewechselt wird.
+     *
+     * @param array<string, mixed> $values
+     */
+    private function contentFields(array $values): string
     {
-        return '<input type="radio" name="' . Html::e($name) . '" value="' . $value . '"'
-            . ($value === $current ? ' checked' : '') . '>';
+        $show = ' x-show="typ === ' . self::TYPE_CONTENT . '" x-cloak';
+
+        return '<div class="field-group"' . $show . '>'
+            . Form::field(
+                'Kategorie',
+                Html::select('cat', $this->options('cat'), (int)$values['cat'], [
+                    'id' => 'cat',
+                    'x-model.number' => 'cat',
+                    '@change' => 'catChanged()',
+                ]),
+                ['name' => 'cat']
+            )
+            . Form::field(
+                'Unterkategorie',
+                self::linkedSelect('subcat', 'Keine Unterkategorie', 'subcatChanged()'),
+                ['name' => 'subcat', 'hint' => 'Optional. Ohne Auswahl verweist der Eintrag auf die Kategorie.']
+            )
+            . Form::field(
+                'Inhalt',
+                self::linkedSelect('item', 'Kein einzelner Inhalt'),
+                ['name' => 'item', 'hint' => 'Optional. Mit Auswahl verweist der Eintrag direkt auf diesen Inhalt.']
+            )
+            . '</div>';
+    }
+
+    /** @param array<string, mixed> $values */
+    private function pluginField(array $values): string
+    {
+        return '<div class="field-group" x-show="typ === ' . self::TYPE_PLUGIN . '" x-cloak>'
+            . Form::field(
+                'Plugin',
+                Html::select('plugin', $this->pluginOptions(), (string)$values['plugin'], ['id' => 'plugin']),
+                ['name' => 'plugin']
+            )
+            . '</div>';
+    }
+
+    /** @param array<string, mixed> $values */
+    private function linkField(array $values): string
+    {
+        return '<div class="field-group" x-show="typ === ' . self::TYPE_LINK . '" x-cloak>'
+            . Form::field(
+                'Link-Code',
+                '<textarea name="extern" rows="2" cols="60">'
+                . Html::e(my_stripslashes((string)$values['extern'])) . '</textarea>',
+                [
+                    'name' => 'extern',
+                    'for' => '',
+                    'hint' => 'Beispiel: a href="http://www.beispiel.de/" target="_blank"',
+                ]
+            )
+            . '</div>';
+    }
+
+    /**
+     * Ein Auswahlfeld, dessen Einträge das Skript beisteuert und beim
+     * Wechsel der Ebene darüber austauscht. Der Ausgangsbestand steht im
+     * Zustand, den linkedSelects() bekommt - deshalb stehen die Einträge
+     * hier nicht zusätzlich im Markup.
+     */
+    private static function linkedSelect(string $name, string $emptyLabel, string $onChange = ''): string
+    {
+        $change = $onChange === '' ? '' : ' @change="' . Html::e($onChange) . '"';
+
+        return '<select name="' . Html::e($name) . '" id="' . Html::e($name) . '"'
+            . ' x-model.number="' . Html::e($name) . '"' . $change . '>'
+            . '<option value="0">' . Html::e($emptyLabel) . '</option>'
+            . '<template x-for="option in ' . Html::e($name) . 's" :key="option.value">'
+            . '<option :value="option.value" x-text="option.label"></option>'
+            . '</template>'
+            . '</select>';
+    }
+
+    /**
+     * Wandelt id => Name in die Form, die das Skript erwartet.
+     *
+     * @param array<int, string> $options
+     * @return list<array{value: int, label: string}>
+     */
+    private static function optionList(array $options): array
+    {
+        $list = [];
+        foreach ($options as $value => $label) {
+            $list[] = ['value' => (int)$value, 'label' => $label];
+        }
+        return $list;
     }
 
     /** Auswahlmöglichkeiten einer Tabelle, optional auf einen Elternwert begrenzt. */

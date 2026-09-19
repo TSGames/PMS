@@ -1,6 +1,5 @@
 /**
- * Inhalte: Liste, Filter, zweistufiges Bearbeiten-Formular, Kopie, Löschen,
- * Wiederherstellung.
+ * Inhalte: Liste, Filter, Editor, Kopie, Löschen, Wiederherstellung.
  */
 
 const { test, expect } = require('@playwright/test');
@@ -34,28 +33,32 @@ test('Filter nach Kategorie und Unterkategorie', async ({ page }) => {
   await expect(page.locator('body')).not.toContainText('Sommerfest 2024');
 });
 
-test('Bearbeiten öffnet zuerst die Vorauswahl', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=2');
-  await expect(page.locator('body')).toContainText('Inhalt bearbeiten - Vorauswahl');
-  await expect(page.locator('select[name="typ"]')).toHaveValue('1');
-  await expect(page.locator('select[name="cat"]')).toHaveValue('1');
-  await expect(page.locator('select[name="subcat"]')).toHaveValue('1');
-});
-
-test('Vorauswahl führt zum Editor mit den gespeicherten Werten', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=2');
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
+test('Bearbeiten öffnet direkt den Editor mit den gespeicherten Werten', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=0');
 
   await expect(page.locator('input[name="name"]')).toHaveValue('Sommerfest 2024');
   await expect(page.locator('textarea[name="description"]')).toHaveValue('Das Sommerfest findet statt');
   await expect(page.locator('textarea[name="content"]')).toContainText('Sommerfest');
 });
 
+test('Die Einordnung steht im Kopf des Editors und ist änderbar', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=0');
+
+  await expect(page.locator('input[name="typ"][value="1"]')).toBeChecked();
+  await expect(page.locator('select[name="cat"]')).toHaveValue('1');
+  await expect(page.locator('select[name="subcat"]')).toHaveValue('1');
+});
+
+test('Kategoriewechsel im Editor lädt die Unterkategorien nach', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=0');
+  await page.selectOption('select[name="cat"]', { label: 'Dokumente' });
+
+  const subcats = page.locator('select[name="subcat"] option');
+  await expect(subcats.filter({ hasText: 'Formulare' })).toHaveCount(1);
+});
+
 test('Inhalt speichern übernimmt die Änderung', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=3');
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
+  await page.goto('admin/inhalte?edit=3&editor=0');
 
   await page.fill('input[name="name"]', 'Neue Öffnungszeiten ab Juli');
   await submit(page, page.locator('input[name="item_step2"]').first());
@@ -66,12 +69,9 @@ test('Inhalt speichern übernimmt die Änderung', async ({ page }) => {
 });
 
 test('Neuen Inhalt anlegen', async ({ page }) => {
-  await page.goto('admin/inhalte?new=yes');
+  await page.goto('admin/inhalte?new=yes&editor=0');
   await page.selectOption('select[name="cat"]', { label: 'Aktuelles' });
-  await submit(page, 'input[name="item_refresh"]');
   await page.selectOption('select[name="subcat"]', { label: 'Neuigkeiten' });
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
 
   await page.fill('input[name="name"]', 'Testartikel');
   await page.fill('textarea[name="description"]', 'Kurzbeschreibung');
@@ -83,12 +83,17 @@ test('Neuen Inhalt anlegen', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Testartikel');
 });
 
-test('TinyMCE wird geladen, wenn der Editor gewählt ist', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=2');
-  await page.check('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
-
+test('TinyMCE wird geladen, wenn der Editor eingeschaltet ist', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=1');
   await expect(page.locator('.tox-tinymce')).toBeVisible({ timeout: 15000 });
+});
+
+test('Der grafische Editor lässt sich im Kopf umschalten', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=1');
+  await submit(page, 'a:has-text("Grafischen Editor ausschalten")');
+
+  await expect(page.locator('.tox-tinymce')).toHaveCount(0);
+  await expect(page.locator('textarea[name="content"]')).toBeVisible();
 });
 
 test('Kopie eines Inhalts erstellen', async ({ page }) => {
@@ -120,21 +125,30 @@ test('Versionsverwaltung eines Inhalts ist erreichbar', async ({ page }) => {
   await expectNoPhpError(page);
 });
 
-test('Vorauswahl bietet für Spezialseiten die Art des Inhalts an', async ({ page }) => {
-  await page.goto('admin/inhalte?new=yes');
-  await page.selectOption('select[name="typ"]', { label: 'Spezialseite' });
-  await submit(page, 'input[name="item_refresh"]');
+test('Spezialseiten zeigen die Art statt Kategorie und Unterkategorie', async ({ page }) => {
+  await page.goto('admin/inhalte?new=yes&editor=0');
+  await expect(page.locator('select[name="typ2"]')).toBeHidden();
 
-  await expect(page.locator('body')).toContainText('Art des Spezialinhalts');
+  await page.click('label[for="typ-3"]');
+
+  await expect(page.locator('select[name="typ2"]')).toBeVisible();
+  await expect(page.locator('select[name="cat"]')).toBeHidden();
   const options = await page.locator('select[name="typ2"] option').allTextContents();
   expect(options).toContain('Startseite');
   expect(options).toContain('Gästebuch');
 });
 
+test('Ohne Unterkategorie meldet der Editor den Fehler am Feld', async ({ page }) => {
+  await page.goto('admin/inhalte?new=yes&editor=0');
+  await page.fill('input[name="name"]', 'Inhalt ohne Einordnung');
+  await submit(page, page.locator('input[name="item_step2"]').first());
+
+  await expect(page.locator('.field-error')).toContainText('Unterkategorie');
+  await expect(page.locator('input[name="name"]')).toHaveValue('Inhalt ohne Einordnung');
+});
+
 test('Editor zeigt alle Felder eines Standardinhalts', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=4');
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
+  await page.goto('admin/inhalte?edit=4&editor=0');
 
   await expect(page.locator('input[name="name"]')).toBeVisible();
   await expect(page.locator('textarea[name="description"]')).toBeVisible();
@@ -149,26 +163,19 @@ test('Editor zeigt alle Felder eines Standardinhalts', async ({ page }) => {
 });
 
 test('Editor eines Downloads zeigt das Link-Feld', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=5');
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
-
+  await page.goto('admin/inhalte?edit=5&editor=0');
   await expect(page.locator('input[name="link"]')).toHaveValue('uploads/aufnahmeantrag.pdf');
 });
 
 test('Editor einer Spezialseite blendet die Sichtbarkeit aus', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=1');
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
+  await page.goto('admin/inhalte?edit=1&editor=0');
 
   await expect(page.locator('input[name="available"]')).toBeVisible();
-  await expect(page.locator('input[name="visible"]')).toHaveCount(0);
+  await expect(page.locator('input[name="visible"]')).toBeHidden();
 });
 
 test('Übernehmen und Schließen kehrt zur Liste zurück', async ({ page }) => {
-  await page.goto('admin/inhalte?edit=4');
-  await page.uncheck('input[name="tinymce"]');
-  await submit(page, 'input[name="item_step1"]');
+  await page.goto('admin/inhalte?edit=4&editor=0');
 
   await page.fill('input[name="name"]', 'Jahreshauptversammlung 2025');
   await submit(page, page.locator('input[value="Übernehmen & Schließen"]'));

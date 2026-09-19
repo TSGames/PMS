@@ -7,6 +7,9 @@ use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Request;
+use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
+use Pms\Backend\View\Icons;
 
 /**
  * Website-Konfigurator.
@@ -127,105 +130,179 @@ final class ConfigController extends Controller
         return Db::first('SELECT * FROM ' . Db::table('config') . ' WHERE id = 1') ?? new \stdClass();
     }
 
+    /**
+     * Aufbau des Konfigurators: Reiter mit den Abschnitten darunter.
+     *
+     * Der Altbestand hatte über 35 Einstellungen in einem einzigen Formular.
+     * Die Abschnitte behalten ihre Namen, liegen jetzt aber auf Reitern -
+     * und das Suchfeld findet eine Einstellung quer über alle hinweg.
+     *
+     * @var array<string, array{label: string, sections: list<string>}>
+     */
+    private const TABS = [
+        'allgemein' => ['label' => 'Allgemein', 'sections' => ['Allgemeines', 'Modul: Sprachen', 'Modul: Suche']],
+        'darstellung' => ['label' => 'Darstellung', 'sections' => ['Modul: Menü', 'Modul: Listenansicht', 'Modul: Inhaltsansicht']],
+        'mitmachen' => ['label' => 'Mitmachen', 'sections' => ['Modul: Kommentare', 'Modul: Bewertungen', 'Modul: Gästebuch', 'Modul: Am Meisten diskutiert', 'Modul: Aktuelle Kommentare']],
+        'benutzer' => ['label' => 'Benutzer', 'sections' => ['Modul: User-System', 'Modul: Top-Users']],
+        'betrieb' => ['label' => 'Betrieb', 'sections' => ['Modul: Besucherzähler', 'Modul: Downloads']],
+        'benachrichtigungen' => ['label' => 'Benachrichtigungen', 'sections' => ['Modul: E-Mail Benachrichtigungen']],
+    ];
+
     private function form(): string
     {
         $config = $this->config();
+        $sections = $this->sections($config);
 
-        $html = Html::formOpen($this->action())
-            . Html::heading('Website-Konfiguration')
-            . '<table class="config_table">'
-            . $this->section('Allgemeines')
-            . Html::field('Website-Name', Html::input('name', $config->name ?? '', ['size' => 30]))
-            . $this->flagRow('title', 'Aktuellen Inhalt bei Seitentitel anzeigen', $config)
-            . Html::field('Seiten-Adresse', Html::input('page', $config->page ?? '', ['size' => 30]), 'z.B. http://www.tsgames.de')
-            . Html::field('Mail-Adresse', Html::input('mail', $config->mail ?? '', ['size' => 30]))
-            . Html::field('Bilderqualität (10 - 100)', Html::input('picquali', (int)($config->picquali ?? 85), ['size' => 3, 'maxlength' => 3]))
-            . $this->flagRow('speciallinks', 'Suchmaschinen-freundliche Links', $config)
-            . $this->flagRow('safemail', 'E-Mailadressen verschlüsseln', $config)
-            . $this->flagRow('allow_compress', 'Seitenausgabe komprimieren (sofern vom Browser zugelassen, kann Ladezeit verkürzen)', $config)
-            . $this->flagRow('editor', 'Grafischen HTML-Editor (TinyMCE) für Content-Bearbeitung verwenden', $config)
-            . $this->flagRow('smileys', 'Smiley-Modul aktivieren', $config)
+        $tabs = '<div class="tabs" x-show="search === \'\'" x-cloak>';
+        foreach (self::TABS as $key => $tab) {
+            $tabs .= '<button type="button" class="tab" :class="tab === \'' . $key . '\' ? \'active\' : \'\'"'
+                . ' @click="select(\'' . $key . '\')">' . Html::e($tab['label']) . '</button>';
+        }
+        $tabs .= '</div>';
 
-            . $this->section('Modul: Sprachen')
-            . Html::field('Sprachdatei', Html::select('language', $this->languageOptions(), $config->language ?? ''));
+        $body = '';
+        foreach (self::TABS as $key => $tab) {
+            foreach ($tab['sections'] as $title) {
+                if (!isset($sections[$title])) {
+                    continue;
+                }
+                $body .= Form::section($title, $sections[$title], [
+                    'data-tab' => $key,
+                    'x-show' => 'sectionVisible($el)',
+                    'x-cloak' => '',
+                ]);
+            }
+        }
+
+        return Components::pageHeader(
+            'Website-Konfiguration',
+            'Globale Einstellungen dieser Website. Die Suche findet eine Einstellung über alle Reiter hinweg.'
+        )
+            . Html::formOpen($this->action())
+            . '<div x-data="configForm(\'allgemein\')">'
+            . '<div class="toolbar">'
+            . '<div class="toolbar-group toolbar-search">'
+            . Icons::render('search', 'icon icon-sm')
+            . '<label class="visually-hidden" for="config-search">Einstellung suchen</label>'
+            . '<input type="search" id="config-search" x-model="search" placeholder="Einstellung suchen" autocomplete="off">'
+            . '</div></div>'
+            . $tabs
+            . Form::card($body, Form::actions('config', 'Speichern', ''))
+            . '</div>'
+            . Html::formClose();
+    }
+
+    /**
+     * Die Einstellungen je Abschnitt.
+     *
+     * @return array<string, string> Abschnittsname => fertige Felder
+     */
+    private function sections(object $config): array
+    {
+        $sections = [];
+
+        $sections['Allgemeines'] = $this->text('Website-Name', 'name', (string)($config->name ?? ''))
+            . $this->flag('title', 'Aktuellen Inhalt im Seitentitel anzeigen', $config)
+            . $this->text('Seiten-Adresse', 'page', (string)($config->page ?? ''), 'Zum Beispiel https://www.beispiel.de')
+            . $this->text('Mail-Adresse', 'mail', (string)($config->mail ?? ''), 'Absender der Benachrichtigungen.')
+            . $this->number('Bilderqualität', 'picquali', (int)($config->picquali ?? 85), '10 bis 100.')
+            . $this->flag('speciallinks', 'Suchmaschinen-freundliche Links', $config)
+            . $this->flag('safemail', 'E-Mail-Adressen verschlüsseln', $config)
+            . $this->flag('allow_compress', 'Seitenausgabe komprimieren', $config, 'Sofern der Browser es zulässt, verkürzt das die Ladezeit.')
+            . $this->flag('editor', 'Grafischen HTML-Editor (TinyMCE) verwenden', $config)
+            . $this->flag('smileys', 'Smiley-Modul aktivieren', $config);
+
+        $sections['Modul: Sprachen'] = Form::field(
+            'Sprachdatei',
+            Html::select('language', $this->languageOptions(), $config->language ?? '', ['id' => 'language']),
+            ['name' => 'language', 'searchable' => true]
+        );
 
         $lists = get_lists($config->search_list ?? '', 'search_list');
         if ($lists) {
-            $html .= $this->section('Modul: Suche') . Html::field('Listenansicht', $lists);
+            $sections['Modul: Suche'] = Form::field('Listenansicht', (string)$lists, ['searchable' => true, 'for' => '']);
         }
 
-        $html .= $this->section('Modul: E-Mail Benachrichtigungen')
-            . '<tr><td colspan="2">' . $this->notificationTable() . '</td></tr>'
+        $sections['Modul: E-Mail Benachrichtigungen'] = Form::wide(
+            '<p class="field-hint">Wer wird worüber benachrichtigt?</p>' . $this->notificationTable(),
+            ['data-search' => 'benachrichtigung e-mail', 'x-show' => 'matches($el)']
+        );
 
-            . $this->section('Modul: Menü')
-            . Html::field('Menü-Modus', $this->menuModeRadios($config))
-            . Html::field('Menüumbruch alle', Html::input('menubreak', (int)($config->menubreak ?? 0), ['size' => 3, 'maxlength' => 3]) . ' Einträge')
-            . Html::field('Menüausrichtung', $this->orientationRadios($config))
-            . Html::field(
+        $sections['Modul: Menü'] = Form::field(
+            'Menü-Modus',
+            $this->menuModeRadios($config),
+            ['for' => '', 'searchable' => true]
+        )
+            . $this->number('Menüumbruch alle', 'menubreak', (int)($config->menubreak ?? 0), 'Einträge. 0 schaltet den Umbruch ab.')
+            . Form::field('Menüausrichtung', $this->orientationRadios($config), ['for' => '', 'searchable' => true])
+            . Form::field(
                 'Menü-Größe',
-                Html::input('menu_width', (int)($config->menu_width ?? 0), ['size' => 4, 'maxlength' => 4]) . 'px Breite, '
-                . Html::input('menu_height', (int)($config->menu_height ?? 0), ['size' => 4, 'maxlength' => 4]) . 'px Höhe'
-            )
+                '<span class="field-inline">'
+                . Html::input('menu_width', (int)($config->menu_width ?? 0), ['id' => 'menu_width', 'type' => 'number', 'style' => 'width:6rem'])
+                . ' px breit '
+                . Html::input('menu_height', (int)($config->menu_height ?? 0), ['id' => 'menu_height', 'type' => 'number', 'style' => 'width:6rem'])
+                . ' px hoch</span>',
+                ['for' => 'menu_width', 'searchable' => true]
+            );
 
-            . $this->section('Modul: Listenansicht')
-            . Html::field('Einträge/Seite', Html::input('page_limit', (int)($config->page_limit ?? 15), ['size' => 3, 'maxlength' => 3]) . ' Einträge')
-            . $this->flagRow('commentssmall', 'Zahl der Kommentare bei Inhalts-Liste anzeigen', $config)
-            . Html::field('Spalten bei Ausgabe', Html::input('list_rows', (int)($config->list_rows ?? 1), ['size' => 3, 'maxlength' => 3]))
+        $sections['Modul: Listenansicht'] = $this->number('Einträge je Seite', 'page_limit', (int)($config->page_limit ?? 15), 'Gilt auch für die Übersichten im Backend.')
+            . $this->flag('commentssmall', 'Zahl der Kommentare in der Inhaltsliste anzeigen', $config)
+            . $this->number('Spalten bei Ausgabe', 'list_rows', (int)($config->list_rows ?? 1));
 
-            . $this->section('Modul: Inhaltsansicht')
-            . $this->flagRow('writtenby', 'Geschrieben von... anzeigen', $config)
+        $sections['Modul: Inhaltsansicht'] = $this->flag('writtenby', '"Geschrieben von ..." anzeigen', $config);
 
-            . $this->section('Modul: Kommentare')
-            . $this->flagRow('comments', 'Inhalte dürfen kommentiert werden', $config)
-            . Html::field('Kommentar-Anzahl (Anzeige)', Html::input('numcomments', (int)($config->numcomments ?? 10), ['size' => 3, 'maxlength' => 5]))
+        $sections['Modul: Kommentare'] = $this->flag('comments', 'Inhalte dürfen kommentiert werden', $config)
+            . $this->number('Kommentare je Seite', 'numcomments', (int)($config->numcomments ?? 10));
 
-            . $this->section('Modul: Bewertungen')
-            . $this->flagRow('rate', 'Bewertungs-System für Inhalte aktivieren', $config)
+        $sections['Modul: Bewertungen'] = $this->flag('rate', 'Bewertungs-System für Inhalte aktivieren', $config);
 
-            . $this->section('Modul: Besucherzähler')
-            . Html::field('Passwort für Statistik-Zugriff', Html::input('visitors_password', $config->visitors_password ?? '', ['size' => 20, 'maxlength' => 32]))
-            . Html::field('Besucherzähler erhöhen um', Html::input('visitors_increment', (int)($config->visitors_increment ?? 1), ['size' => 6]))
-            . Html::field('Zeit (Minuten), die ein Besucher als "Online" gilt', Html::input('visitors_lifetime', (int)($config->visitors_lifetime ?? 15), ['size' => 6]))
+        $sections['Modul: Besucherzähler'] = $this->text('Passwort für Statistik-Zugriff', 'visitors_password', (string)($config->visitors_password ?? ''))
+            . $this->number('Besucherzähler erhöhen um', 'visitors_increment', (int)($config->visitors_increment ?? 1))
+            . $this->number('Besucher gilt als online für', 'visitors_lifetime', (int)($config->visitors_lifetime ?? 15), 'Minuten.');
 
-            . $this->section('Modul: Downloads')
-            . $this->flagRow('predownload', 'Bei Downloads zunächst Download-Vorschaltseite', $config)
+        $sections['Modul: Downloads'] = $this->flag('predownload', 'Bei Downloads zunächst eine Vorschaltseite zeigen', $config);
 
-            . $this->section('Modul: User-System')
-            . $this->flagRow('register_activated', 'Registration erlauben', $config)
-            . $this->flagRow('password_recovery_activated', 'Passwort darf zurückgesetzt werden', $config)
+        $sections['Modul: User-System'] = $this->flag('register_activated', 'Registrierung erlauben', $config)
+            . $this->flag('password_recovery_activated', 'Passwort darf zurückgesetzt werden', $config);
 
-            . $this->section('Modul: Top-Users')
-            . $this->flagRow('topusers', 'Top-Userliste aktiv', $config)
-            . Html::field('Anzahl der Top-User', Html::input('numtopuser', (int)($config->numtopuser ?? 5), ['size' => 3, 'maxlength' => 5]))
+        $sections['Modul: Top-Users'] = $this->flag('topusers', 'Top-Userliste aktiv', $config)
+            . $this->number('Anzahl der Top-User', 'numtopuser', (int)($config->numtopuser ?? 5));
 
-            . $this->section('Modul: Gästebuch')
-            . $this->flagRow('guestbook_activated', 'Verfassen neuer Gästebucheinträge möglich', $config)
+        $sections['Modul: Gästebuch'] = $this->flag('guestbook_activated', 'Neue Gästebucheinträge sind möglich', $config);
 
-            . $this->section('Modul: Am Meisten diskutiert')
-            . Html::field('Minimum-Kommentarzahl für "Meist diskutiert"', Html::input('mincomments', (int)($config->mincomments ?? 2), ['size' => 3, 'maxlength' => 5]))
+        $sections['Modul: Am Meisten diskutiert'] = $this->number('Mindestzahl an Kommentaren', 'mincomments', (int)($config->mincomments ?? 2));
 
-            . $this->section('Modul: Aktuelle Kommentare')
-            . Html::field('Kommentare der letzten', Html::input('latest_comments_days', (int)($config->latest_comments_days ?? 7), ['size' => 2]) . ' Tage anzeigen')
-            . Html::field('Anzahl Zeichen, bis gekürzt wird', Html::input('latest_comments_chars', (int)($config->latest_comments_chars ?? 120), ['size' => 2]))
+        $sections['Modul: Aktuelle Kommentare'] = $this->number('Kommentare der letzten', 'latest_comments_days', (int)($config->latest_comments_days ?? 7), 'Tage anzeigen.')
+            . $this->number('Zeichen, bis gekürzt wird', 'latest_comments_chars', (int)($config->latest_comments_chars ?? 120));
 
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="config" value="Speichern">'
-            . '</div></td></tr></table>'
-            . Html::formClose();
-
-        return $html;
+        return $sections;
     }
 
-    private function section(string $title): string
+    private function text(string $label, string $field, string $value, string $hint = ''): string
     {
-        return '<tr><td colspan="2"><div class="config_space">' . Html::e($title) . '</div></td></tr>';
+        return Form::field(
+            $label,
+            Html::input($field, $value, ['id' => $field]),
+            ['name' => $field, 'hint' => $hint, 'searchable' => true]
+        );
     }
 
-    private function flagRow(string $field, string $label, object $config): string
+    private function number(string $label, string $field, int $value, string $hint = ''): string
     {
-        return '<tr><td colspan="2">'
-            . Html::checkbox($field, !empty($config->$field), $label)
-            . '</td></tr>';
+        return Form::field(
+            $label,
+            Html::input($field, $value, ['id' => $field, 'type' => 'number', 'style' => 'width:8rem']),
+            ['name' => $field, 'hint' => $hint, 'searchable' => true]
+        );
+    }
+
+    private function flag(string $field, string $label, object $config, string $hint = ''): string
+    {
+        return Form::check(
+            Html::checkbox($field, !empty($config->$field)),
+            $label,
+            ['name' => $field, 'hint' => $hint, 'searchable' => true]
+        );
     }
 
     private function menuModeRadios(object $config): string
@@ -264,24 +341,27 @@ final class ConfigController extends Controller
     {
         $dialogs = $GLOBALS['confirmation_dialogs'] ?? [];
 
-        $html = '<table class="group"><tr><td class="confirm_head">Benutzer</td>';
+        $html = '<div class="table-wrap"><table class="data-table"><thead><tr><th class="confirm_head">Benutzer</th>';
         foreach ($dialogs as $dialog) {
-            $html .= '<td class="confirm_head">' . Html::e((string)($dialog[2] ?? $dialog[0])) . '</td>';
+            $html .= '<th class="confirm_head">' . Html::e((string)($dialog[2] ?? $dialog[0])) . '</th>';
         }
-        $html .= '</tr>';
+        $html .= '</tr></thead><tbody>';
 
         $users = Db::select('SELECT * FROM ' . Db::table('user') . ' WHERE typ >= 1 ORDER BY typ DESC, name');
         foreach ($users as $user) {
-            $html .= '<tr><td>' . Html::e((string)$user->name) . ' (' . Html::e((string)$user->mail) . ')</td>';
+            $html .= '<tr><td class="cell-title" data-label="Benutzer">' . Html::e((string)$user->name)
+                . ' (' . Html::e((string)$user->mail) . ')</td>';
             foreach ($dialogs as $dialog) {
                 [$field, $column] = $dialog;
+                $label = (string)($dialog[2] ?? $dialog[0]);
                 $checked = !empty($user->$column) ? ' checked' : '';
-                $html .= '<td style="text-align:center;"><input type="checkbox" name="' . Html::e($field) . '[]"'
+                $html .= '<td class="cell-check" data-label="' . Html::e($label) . '">'
+                    . '<input type="checkbox" name="' . Html::e($field) . '[]"'
                     . ' value="' . (int)$user->id . '"' . $checked . '></td>';
             }
             $html .= '</tr>';
         }
 
-        return $html . '</table>';
+        return $html . '</tbody></table></div>';
     }
 }

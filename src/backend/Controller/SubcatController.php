@@ -5,12 +5,14 @@ namespace Pms\Backend\Controller;
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\EntityImage;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Unterkategorien.
@@ -27,7 +29,10 @@ final class SubcatController extends Controller
     public function handle(): string
     {
         if (Request::submitted('subcat')) {
-            $this->save();
+            $entered = $this->save();
+            if ($entered !== null) {
+                return $this->form($entered);
+            }
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -49,18 +54,14 @@ final class SubcatController extends Controller
         return $this->overview();
     }
 
-    private function save(): void
+    /** @return object|null Die eingegebenen Werte, wenn nicht gespeichert wurde */
+    private function save(): ?object
     {
         if (!$this->checkToken()) {
-            return;
+            return null;
         }
 
         $name = Request::string('name');
-        if ($name === '') {
-            Flash::error('Bitte geben Sie eine Bezeichnung an.');
-            return;
-        }
-
         $id = Request::int('id');
         $cat = Request::int('uppcat');
 
@@ -73,6 +74,16 @@ final class SubcatController extends Controller
             'jump' => Request::checkbox('jump'),
             'list' => Request::string('list'),
         ];
+        $entered = (object)($data + ['id' => $id, 'image' => '']);
+
+        if ($name === '') {
+            Errors::add('name', 'Bitte geben Sie eine Bezeichnung an.');
+            return $entered;
+        }
+        if ($cat <= 0) {
+            Errors::add('uppcat', 'Bitte wählen Sie eine Kategorie.');
+            return $entered;
+        }
 
         if ($id > 0 && Request::checkbox('image_delete')) {
             EntityImage::delete('subcat', $id, (string)from_db('subcat', $id, 'image'));
@@ -93,7 +104,7 @@ final class SubcatController extends Controller
 
         if (!$success) {
             Flash::error('Fehler beim Speichern der Unterkategorie!');
-            return;
+            return $entered;
         }
 
         $extension = EntityImage::store('subcat', $id);
@@ -175,39 +186,64 @@ final class SubcatController extends Controller
             $image = (string)EntityImage::detect('subcat', $id);
         }
 
-        $html = Html::formOpen($this->action(), [], ['upload' => true])
-            . Html::heading($isEdit ? 'Unterkategorie bearbeiten' : 'Unterkategorie erstellen')
-            . Html::hidden('id', $id)
-            . '<table>'
-            . Html::field('Bezeichnung', Html::input('name', $isEdit ? $subcat->name : '', ['size' => 36]))
-            . Html::field('Beschreibung', Html::textarea('description', $isEdit ? $subcat->description : '', 5, 35))
-            . Html::field('Bild (optional)', '<input type="file" name="image" size="36">');
-
-        if ($image !== '') {
-            $html .= '<tr><td>' . make_contentimg('subcat', $id, $image, 0) . '</td><td>'
-                . Html::checkbox('image_delete', false, 'Aktuelles Bild löschen')
-                . '</td></tr>';
-        }
-
-        $html .= Html::field('Sortierung', Html::input('sort', $isEdit ? (int)$subcat->sort : 1000, ['size' => 7]))
-            . Html::field('In Kategorie', Html::select('uppcat', $this->categoryOptions(), $selectedCat));
+        $general = Form::field(
+            'Bezeichnung',
+            Html::input('name', $isEdit ? $subcat->name : '', ['id' => 'name']),
+            ['name' => 'name', 'required' => true]
+        )
+            . Form::field(
+                'Beschreibung',
+                Html::textarea('description', $isEdit ? $subcat->description : '', 5, 35),
+                ['name' => 'description', 'for' => '']
+            )
+            . Form::field(
+                'In Kategorie',
+                Html::select('uppcat', $this->categoryOptions(), $selectedCat, ['id' => 'uppcat']),
+                ['name' => 'uppcat', 'for' => 'uppcat', 'required' => true]
+            )
+            . Form::field(
+                'Sortierung',
+                Html::input('sort', $isEdit ? (int)$subcat->sort : 1000, ['id' => 'sort', 'type' => 'number']),
+                ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen weiter oben.']
+            );
 
         $lists = get_lists($isEdit ? $subcat->list : '');
         if ($lists) {
-            $html .= Html::field('Listenansicht', $lists);
+            $general .= Form::field('Listenansicht', (string)$lists, ['name' => 'list']);
         }
 
-        return $html
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('available', !$isEdit || (bool)$subcat->available, 'Unterkategorie verfügbar')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('jump', $isEdit && (bool)$subcat->jump, 'Wenn nur 1 Inhalt vorhanden, sofort auf diesen springen')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="subcat" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        $imageField = Form::field(
+            'Bild',
+            '<input type="file" name="image" id="image" accept="image/*">',
+            ['name' => 'image', 'for' => 'image', 'hint' => 'Optional. Erscheint in der Übersicht der Unterkategorie.']
+        );
+        if ($image !== '') {
+            $imageField .= Form::field(
+                'Aktuelles Bild',
+                (string)make_contentimg('subcat', $id, $image, 0)
+                . '<label class="field-check">' . Html::checkbox('image_delete', false) . ' Aktuelles Bild löschen</label>',
+                ['for' => '']
+            );
+        }
+
+        $options = Form::check(
+            Html::checkbox('available', !$isEdit || (bool)$subcat->available),
+            'Unterkategorie verfügbar'
+        )
+            . Form::check(
+                Html::checkbox('jump', $isEdit && (bool)$subcat->jump),
+                'Bei nur einem Inhalt sofort auf diesen springen'
+            );
+
+        return Components::pageHeader($id > 0 ? 'Unterkategorie bearbeiten' : 'Unterkategorie erstellen')
+            . Html::formOpen($this->action(), [], ['upload' => true])
+            . Html::hidden('id', $id)
+            . Form::card(
+                Form::section('Allgemein', $general)
+                . Form::section('Bild', $imageField)
+                . Form::section('Verhalten', $options),
+                Form::actions('subcat', 'Speichern', $this->url())
+            )
             . Html::formClose();
     }
 

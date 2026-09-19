@@ -4,11 +4,13 @@ namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
 use Pms\Backend\Support\Auth;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Sperrungen von IP-Adressen.
@@ -31,7 +33,10 @@ final class BansController extends Controller
     public function handle(): string
     {
         if (Request::submitted('bans')) {
-            $this->save();
+            $entered = $this->save();
+            if ($entered !== null) {
+                return $this->form($entered);
+            }
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -58,19 +63,19 @@ final class BansController extends Controller
         return $this->overview();
     }
 
-    /** Speichert einen neuen oder geänderten Ban. */
-    private function save(): void
+    /**
+     * Speichert eine neue oder geänderte Sperrung.
+     *
+     * @return object|null Die eingegebenen Werte, wenn nicht gespeichert wurde
+     */
+    private function save(): ?object
     {
         if (!$this->checkToken()) {
-            return;
+            return null;
         }
 
         $id = Request::int('id');
         $ip = Request::string('ip');
-        if ($ip === '') {
-            Flash::error('Bitte geben Sie eine IP-Adresse an.');
-            return;
-        }
 
         // Dauer in Tagen; 0 oder leer bedeutet "unbegrenzt"
         $days = Request::float('time');
@@ -81,14 +86,25 @@ final class BansController extends Controller
             'reason' => Request::text('reason'),
             'time' => $expires,
         ];
+        $entered = (object)($data + ['id' => $id]);
+
+        if ($ip === '') {
+            Errors::add('ip', 'Bitte geben Sie eine IP-Adresse an.');
+            return $entered;
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            Errors::add('ip', 'Das ist keine gültige IP-Adresse.');
+            return $entered;
+        }
 
         $success = $id > 0 ? Db::update('bans', $id, $data) : Db::insert('bans', $data) > 0;
 
         if ($success) {
-            Flash::success('Ban erfolgreich gespeichert!');
+            Flash::success('Sperrung erfolgreich gespeichert!');
             $this->redirect();
         }
-        Flash::error('Fehler beim Speichern des Bans!');
+        Flash::error('Fehler beim Speichern der Sperrung!');
+        return $entered;
     }
 
     private function find(int $id): ?object
@@ -103,22 +119,35 @@ final class BansController extends Controller
     private function form(?object $ban): string
     {
         $isEdit = $ban !== null;
+        $id = $isEdit ? (int)$ban->id : 0;
+
         $days = '';
         if ($isEdit && (int)$ban->time > 0) {
             $days = (string)max(0, (int)ceil(((int)$ban->time - time()) / 86400));
         }
 
-        return Html::formOpen($this->action())
-            . Html::heading($isEdit ? 'Ban bearbeiten' : 'Neuen Ban erstellen')
-            . Html::hidden('id', $isEdit ? (int)$ban->id : 0)
-            . '<table>'
-            . Html::field('IP', Html::input('ip', $isEdit ? $ban->ip : '', ['maxlength' => 15]))
-            . Html::field('Begründung (Optional)', Html::textarea('reason', $isEdit ? $ban->reason : '', 5, 40))
-            . Html::field('Zeitlimit in Tagen (0 = Kein Limit)', Html::input('time', $days, ['size' => 3]))
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="bans" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        $fields = Form::field(
+            'IP-Adresse',
+            Html::input('ip', $isEdit ? $ban->ip : '', ['id' => 'ip', 'maxlength' => 45]),
+            ['name' => 'ip', 'required' => true, 'hint' => 'IPv4 oder IPv6, zum Beispiel 203.0.113.7']
+        )
+            . Form::field(
+                'Begründung',
+                Html::textarea('reason', $isEdit ? $ban->reason : '', 5, 40),
+                ['name' => 'reason', 'for' => '', 'hint' => 'Optional, erscheint nur im Backend.']
+            )
+            . Form::field(
+                'Dauer',
+                '<span class="field-inline">'
+                . Html::input('time', $days, ['id' => 'time', 'type' => 'number', 'min' => 0, 'style' => 'width:7rem'])
+                . ' Tage</span>',
+                ['name' => 'time', 'hint' => '0 oder leer sperrt unbegrenzt.']
+            );
+
+        return Components::pageHeader($id > 0 ? 'Sperrung bearbeiten' : 'Neue Sperrung')
+            . Html::formOpen($this->action())
+            . Html::hidden('id', $id)
+            . Form::card(Form::section('', $fields), Form::actions('bans', 'Speichern', $this->url()))
             . Html::formClose();
     }
 

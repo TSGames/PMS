@@ -24,9 +24,9 @@ den Webserver nicht erreichbar (`.htaccess`) und wird ausschließlich von
 | --- | --- |
 | `Controller/` | Je ein Controller pro Bereich des Backends |
 | `Data/` | `Db` – Datenbankzugriff mit vorbereiteten Anweisungen |
-| `Http/` | Router, Navigation, JSON-Schnittstellen, Update-Prüfung |
-| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen |
-| `View/` | Grundgerüst, Templates und Symbole |
+| `Http/` | Routen, Navigation, JSON-Schnittstellen, Update-Prüfung |
+| `Support/` | Eingaben, Anmeldung, Token, Meldungen, HTML-Bausteine, Listen, Feldfehler |
+| `View/` | Grundgerüst, Templates, Symbole, Listen- und Formularbausteine |
 
 ## Ein Controller
 
@@ -110,6 +110,44 @@ ohne JavaScript erscheint stattdessen ein Schalter "Anwenden".
 und `Components::booleanChip()` die farbigen Markierungen. `Html::table()`
 bleibt für die wenigen Übersichten, die weder Suche noch Sortierung
 brauchen (Sicherungen, Ereignisse, Website-Status).
+
+## Ein Formular bauen
+
+`View\Form` liefert die Teile, `Support\Errors` die Meldungen am Feld:
+
+```php
+$fields = Form::field('Name', Html::input('name', $value, ['id' => 'name']), [
+    'name' => 'name',        // unter diesem Namen sucht Form die Fehlermeldung
+    'required' => true,
+    'hint' => 'Mindestens 3 Zeichen.',
+])
+    . Form::check(Html::checkbox('available', true), 'Eintrag verfügbar');
+
+return Components::pageHeader('Kategorie bearbeiten')
+    . Html::formOpen($this->action())
+    . Html::hidden('id', $id)
+    . Form::card(
+        Form::section('Allgemein', $fields),
+        Form::actions('cat', 'Speichern', $this->url())
+    )
+    . Html::formClose();
+```
+
+Geprüft wird auf dem Server, deshalb trägt jedes POST-Formular `novalidate`:
+Sonst blockiert der Browser das Absenden und die Meldung am Feld käme nie
+zustande.
+
+`save()` gibt die eingegebenen Werte zurück, wenn nicht gespeichert werden
+konnte; `handle()` zeigt damit das Formular erneut an. So bleibt nichts
+verloren, was jemand eingetippt hat - der Altbestand warf das Formular bei
+jedem Fehler weg.
+
+Felder, die nur für bestimmte Fälle gelten, blendet Alpine ein und aus
+(`x-show`), statt sie serverseitig wegzulassen. Der Zustand umschließt das
+ganze Formular, nicht einzelne Abschnitte. Abhängige Auswahlfelder
+(Kategorie - Unterkategorie - Inhalt) laden ihre Einträge über
+`Http\OptionsEndpoint` nach; ihr Ausgangsbestand steht im Zustand, den
+`linkedSelects()` bekommt, und deshalb nicht zusätzlich im Markup.
 
 ## Oberfläche
 

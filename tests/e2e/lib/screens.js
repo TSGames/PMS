@@ -244,59 +244,44 @@ const SCREENS = [
     wide: true,
   },
   {
-    id: 'item-neu-vorauswahl',
-    group: 'Inhalte',
-    title: 'Inhalt hinzufügen (Vorauswahl)',
-    role: 'admin',
-    url: 'admin/inhalte?new=yes',
-    heading: 'Inhalt hinzufügen - Vorauswahl',
-  },
-  {
     id: 'item-neu-editor',
     group: 'Inhalte',
-    title: 'Inhalt hinzufügen (Editor)',
+    title: 'Inhalt hinzufügen',
     role: 'admin',
-    url: 'admin/inhalte?new=yes',
+    url: 'admin/inhalte?new=yes&editor=0',
     heading: 'Inhalt erstellen',
-    // Beim Anlegen erscheint die Unterkategorie erst nach "Aktualisieren"
     prepare: async (page) => {
       await page.selectOption('select[name="cat"]', { label: 'Aktuelles' });
-      await page.click('input[name="item_refresh"]');
       await page.selectOption('select[name="subcat"]', { label: 'Neuigkeiten' });
-      await page.uncheck('input[name="tinymce"]');
-      await page.click('input[name="item_step1"]');
     },
   },
   {
-    id: 'item-bearbeiten-vorauswahl',
+    id: 'item-neu-spezialseite',
     group: 'Inhalte',
-    title: 'Inhalt bearbeiten (Vorauswahl)',
+    title: 'Inhalt hinzufügen (Spezialseite)',
     role: 'admin',
-    url: 'admin/inhalte?edit=2',
-    heading: 'Inhalt bearbeiten - Vorauswahl',
+    url: 'admin/inhalte?new=yes&editor=0',
+    heading: 'Art des Spezialinhalts',
+    prepare: async (page) => {
+      await page.click('label[for="typ-3"]');
+    },
   },
   {
     id: 'item-bearbeiten-editor',
     group: 'Inhalte',
-    title: 'Inhalt bearbeiten (Editor ohne TinyMCE)',
+    title: 'Inhalt bearbeiten (ohne TinyMCE)',
     role: 'admin',
-    url: 'admin/inhalte?edit=2',
+    url: 'admin/inhalte?edit=2&editor=0',
     heading: 'Inhalt bearbeiten',
-    prepare: async (page) => {
-      await page.uncheck('input[name="tinymce"]');
-      await page.click('input[name="item_step1"]');
-    },
   },
   {
     id: 'item-bearbeiten-tinymce',
     group: 'Inhalte',
     title: 'Inhalt bearbeiten (TinyMCE-Editor)',
     role: 'admin',
-    url: 'admin/inhalte?edit=2',
+    url: 'admin/inhalte?edit=2&editor=1',
     heading: 'Inhalt bearbeiten',
     prepare: async (page) => {
-      await page.check('input[name="tinymce"]');
-      await page.click('input[name="item_step1"]');
       await page.waitForTimeout(1500);
     },
   },
@@ -395,7 +380,7 @@ const SCREENS = [
     title: 'Ban erstellen',
     role: 'admin',
     url: 'admin/sperrungen?new=yes',
-    heading: 'Neuen Ban erstellen',
+    heading: 'Neue Sperrung',
   },
   {
     id: 'bans-bearbeiten',
@@ -403,7 +388,7 @@ const SCREENS = [
     title: 'Ban bearbeiten',
     role: 'admin',
     url: 'admin/sperrungen?edit=1',
-    heading: 'Ban bearbeiten',
+    heading: 'Sperrung bearbeiten',
   },
 
   // ------------------------------------------------------------ Monitoring

@@ -34,6 +34,7 @@ final class Routes
         'update' => '/admin/aktualisierung',
         'xlsx_import_ajax' => '/admin/api/xlsx-import',
         'crop_image_ajax' => '/admin/api/bild-zuschneiden',
+        'options_ajax' => '/admin/api/auswahl',
     ];
 
     /** Pfad des Einstiegsskripts, das die Module anzeigt. */

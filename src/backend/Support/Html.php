@@ -44,8 +44,12 @@ final class Html
         $method = $options['method'] ?? 'post';
         $upload = ($options['upload'] ?? false) ? ' enctype="multipart/form-data"' : '';
 
+        // novalidate: Geprüft wird auf dem Server. Sonst blockiert der Browser
+        // das Absenden und die Meldungen am Feld kämen nie zustande.
+        $validation = strtolower($method) === 'post' ? ' novalidate' : '';
+
         $html = '<form action="' . self::e($target) . '" name="pms_form" method="' . self::e($method) . '"'
-            . $upload . ' accept-charset="utf-8">';
+            . $upload . $validation . ' accept-charset="utf-8">';
         if (strtolower($method) === 'post') {
             $html .= Csrf::field();
         }

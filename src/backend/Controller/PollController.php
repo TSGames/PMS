@@ -3,12 +3,14 @@
 namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\Support\Sorting;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Umfragen mit bis zu zehn Antwortmöglichkeiten.
@@ -27,7 +29,10 @@ final class PollController extends Controller
     public function handle(): string
     {
         if (Request::submitted('poll')) {
-            $this->save();
+            $entered = $this->save();
+            if ($entered !== null) {
+                return $this->form($entered);
+            }
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -56,25 +61,30 @@ final class PollController extends Controller
         return $this->overview();
     }
 
-    private function save(): void
+    /** @return object|null Die eingegebenen Werte, wenn nicht gespeichert wurde */
+    private function save(): ?object
     {
         if (!$this->checkToken()) {
-            return;
-        }
-
-        $question = Request::string('question');
-        if ($question === '') {
-            Flash::error('Bitte geben Sie eine Frage an.');
-            return;
+            return null;
         }
 
         $data = [
-            'question' => $question,
+            'question' => Request::string('question'),
             'sort' => Request::int('sort', 1000),
             'available' => Request::checkbox('available'),
         ];
         for ($i = 1; $i <= self::ANSWER_COUNT; $i++) {
             $data['answer' . $i] = Request::string('answer' . $i);
+        }
+        $entered = (object)($data + ['id' => Request::int('id')]);
+
+        if ($data['question'] === '') {
+            Errors::add('question', 'Bitte geben Sie eine Frage an.');
+            return $entered;
+        }
+        if ($data['answer1'] === '' || $data['answer2'] === '') {
+            Errors::add('answer1', 'Eine Umfrage braucht mindestens zwei Antworten.');
+            return $entered;
         }
 
         $id = Request::int('id');
@@ -84,7 +94,9 @@ final class PollController extends Controller
             Flash::success('Umfrage erfolgreich gespeichert!');
             $this->redirect();
         }
+
         Flash::error('Fehler beim Speichern der Umfrage!');
+        return $entered;
     }
 
     private function find(int $id): ?object
@@ -98,27 +110,41 @@ final class PollController extends Controller
     private function form(?object $poll): string
     {
         $isEdit = $poll !== null;
+        $id = $isEdit ? (int)$poll->id : 0;
 
-        $html = Html::formOpen($this->action())
-            . Html::heading($isEdit ? 'Umfrage bearbeiten' : 'Umfrage erstellen')
-            . Html::hidden('id', $isEdit ? (int)$poll->id : 0)
-            . '<table>'
-            . Html::field('Frage', Html::input('question', $isEdit ? $poll->question : '', ['size' => 40]))
-            . Html::field('Sortierung', Html::input('sort', $isEdit ? (int)$poll->sort : 1000));
+        $question = Form::field(
+            'Frage',
+            Html::input('question', $isEdit ? $poll->question : '', ['id' => 'question']),
+            ['name' => 'question', 'required' => true]
+        )
+            . Form::field(
+                'Sortierung',
+                Html::input('sort', $isEdit ? (int)$poll->sort : 1000, ['id' => 'sort', 'type' => 'number']),
+                ['name' => 'sort']
+            )
+            . Form::check(
+                Html::checkbox('available', !$isEdit || (bool)$poll->available),
+                'Umfrage verfügbar'
+            );
 
+        $answers = '';
         for ($i = 1; $i <= self::ANSWER_COUNT; $i++) {
             $field = 'answer' . $i;
-            $html .= Html::field($i . '. Antwort', Html::input($field, $isEdit ? $poll->$field : '', ['size' => 40]));
+            $answers .= Form::field(
+                $i . '. Antwort',
+                Html::input($field, $isEdit ? $poll->$field : '', ['id' => $field]),
+                ['name' => $field, 'required' => $i <= 2]
+            );
         }
 
-        return $html
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('available', !$isEdit || (bool)$poll->available, 'Umfrage verfügbar')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="poll" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        return Components::pageHeader($id > 0 ? 'Umfrage bearbeiten' : 'Umfrage erstellen')
+            . Html::formOpen($this->action())
+            . Html::hidden('id', $id)
+            . Form::card(
+                Form::section('Frage', $question)
+                . Form::section('Antworten', $answers),
+                Form::actions('poll', 'Speichern', $this->url())
+            )
             . Html::formClose();
     }
 

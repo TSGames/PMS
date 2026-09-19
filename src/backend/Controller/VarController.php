@@ -3,11 +3,13 @@
 namespace Pms\Backend\Controller;
 
 use Pms\Backend\Data\Db;
+use Pms\Backend\Support\Errors;
 use Pms\Backend\Support\Flash;
 use Pms\Backend\Support\Html;
 use Pms\Backend\Support\Listing;
 use Pms\Backend\Support\Request;
 use Pms\Backend\View\Components;
+use Pms\Backend\View\Form;
 
 /**
  * Variablen: Platzhalter, die beim Ausliefern der Seiten ersetzt werden.
@@ -24,7 +26,10 @@ final class VarController extends Controller
     public function handle(): string
     {
         if (Request::submitted('var')) {
-            $this->save();
+            $entered = $this->save();
+            if ($entered !== null) {
+                return $this->form($entered);
+            }
         }
 
         $confirmed = $this->confirmedDeleteId();
@@ -51,24 +56,25 @@ final class VarController extends Controller
         return $this->overview();
     }
 
-    private function save(): void
+    /** @return object|null Die eingegebenen Werte, wenn nicht gespeichert wurde */
+    private function save(): ?object
     {
         if (!$this->checkToken()) {
-            return;
-        }
-
-        $search = Request::text('search');
-        if (trim($search) === '') {
-            Flash::error('Bitte geben Sie an, wonach gesucht werden soll.');
-            return;
+            return null;
         }
 
         $id = Request::int('id');
         $data = [
-            'searcher' => $search,
+            'searcher' => Request::text('search'),
             'replacer' => Request::text('replace'),
             'makebr' => Request::checkbox('makebr'),
         ];
+        $entered = (object)($data + ['id' => $id]);
+
+        if (trim($data['searcher']) === '') {
+            Errors::add('search', 'Bitte geben Sie an, wonach gesucht werden soll.');
+            return $entered;
+        }
 
         $success = $id > 0 ? Db::update('dynamic', $id, $data) : Db::insert('dynamic', $data) > 0;
 
@@ -76,7 +82,9 @@ final class VarController extends Controller
             Flash::success('Regel erfolgreich gespeichert!');
             $this->redirect();
         }
+
         Flash::error('Fehler beim Speichern der Regel!');
+        return $entered;
     }
 
     private function find(int $id): ?object
@@ -90,20 +98,30 @@ final class VarController extends Controller
     private function form(?object $rule): string
     {
         $isEdit = $rule !== null;
+        $id = $isEdit ? (int)$rule->id : 0;
 
-        return Html::formOpen($this->action())
-            . Html::heading($isEdit ? 'Regel bearbeiten' : 'Neue Regel erstellen')
-            . Html::hidden('id', $isEdit ? (int)$rule->id : 0)
-            . '<table>'
-            . Html::field('Suchen', Html::textarea('search', $isEdit ? $rule->searcher : '', 10, 70))
-            . Html::field('Ersetzen mit', Html::textarea('replace', $isEdit ? $rule->replacer : '', 10, 70))
-            . '<tr><td colspan="2"><div class="action-section">'
-            . Html::checkbox('makebr', !$isEdit || (bool)$rule->makebr, 'Umbrüche mit "<br>" ersetzen.')
-            . '</div></td></tr>'
-            . '<tr><td colspan="2"><div class="action-section">'
-            . '<input type="submit" name="var" value="Speichern"> '
-            . Html::button('Abbrechen', $this->url(), 'button button-secondary')
-            . '</div></td></tr></table>'
+        $fields = Form::field(
+            'Suchen nach',
+            Html::textarea('search', $isEdit ? $rule->searcher : '', 8, 70),
+            ['name' => 'search', 'for' => '', 'required' => true, 'hint' => 'Der Platzhalter, wie er im Inhalt steht.']
+        )
+            . Form::field(
+                'Ersetzen mit',
+                Html::textarea('replace', $isEdit ? $rule->replacer : '', 8, 70),
+                ['name' => 'replace', 'for' => '', 'hint' => 'Darf HTML enthalten.']
+            )
+            . Form::check(
+                Html::checkbox('makebr', !$isEdit || (bool)$rule->makebr),
+                'Zeilenumbrüche der Ersetzung als <br> ausgeben'
+            );
+
+        return Components::pageHeader(
+            $id > 0 ? 'Regel bearbeiten' : 'Neue Regel erstellen',
+            'Jedes Vorkommen des Suchtextes wird beim Anzeigen ersetzt.'
+        )
+            . Html::formOpen($this->action())
+            . Html::hidden('id', $id)
+            . Form::card(Form::section('', $fields), Form::actions('var', 'Speichern', $this->url()))
             . Html::formClose()
             . get_monaco();
     }

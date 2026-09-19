@@ -74,6 +74,11 @@ final class Kernel
             CropEndpoint::handle();
             return $response;
         });
+        $app->map($methods, Routes::all()['options_ajax'], static function (ServerRequestInterface $request, ResponseInterface $response) {
+            Request::bind($request, 'options_ajax');
+            OptionsEndpoint::handle();
+            return $response;
+        });
 
         // Abmelden und offene Vorgänge wurden bereits beim Start verarbeitet
         foreach (['logout', 'load_last', 'update'] as $action) {

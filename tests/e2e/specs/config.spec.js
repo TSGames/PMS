@@ -57,6 +57,31 @@ test('Sprachauswahl enthält die mitgelieferten Sprachdateien', async ({ page })
   expect(options).not.toContain('custom');
 });
 
+test('Reiter zeigen jeweils nur ihre Abschnitte', async ({ page }) => {
+  await expect(page.locator('.form-section:has-text("Allgemeines")')).toBeVisible();
+  await expect(page.locator('.form-section:has-text("Modul: Kommentare")')).toBeHidden();
+
+  await page.click('.tab:has-text("Mitmachen")');
+  await expect(page.locator('.form-section:has-text("Modul: Kommentare")')).toBeVisible();
+  await expect(page.locator('.form-section:has-text("Allgemeines")')).toBeHidden();
+});
+
+test('Der gewählte Reiter steht in der Adresse', async ({ page }) => {
+  await page.click('.tab:has-text("Betrieb")');
+  expect(new URL(page.url()).hash).toBe('#betrieb');
+
+  await page.reload();
+  await expect(page.locator('.form-section:has-text("Modul: Downloads")')).toBeVisible();
+});
+
+test('Die Suche findet eine Einstellung über alle Reiter hinweg', async ({ page }) => {
+  await page.fill('#config-search', 'gästebuch');
+
+  await expect(page.locator('.form-section:has-text("Modul: Gästebuch")')).toBeVisible();
+  await expect(page.locator('.form-section:has-text("Modul: Downloads")')).toBeHidden();
+  await expect(page.locator('.tabs')).toBeHidden();
+});
+
 test('Änderung wird gespeichert', async ({ page }) => {
   await page.fill('input[name="name"]', 'PMS Testsystem');
   await submit(page, 'input[name="config"]');
@@ -68,6 +93,7 @@ test('Änderung wird gespeichert', async ({ page }) => {
 });
 
 test('Benachrichtigungen lassen sich je Benutzer setzen und speichern', async ({ page }) => {
+  await page.click('.tab:has-text("Benachrichtigungen")');
   const guestbookForRedakteur = page.locator('input[name="user_guestbook[]"][value="2"]');
   await expect(guestbookForRedakteur).not.toBeChecked();
 
@@ -79,6 +105,7 @@ test('Benachrichtigungen lassen sich je Benutzer setzen und speichern', async ({
 });
 
 test('Spalten der Benachrichtigungstabelle sind beschriftet', async ({ page }) => {
+  await page.click('.tab:has-text("Benachrichtigungen")');
   const headers = await page.locator('.confirm_head').allTextContents();
   expect(headers).toEqual(['Benutzer', 'Gästebuch', 'Kommentare', 'Registration']);
 });
