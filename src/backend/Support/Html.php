@@ -17,8 +17,18 @@ final class Html
     /** Baut eine Adresse im Backend zusammen: url('cat', ['edit' => 5]). */
     public static function url(string $action, array $params = []): string
     {
-        $query = array_merge(['action' => $action], $params);
-        return 'admin.php?' . http_build_query($query);
+        $path = \Pms\Backend\Http\Routes::path($action);
+        return $params === [] ? $path : $path . '?' . http_build_query($params);
+    }
+
+    /**
+     * Adresse einer mitgelieferten Datei (Stylesheet, Bild, Skript).
+     * Nötig, weil die Bereiche unter /admin/… liegen und relative Pfade
+     * dort sonst ins Leere zeigen.
+     */
+    public static function asset(string $path): string
+    {
+        return \Pms\Backend\Http\Routes::basePath() . '/' . ltrim($path, '/');
     }
 
     /** Überschrift eines Bereichs. */
@@ -30,7 +40,7 @@ final class Html
     /** Öffnendes Formular-Tag inklusive CSRF-Feld. */
     public static function formOpen(string $action = '', array $params = [], array $options = []): string
     {
-        $target = $action === '' ? 'admin.php' : self::url($action, $params);
+        $target = $action === '' ? \Pms\Backend\Http\Routes::path(\Pms\Backend\Http\Routes::currentAction()) : self::url($action, $params);
         $method = $options['method'] ?? 'post';
         $upload = ($options['upload'] ?? false) ? ' enctype="multipart/form-data"' : '';
 

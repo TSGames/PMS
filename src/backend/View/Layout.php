@@ -60,6 +60,7 @@ final class Layout
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="' . Html::e(\Pms\Backend\Http\Routes::baseHref()) . '">
 <title>' . Html::e($title) . '</title>
 <link rel="stylesheet" type="text/css" href="admin.css">
 <link rel="stylesheet" type="text/css" href="crop_modal.css">

@@ -51,12 +51,12 @@ test('Stylesheets und Skripte werden ausgeliefert', async ({ page }) => {
   });
 
   await login(page, 'admin');
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   expect(failed, `Fehlende Ressourcen: ${failed.join(', ')}`).toEqual([]);
 });
 
 test('Tabellen sind in einen scrollbaren Container gehüllt', async ({ page }) => {
   await login(page, 'admin');
-  await page.goto('admin.php?action=cat');
+  await page.goto('admin/kategorien');
   await expect(page.locator('.table-responsive table.items')).toBeVisible();
 });

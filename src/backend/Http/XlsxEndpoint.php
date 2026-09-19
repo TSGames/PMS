@@ -13,16 +13,11 @@ use Pms\Backend\Support\Request;
  */
 final class XlsxEndpoint
 {
-    private const ACTION = 'xlsx_import_ajax';
     private const TEMP_DIR = 'images/uploads/temp/';
 
-    /** Beantwortet die Anfrage und beendet das Skript, wenn sie zuständig ist. */
-    public static function handleIfRequested(): void
+    /** Beantwortet die Anfrage und beendet das Skript. */
+    public static function handle(): void
     {
-        if (($_GET['action'] ?? '') !== self::ACTION) {
-            return;
-        }
-
         header('Content-Type: application/json');
 
         if (!Auth::isLoggedIn()) {

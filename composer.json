@@ -1,7 +1,9 @@
 {
     "name": "tsgames/pms",
     "require": {
-        "tinymce/tinymce": "^7.6"
+        "tinymce/tinymce": "^7.9.3",
+        "slim/slim": "^4.0",
+        "slim/psr7": "^1.0"
     },
     "require-dev": {
         "vimeo/psalm": "^6.0"

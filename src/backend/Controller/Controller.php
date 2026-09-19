@@ -53,8 +53,7 @@ abstract class Controller
      */
     protected function redirect(array $params = []): never
     {
-        header('Location: ' . $this->url($params));
-        exit;
+        throw new \Pms\Backend\Http\RedirectSignal($this->url($params));
     }
 
     /** Prüft das CSRF-Token einer verändernden Anfrage. */

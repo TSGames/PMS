@@ -14,7 +14,7 @@ test.beforeEach(async ({ context }) => {
 });
 
 test('Ohne Anmeldung erscheint die Login-Maske', async ({ page }) => {
-  await page.goto('admin.php');
+  await page.goto('admin');
   await expect(page.locator('body')).toContainText('PMS Back End Login');
   await expect(page.locator('input[name="login_name"]')).toBeVisible();
   await expect(page.locator('input[name="login_password"]')).toBeVisible();
@@ -34,7 +34,7 @@ test('Anmeldung als Administrator führt ins Backend', async ({ page }) => {
 });
 
 test('Falsches Passwort wird abgewiesen', async ({ page }) => {
-  await page.goto('admin.php');
+  await page.goto('admin');
   await page.fill('input[name="login_name"]', 'admin');
   await page.fill('input[name="login_password"]', 'falsch');
   await page.click('input[name="login"]');
@@ -43,7 +43,7 @@ test('Falsches Passwort wird abgewiesen', async ({ page }) => {
 });
 
 test('Unbekannter Benutzer wird abgewiesen', async ({ page }) => {
-  await page.goto('admin.php');
+  await page.goto('admin');
   await page.fill('input[name="login_name"]', 'gibtesnicht');
   await page.fill('input[name="login_password"]', 'egal');
   await page.click('input[name="login"]');
@@ -51,7 +51,7 @@ test('Unbekannter Benutzer wird abgewiesen', async ({ page }) => {
 });
 
 test('Gesperrter Benutzer wird abgewiesen', async ({ page }) => {
-  await page.goto('admin.php');
+  await page.goto('admin');
   await page.fill('input[name="login_name"]', 'gesperrt');
   await page.fill('input[name="login_password"]', 'admin123');
   await page.click('input[name="login"]');
@@ -59,7 +59,7 @@ test('Gesperrter Benutzer wird abgewiesen', async ({ page }) => {
 });
 
 test('Moderator darf das Backend nicht betreten', async ({ page }) => {
-  await page.goto('admin.php');
+  await page.goto('admin');
   await page.fill('input[name="login_name"]', USERS.moderator.name);
   await page.fill('input[name="login_password"]', USERS.moderator.password);
   await page.click('input[name="login"]');
@@ -69,24 +69,24 @@ test('Moderator darf das Backend nicht betreten', async ({ page }) => {
 
 test('Abmeldung beendet die Sitzung', async ({ page }) => {
   await login(page, 'admin');
-  await page.goto('admin.php?action=logout');
+  await page.goto('admin/abmelden');
   await expect(page.locator('body')).toContainText('Logout erfolgreich!');
 
   await page.context().clearCookies();
-  await page.goto('admin.php?action=cat');
+  await page.goto('admin/kategorien');
   await expect(page.locator('body')).toContainText('PMS Back End Login');
 });
 
 test('Administrator ohne Super-Admin-Rechte sieht den Konfigurator nicht', async ({ page }) => {
   await login(page, 'redakteur');
-  await page.goto('admin.php?action=config');
+  await page.goto('admin/einstellungen');
   await expect(page.locator('body')).toContainText('Ihre Berechtigungen sind zu niedrig');
   await expect(page.locator('input[name="config"]')).toHaveCount(0);
 });
 
 test('Administrator ohne Super-Admin-Rechte darf keine Kategorie löschen', async ({ page }) => {
   await login(page, 'redakteur');
-  await page.goto('admin.php?action=cat&delete=4');
+  await page.goto('admin/kategorien?delete=4');
   await expect(page.locator('body')).toContainText('nicht genügend Rechte');
   await expect(page.locator('input[name="cat_delete"]')).toHaveCount(0);
 });

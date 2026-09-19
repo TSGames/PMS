@@ -9,7 +9,7 @@ const { login, resetDatabase, expectNoPhpError, submit } = require('../lib/admin
 test.beforeEach(async ({ page }) => {
   resetDatabase();
   await login(page, 'admin');
-  await page.goto('admin.php?action=config');
+  await page.goto('admin/einstellungen');
 });
 
 test('Formular zeigt die gespeicherten Werte', async ({ page }) => {
@@ -62,7 +62,7 @@ test('Änderung wird gespeichert', async ({ page }) => {
   await submit(page, 'input[name="config"]');
   await expectNoPhpError(page);
 
-  await page.goto('admin.php?action=config');
+  await page.goto('admin/einstellungen');
   await expect(page.locator('input[name="name"]')).toHaveValue('PMS Testsystem');
   await expect(page.locator('.sidebar-header')).toContainText('PMS Testsystem');
 });
@@ -74,7 +74,7 @@ test('Benachrichtigungen lassen sich je Benutzer setzen und speichern', async ({
   await guestbookForRedakteur.check();
   await submit(page, 'input[name="config"]');
 
-  await page.goto('admin.php?action=config');
+  await page.goto('admin/einstellungen');
   await expect(page.locator('input[name="user_guestbook[]"][value="2"]')).toBeChecked();
 });
 

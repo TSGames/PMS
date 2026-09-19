@@ -21,7 +21,7 @@ echo Layout::head(Layout::title());
 <div class="admin-layout">
 <aside class="admin-sidebar" id="admin-sidebar">
     <div class="sidebar-header"><?= Html::e($siteName) ?><button class="sidebar-close" id="sidebar-close" aria-label="Navigation schließen" title="Navigation schließen">&#10005;</button></div>
-    <div class="sidebar-user">Hallo, <?= Html::e($userName) ?> (<a href="admin.php?action=logout">Logout</a>)</div>
+    <div class="sidebar-user">Hallo, <?= Html::e($userName) ?> (<a href="<?= Html::e(Html::url('logout')) ?>">Logout</a>)</div>
     <nav class="sidebar-nav">
         <div class="nav-section-label">Navigation</div>
         <ul class="nav-list">
@@ -44,7 +44,7 @@ echo Layout::head(Layout::title());
         <div class="nav-section-label">Module</div>
         <ul class="nav-list">
 <?php foreach ($modules as $module): ?>
-            <li class="nav-item"><a href="admin.php?modul=<?= Html::e($module['action']) ?>"><span class="nav-icon"></span><span class="nav-label"><?= Html::e($module['label']) ?></span></a></li>
+            <li class="nav-item"><a href="<?= Html::e(Html::asset('admin/modul/' . $module['action'])) ?>"><span class="nav-icon"></span><span class="nav-label"><?= Html::e($module['label']) ?></span></a></li>
 <?php endforeach; ?>
         </ul>
 <?php endif; ?>

@@ -55,8 +55,8 @@ module.exports = defineConfig({
     },
   ],
   webServer: {
-    command: `PHP_INI_SCAN_DIR=${CONF_DIR} php -S ${HOST}:${PORT} -t ${REPO_ROOT}/src`,
-    url: `${BASE_URL}admin.php`,
+    command: `PHP_INI_SCAN_DIR=${CONF_DIR} php -S ${HOST}:${PORT} -t ${REPO_ROOT}/src ${REPO_ROOT}/tests/mock/router.php`,
+    url: `${BASE_URL}admin`,
     reuseExistingServer: true,
     timeout: 20000,
     stdout: 'ignore',

@@ -34,11 +34,11 @@ start() {
     fi
     mkdir -p "$RUNTIME/logs"
     PHP_INI_SCAN_DIR="$CONF_DIR" php -S "$HOST:$PORT" -t "$REPO_ROOT/src" \
-        >"$LOG_FILE" 2>&1 &
+        "$REPO_ROOT/tests/mock/router.php" >"$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
 
     for _ in $(seq 1 50); do
-        if curl -fs -o /dev/null "http://$HOST:$PORT/admin.php"; then
+        if curl -fs -o /dev/null "http://$HOST:$PORT/admin"; then
             echo "Server gestartet: http://$HOST:$PORT/admin.php (PID $(cat "$PID_FILE"))"
             return 0
         fi

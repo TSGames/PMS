@@ -24,7 +24,7 @@ final class UpdateGate
     {
         self::ensureVersionFile();
 
-        if (Request::string('action') === 'update' && file_exists('update.sql')) {
+        if (Routes::currentAction('') === 'update' && file_exists('update.sql')) {
             self::install();
             return null;
         }

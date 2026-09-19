@@ -1,0 +1,9 @@
+# Abhängigkeiten werden im Image selbst installiert
+/vendor/
+/src/tinymce
+/tests/
+**/node_modules
+
+# Entwicklungsdaten
+/tests/.runtime/
+.git

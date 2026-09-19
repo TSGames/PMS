@@ -27,6 +27,9 @@ RUN echo "display_errors=On" >> /usr/local/etc/php/conf.d/docker-php.ini \
 
 COPY mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 COPY template/ /var/template_init/
+# Abhängigkeiten (Slim, TinyMCE). vendor/ bleibt außerhalb des Webroots,
+# weil dieser in der Entwicklung per Bind-Mount überlagert wird; der Editor
+# wird in den Webroot kopiert, weil er vom Browser geladen wird.
 COPY composer.json composer.lock /var/composer/
 RUN cd /var/composer && composer install --no-dev --optimize-autoloader \
     && cp -r ./vendor/tinymce/tinymce /var/www/html/

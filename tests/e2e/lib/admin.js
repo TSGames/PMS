@@ -58,7 +58,7 @@ async function submit(page, selector) {
 async function login(page, role = 'admin') {
   const user = USERS[role];
   if (!user) throw new Error(`Unbekannte Rolle: ${role}`);
-  await page.goto('admin.php');
+  await page.goto('admin');
   await page.fill('input[name="login_name"]', user.name);
   await page.fill('input[name="login_password"]', user.password);
   await submit(page, 'input[name="login"]');
@@ -70,7 +70,7 @@ async function login(page, role = 'admin') {
  * wieder die Login-Maske zeigt.
  */
 async function logout(page) {
-  await page.goto('admin.php?action=logout');
+  await page.goto('admin/abmelden');
   await page.context().clearCookies();
 }
 

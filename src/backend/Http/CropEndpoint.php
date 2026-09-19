@@ -14,15 +14,11 @@ use Pms\Backend\Support\Request;
  */
 final class CropEndpoint
 {
-    private const ACTION = 'crop_image_ajax';
     private const UPLOAD_DIR = 'images/uploads/';
 
-    public static function handleIfRequested(): void
+    /** Beantwortet die Anfrage und beendet das Skript. */
+    public static function handle(): void
     {
-        if (Request::string('action') !== self::ACTION) {
-            return;
-        }
-
         header('Content-Type: application/json; charset=utf-8');
 
         if (!Auth::isLoggedIn()) {

@@ -1,6 +1,9 @@
 RewriteEngine On
 RewriteBase /
 
+# Administrationsbereich: /admin/... wird von admin.php beantwortet
+RewriteRule ^admin(/.*)?$ admin.php [QSA,L]
+
 RewriteRule ^content/download/(.*)\.html$ index.php?download=$1 [QSA]
 RewriteRule ^content/download/(.*)$ $1
 RewriteRule ^content/(.*)\.html$ index.php?follow=$1 [QSA]

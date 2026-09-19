@@ -60,6 +60,6 @@ test('Navigation enthält alle Hauptbereiche', async ({ page }) => {
 
 test('Aktiver Navigationspunkt wird markiert', async ({ page }) => {
   await login(page, 'admin');
-  await page.goto('admin.php?action=cat');
+  await page.goto('admin/kategorien');
   await expect(page.locator('.nav-item.active .nav-label')).toHaveText('Kategorien');
 });

@@ -69,6 +69,19 @@ if (!is_link($link)) {
 }
 step("Symlink src/template_files -> $tplDir");
 
+// Der Editor kommt aus composer; im Image kopiert ihn das Dockerfile,
+// lokal genügt ein Symlink auf das vendor-Verzeichnis.
+$editor = $repo . '/vendor/tinymce/tinymce';
+$editorLink = $src . '/tinymce';
+if (is_dir($editor)) {
+    if (!is_link($editorLink)) {
+        symlink($editor, $editorLink);
+    }
+    step('Symlink src/tinymce -> vendor/tinymce/tinymce');
+} else {
+    step('Hinweis: vendor/tinymce/tinymce fehlt - bitte "composer install" ausführen');
+}
+
 // ---------------------------------------------------------------------------
 // PHP-Konfiguration für den Testserver
 //
@@ -147,4 +160,4 @@ echo "  Login     : admin / admin123 (Super-Administrator)\n";
 echo "              redakteur / admin123 (Administrator)\n";
 echo "              moderator / admin123 (Moderator, kein Backend-Zugriff)\n\n";
 echo "  Start     : tests/mock/server.sh start\n";
-echo "  Adresse   : http://" . PMS_HOST . ":" . PMS_PORT . "/admin.php\n";
+echo "  Adresse   : http://" . PMS_HOST . ":" . PMS_PORT . "/admin\n";

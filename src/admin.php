@@ -3,10 +3,14 @@
  * Einstiegspunkt des Administrationsbereichs.
  *
  * Ablauf einer Anfrage:
- *   1. Schnittstellen ohne Seitenausgabe (JSON)
- *   2. Anmeldung prüfen - ohne gültige Sitzung wird nichts verarbeitet
- *   3. Eingaben verarbeiten (Controller bzw. Übergangsschicht)
- *   4. Seite ausgeben
+ *   1. Anwendung laden (Konfiguration, Funktionen, Abhängigkeiten)
+ *   2. Anmeldung verarbeiten - setzt Cookies, muss vor jeder Ausgabe laufen
+ *   3. Zubehör des angemeldeten Bereichs (Besucherzähler, Module)
+ *   4. Slim beantwortet die Anfrage
+ *
+ * Die Schritte 2 und 3 stehen hier und nicht in einer Klasse, weil der
+ * Altbestand (counter.php, update.php, modules/*) mit globalen Variablen
+ * arbeitet und diese im globalen Gültigkeitsbereich erwartet.
  */
 
 define('PMS_FRONTEND', 0);
@@ -16,73 +20,40 @@ define('PMS_ADMIN_ENTRY', 1);
 require 'functions.php';
 require 'backend/bootstrap.php';
 
-
-use Pms\Backend\Http\CropEndpoint;
-use Pms\Backend\Http\Router;
-use Pms\Backend\Http\UpdateGate;
-use Pms\Backend\Http\XlsxEndpoint;
+use Pms\Backend\Http\Kernel;
+use Pms\Backend\Http\Navigation;
+use Pms\Backend\Http\Routes;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Editor;
-use Pms\Backend\Support\Flash;
-use Pms\Backend\Support\Request;
-use Pms\Backend\View\Layout;
 
-// 1. Schnittstellen, die kein HTML liefern
-XlsxEndpoint::handleIfRequested();
-CropEndpoint::handleIfRequested();
-
-// 2. Anmeldung: setzt Cookies und muss vor jeder Ausgabe laufen
+// 2. Anmeldung, Abmeldung, offener Vorgang aus einer beendeten Sitzung
 Auth::handleRequest();
 Auth::resumePendingAction();
 Auth::enforceBackendAccess();
 
-if (!Auth::isLoggedIn()) {
-    // Ohne gültige Sitzung werden keinerlei Eingaben verarbeitet.
-    if (!Request::submitted('login')) {
-        if (Request::isPost()) {
-            Flash::error('Aus Sicherheitsgründen wurde die Sitzung beendet.<br>'
-                . 'Bitte geben Sie Ihre Zugangsdaten erneut ein');
-        }
-        // Angefangenen Vorgang merken, damit er nach der Anmeldung weitergeht
+$modul_name = [];
+$modul_content = '';
+
+if (Auth::isLoggedIn()) {
+    Editor::syncSession();
+
+    // Besucherzähler: counter.php ordnet den Aufruf über $action_list einer
+    // Backend-Seite zu, convert_action() beschriftet sie über $action_name
+    $admin_center = 1;
+    $action = Routes::currentAction();
+    $action_list = Navigation::actionNames();
+    $action_name = Navigation::actionLabels();
+    include 'counter.php';
+
+    // Module melden sich an und liefern ihre Ausgabe
+    $modul = Routes::currentModule();
+    require 'backend/modules.php';
+} else {
+    // Angefangenen Vorgang merken, damit er nach der Anmeldung weitergeht
+    if (!\Pms\Backend\Support\Request::submitted('login')) {
         store_all();
     }
-
-    $rememberedName = '';
-    if (!empty($_COOKIE['login_id'])) {
-        $rememberedName = (string)from_db('user', (int)$_COOKIE['login_id'], 'name');
-    }
-
-    Layout::renderLogin($rememberedName);
-    exit;
 }
 
-Editor::syncSession();
-
-$modul = Request::string('modul');
-$action = Request::action($modul === '' ? 'home' : '');
-
-// 3. Besucherzähler des Backends
-// counter.php ordnet den Aufruf über $action_list einer Backend-Seite zu,
-// convert_action() beschriftet sie später über $action_name
-$admin_center = 1;
-$action_list = \Pms\Backend\Http\Navigation::actionNames();
-$action_name = \Pms\Backend\Http\Navigation::actionLabels();
-include 'counter.php';
-
-require 'backend/modules.php';  // $modul_name, $modul_content
-
-// 4. Inhalt erzeugen
-ob_start();
-
-$updateNotice = UpdateGate::render();
-if ($updateNotice !== null) {
-    echo $updateNotice;
-} elseif ($modul !== '') {
-    echo $modul_content;
-} else {
-    echo Router::dispatch($action);
-}
-
-$content = ob_get_clean();
-
-Layout::render($content, $action, $modul_name);
+// 4. Anfrage beantworten
+Kernel::run($modul_name, $modul_content);

@@ -30,7 +30,7 @@ final class Auth
     {
         $cookieDomain = $GLOBALS['cookie_domain'] ?? '';
 
-        if (Request::string('action') === 'logout') {
+        if (\Pms\Backend\Http\Routes::currentAction('') === 'logout') {
             delete_sessions();
             Flash::success('Logout erfolgreich!');
             return;
@@ -72,7 +72,7 @@ final class Auth
     /** Nimmt einen bei der letzten Abmeldung gespeicherten Vorgang wieder auf. */
     public static function resumePendingAction(): void
     {
-        if (Request::string('action') === 'load_last') {
+        if (\Pms\Backend\Http\Routes::currentAction('') === 'load_last') {
             unset($_SESSION['reload_check']);
             reload_all(1);
             return;

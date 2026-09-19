@@ -2,45 +2,52 @@
 
 namespace Pms\Backend\Support;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * Typisierter Zugriff auf die Eingabedaten einer Anfrage.
  *
- * Der Altbestand liest $_GET/$_POST direkt aus und rechnet anschließend mit
- * den Rohwerten. Unter PHP 8 führt das bei leeren Feldern zu Abbrüchen
- * (z.B. "" * 1). Diese Klasse liefert immer den erwarteten Typ.
+ * Die Klasse ist eine Fassade über die PSR-7-Anfrage, die Slim übergibt.
+ * Ohne gebundene Anfrage (Kommandozeile, Tests) greift sie auf $_POST und
+ * $_GET zurück.
+ *
+ * Der Altbestand rechnete mit Rohwerten; unter PHP 8 führt das bei leeren
+ * Feldern zu Abbrüchen ("" * 1). Hier kommt immer der erwartete Typ heraus.
  */
 final class Request
 {
-    /** Ganzzahl aus POST, sonst GET. Leere oder ungültige Werte ergeben den Standardwert. */
+    private static ?ServerRequestInterface $current = null;
+    private static string $action = '';
+
+    /** Bindet die laufende Anfrage und die aufgelöste Aktion. */
+    public static function bind(ServerRequestInterface $request, string $action = ''): void
+    {
+        self::$current = $request;
+        self::$action = $action;
+    }
+
+    public static function current(): ?ServerRequestInterface
+    {
+        return self::$current;
+    }
+
+    /** Ganzzahl aus den Formulardaten, sonst aus der Abfragezeichenfolge. */
     public static function int(string $key, int $default = 0): int
     {
-        $value = self::raw($key);
-        if ($value === null || !is_scalar($value)) {
-            return $default;
-        }
-        $value = trim((string)$value);
-        if ($value === '' || !is_numeric($value)) {
-            return $default;
-        }
-        return (int)$value;
+        return self::toInt(self::raw($key), $default);
     }
 
     /** Ganzzahl ausschließlich aus der Abfragezeichenfolge. */
     public static function queryInt(string $key, int $default = 0): int
     {
-        $value = $_GET[$key] ?? null;
-        if ($value === null || !is_scalar($value)) {
-            return $default;
-        }
-        $value = trim((string)$value);
-        return $value === '' || !is_numeric($value) ? $default : (int)$value;
+        return self::toInt(self::query()[$key] ?? null, $default);
     }
 
     /** Kommazahl, akzeptiert auch das deutsche Dezimalkomma. */
     public static function float(string $key, float $default = 0.0): float
     {
         $value = self::raw($key);
-        if ($value === null || !is_scalar($value)) {
+        if (!is_scalar($value)) {
             return $default;
         }
         $value = str_replace(',', '.', trim((string)$value));
@@ -51,10 +58,7 @@ final class Request
     public static function string(string $key, string $default = ''): string
     {
         $value = self::raw($key);
-        if ($value === null || !is_scalar($value)) {
-            return $default;
-        }
-        return trim((string)$value);
+        return is_scalar($value) ? trim((string)$value) : $default;
     }
 
     /** Rohe Zeichenkette (z.B. Inhalte mit bedeutsamen Leerzeilen). */
@@ -68,19 +72,17 @@ final class Request
     public static function checkbox(string $key): int
     {
         $value = self::raw($key);
-        if ($value === null || $value === '' || $value === '0') {
-            return 0;
-        }
-        return 1;
+        return ($value === null || $value === '' || $value === '0') ? 0 : 1;
     }
 
     /** Liste von Ganzzahlen (z.B. Checkbox-Gruppen name="feld[]"). */
     public static function intList(string $key): array
     {
-        $value = $_POST[$key] ?? $_GET[$key] ?? null;
+        $value = self::body()[$key] ?? self::query()[$key] ?? null;
         if (!is_array($value)) {
             return [];
         }
+
         $result = [];
         foreach ($value as $entry) {
             if (is_scalar($entry) && is_numeric(trim((string)$entry))) {
@@ -93,23 +95,58 @@ final class Request
     /** Wurde das Formular mit diesem Schalter abgeschickt? */
     public static function submitted(string $key): bool
     {
-        return array_key_exists($key, $_POST);
+        return array_key_exists($key, self::body());
     }
 
     public static function isPost(): bool
     {
+        if (self::$current !== null) {
+            return self::$current->getMethod() === 'POST';
+        }
         return ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
     }
 
-    /** Die Aktion der aktuellen Anfrage (POST hat Vorrang, wie bisher). */
+    /** Die Aktion der laufenden Anfrage. */
     public static function action(string $default = ''): string
     {
+        if (self::$action !== '') {
+            return self::$action;
+        }
         $action = self::string('action');
         return $action !== '' ? $action : $default;
     }
 
+    /** @return array<string, mixed> */
+    private static function body(): array
+    {
+        if (self::$current !== null) {
+            $body = self::$current->getParsedBody();
+            return is_array($body) ? $body : [];
+        }
+        return $_POST;
+    }
+
+    /** @return array<string, mixed> */
+    private static function query(): array
+    {
+        return self::$current !== null ? self::$current->getQueryParams() : $_GET;
+    }
+
     private static function raw(string $key): mixed
     {
-        return $_POST[$key] ?? $_GET[$key] ?? null;
+        $body = self::body();
+        if (array_key_exists($key, $body)) {
+            return $body[$key];
+        }
+        return self::query()[$key] ?? null;
+    }
+
+    private static function toInt(mixed $value, int $default): int
+    {
+        if (!is_scalar($value)) {
+            return $default;
+        }
+        $value = trim((string)$value);
+        return ($value === '' || !is_numeric($value)) ? $default : (int)$value;
     }
 }

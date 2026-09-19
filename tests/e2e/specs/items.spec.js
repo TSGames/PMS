@@ -13,13 +13,13 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('Liste zeigt die Inhalte der gewählten Kategorie', async ({ page }) => {
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   await expect(page.locator('body')).toContainText('Inhalte');
   await expect(page.locator('body')).toContainText('Sommerfest 2024');
 });
 
 test('Filter nach Kategorie und Unterkategorie', async ({ page }) => {
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   await page.selectOption('select[name="uppcat"]', { label: 'Dokumente' });
   await submit(page, 'input[name="item_filter"]');
 
@@ -28,7 +28,7 @@ test('Filter nach Kategorie und Unterkategorie', async ({ page }) => {
 });
 
 test('Bearbeiten öffnet zuerst die Vorauswahl', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=2');
+  await page.goto('admin/inhalte?edit=2');
   await expect(page.locator('body')).toContainText('Inhalt bearbeiten - Vorauswahl');
   await expect(page.locator('select[name="typ"]')).toHaveValue('1');
   await expect(page.locator('select[name="cat"]')).toHaveValue('1');
@@ -36,7 +36,7 @@ test('Bearbeiten öffnet zuerst die Vorauswahl', async ({ page }) => {
 });
 
 test('Vorauswahl führt zum Editor mit den gespeicherten Werten', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=2');
+  await page.goto('admin/inhalte?edit=2');
   await page.uncheck('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -46,7 +46,7 @@ test('Vorauswahl führt zum Editor mit den gespeicherten Werten', async ({ page 
 });
 
 test('Inhalt speichern übernimmt die Änderung', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=3');
+  await page.goto('admin/inhalte?edit=3');
   await page.uncheck('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -54,12 +54,12 @@ test('Inhalt speichern übernimmt die Änderung', async ({ page }) => {
   await submit(page, page.locator('input[name="item_step2"]').first());
 
   await expectNoPhpError(page);
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   await expect(page.locator('body')).toContainText('Neue Öffnungszeiten ab Juli');
 });
 
 test('Neuen Inhalt anlegen', async ({ page }) => {
-  await page.goto('admin.php?action=item&new=yes');
+  await page.goto('admin/inhalte?new=yes');
   await page.selectOption('select[name="cat"]', { label: 'Aktuelles' });
   await submit(page, 'input[name="item_refresh"]');
   await page.selectOption('select[name="subcat"]', { label: 'Neuigkeiten' });
@@ -72,12 +72,12 @@ test('Neuen Inhalt anlegen', async ({ page }) => {
   await submit(page, page.locator('input[name="item_step2"]').first());
 
   await expectNoPhpError(page);
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   await expect(page.locator('body')).toContainText('Testartikel');
 });
 
 test('TinyMCE wird geladen, wenn der Editor gewählt ist', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=2');
+  await page.goto('admin/inhalte?edit=2');
   await page.check('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -85,15 +85,15 @@ test('TinyMCE wird geladen, wenn der Editor gewählt ist', async ({ page }) => {
 });
 
 test('Kopie eines Inhalts erstellen', async ({ page }) => {
-  await page.goto('admin.php?action=item&do_copy=2');
+  await page.goto('admin/inhalte?do_copy=2');
   await expectNoPhpError(page);
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   const rows = await page.locator('table.items').textContent();
   expect(rows.match(/Sommerfest 2024/g).length).toBeGreaterThanOrEqual(2);
 });
 
 test('Löschen fragt nach und entfernt den Inhalt', async ({ page }) => {
-  await page.goto('admin.php?action=item&delete=4');
+  await page.goto('admin/inhalte?delete=4');
   await expect(page.locator('body')).toContainText('Jahreshauptversammlung');
 
   await submit(page, 'input[name="confirm_delete"]');
@@ -102,19 +102,19 @@ test('Löschen fragt nach und entfernt den Inhalt', async ({ page }) => {
 });
 
 test('Wiederherstellungsseite ist erreichbar', async ({ page }) => {
-  await page.goto('admin.php?action=item_restore');
+  await page.goto('admin/inhalte/wiederherstellen');
   await expect(page.locator('body')).toContainText('Gelöschten Inhalt wiederherstellen');
   await expectNoPhpError(page);
 });
 
 test('Versionsverwaltung eines Inhalts ist erreichbar', async ({ page }) => {
-  await page.goto('admin.php?action=item_recover&item=2');
+  await page.goto('admin/inhalte/versionen?item=2');
   await expect(page.locator('body')).toContainText('Inhalt wiederherstellen');
   await expectNoPhpError(page);
 });
 
 test('Vorauswahl bietet für Spezialseiten die Art des Inhalts an', async ({ page }) => {
-  await page.goto('admin.php?action=item&new=yes');
+  await page.goto('admin/inhalte?new=yes');
   await page.selectOption('select[name="typ"]', { label: 'Spezialseite' });
   await submit(page, 'input[name="item_refresh"]');
 
@@ -125,7 +125,7 @@ test('Vorauswahl bietet für Spezialseiten die Art des Inhalts an', async ({ pag
 });
 
 test('Editor zeigt alle Felder eines Standardinhalts', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=4');
+  await page.goto('admin/inhalte?edit=4');
   await page.uncheck('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -142,7 +142,7 @@ test('Editor zeigt alle Felder eines Standardinhalts', async ({ page }) => {
 });
 
 test('Editor eines Downloads zeigt das Link-Feld', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=5');
+  await page.goto('admin/inhalte?edit=5');
   await page.uncheck('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -150,7 +150,7 @@ test('Editor eines Downloads zeigt das Link-Feld', async ({ page }) => {
 });
 
 test('Editor einer Spezialseite blendet die Sichtbarkeit aus', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=1');
+  await page.goto('admin/inhalte?edit=1');
   await page.uncheck('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -159,7 +159,7 @@ test('Editor einer Spezialseite blendet die Sichtbarkeit aus', async ({ page }) 
 });
 
 test('Übernehmen und Schließen kehrt zur Liste zurück', async ({ page }) => {
-  await page.goto('admin.php?action=item&edit=4');
+  await page.goto('admin/inhalte?edit=4');
   await page.uncheck('input[name="tinymce"]');
   await submit(page, 'input[name="item_step1"]');
 
@@ -170,7 +170,7 @@ test('Übernehmen und Schließen kehrt zur Liste zurück', async ({ page }) => {
 });
 
 test('Liste lässt sich nach Unterkategorie filtern', async ({ page }) => {
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   await page.selectOption('select[name="uppcat"]', { label: 'Aktuelles' });
   await submit(page, 'input[name="item_filter"]');
   await page.selectOption('select[name="uppcat2"]', { label: 'Termine' });
@@ -181,7 +181,7 @@ test('Liste lässt sich nach Unterkategorie filtern', async ({ page }) => {
 });
 
 test('Sortierung der Inhalte lässt sich ändern', async ({ page }) => {
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   const before = await tableColumn(page, 2, 'Name');
   const row = page.locator('table.items tr', { hasText: 'Beitragsordnung' });
   await submit(page, row.locator('a', { hasText: '↑' }));
@@ -191,7 +191,7 @@ test('Sortierung der Inhalte lässt sich ändern', async ({ page }) => {
 });
 
 test('Spezialseiten lassen sich nicht kopieren', async ({ page }) => {
-  await page.goto('admin.php?action=item');
+  await page.goto('admin/inhalte');
   const row = page.locator('table.items tr', { hasText: 'Willkommen' });
   await expect(row.locator('a', { hasText: 'Kopie erstellen' })).toHaveCount(0);
 });

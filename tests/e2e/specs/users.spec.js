@@ -12,7 +12,7 @@ const { login, resetDatabase, expectNoPhpError, submit, tableColumn } = require(
 test.beforeEach(async ({ page }) => {
   resetDatabase();
   await login(page, 'admin');
-  await page.goto('admin.php?action=user');
+  await page.goto('admin/benutzer');
 });
 
 test('Liste zeigt alle Mock-Benutzer', async ({ page }) => {
@@ -35,7 +35,7 @@ test('Liste nennt die Zahl der registrierten Benutzer', async ({ page }) => {
 });
 
 test('Bearbeiten zeigt die gespeicherten Werte', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=2');
+  await page.goto('admin/benutzer?edit=2');
   await expect(page.locator('input[name="name"]')).toHaveValue('redakteur');
   await expect(page.locator('input[name="mail"]')).toHaveValue('redakteur@example.org');
   await expect(page.locator('select[name="typ"]')).toHaveValue('2');
@@ -43,17 +43,17 @@ test('Bearbeiten zeigt die gespeicherten Werte', async ({ page }) => {
 });
 
 test('Mailadresse eines Benutzers ändern', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await page.fill('input[name="mail"]', 'gast-neu@example.org');
   await submit(page, 'input[name="user"]');
 
   await expectNoPhpError(page);
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await expect(page.locator('input[name="mail"]')).toHaveValue('gast-neu@example.org');
 });
 
 test('Abweichende Passwortwiederholung wird abgelehnt', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await page.fill('input[name="password"]', 'geheim123');
   await page.fill('input[name="passwordr"]', 'anders123');
   await submit(page, 'input[name="user"]');
@@ -62,26 +62,26 @@ test('Abweichende Passwortwiederholung wird abgelehnt', async ({ page }) => {
 });
 
 test('Ungültige Mailadresse wird abgelehnt', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await page.fill('input[name="mail"]', 'keine-mail');
   await submit(page, 'input[name="user"]');
 
   await expect(page.locator('body')).toContainText('Mail');
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await expect(page.locator('input[name="mail"]')).toHaveValue('gast@example.org');
 });
 
 test('Zu kurzer Benutzername wird abgelehnt', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await page.fill('input[name="name"]', 'ab');
   await submit(page, 'input[name="user"]');
 
-  await page.goto('admin.php?action=user');
+  await page.goto('admin/benutzer');
   expect(await tableColumn(page, 2, 'Name')).toContain('gast');
 });
 
 test('Bereits vergebener Benutzername wird abgelehnt', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=4');
+  await page.goto('admin/benutzer?edit=4');
   await page.fill('input[name="name"]', 'admin');
   await submit(page, 'input[name="user"]');
 
@@ -89,7 +89,7 @@ test('Bereits vergebener Benutzername wird abgelehnt', async ({ page }) => {
 });
 
 test('Eigener Account kann nicht gesperrt werden', async ({ page }) => {
-  await page.goto('admin.php?action=user&edit=1');
+  await page.goto('admin/benutzer?edit=1');
   await page.uncheck('input[name="active"]');
   await submit(page, 'input[name="user"]');
 
@@ -97,18 +97,18 @@ test('Eigener Account kann nicht gesperrt werden', async ({ page }) => {
 });
 
 test('Benutzer löschen fragt nach und entfernt ihn', async ({ page }) => {
-  await page.goto('admin.php?action=user&delete=5');
+  await page.goto('admin/benutzer?delete=5');
   await expect(page.locator('body')).toContainText('gesperrt');
   await submit(page, 'input[name="confirm_delete"]');
 
   await expect(page.locator('body')).toContainText('erfolgreich entfernt');
-  await page.goto('admin.php?action=user');
+  await page.goto('admin/benutzer');
   expect(await tableColumn(page, 2, 'Name')).not.toContain('gesperrt');
 });
 
 test('Eigenes Konto lässt sich nicht löschen', async ({ page }) => {
-  await page.goto('admin.php?action=user&delete=1');
+  await page.goto('admin/benutzer?delete=1');
   await expect(page.locator('body')).toContainText('nicht selbst löschen');
-  await page.goto('admin.php?action=user');
+  await page.goto('admin/benutzer');
   expect(await tableColumn(page, 2, 'Name')).toContain('admin');
 });

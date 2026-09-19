@@ -13,6 +13,19 @@ if (!defined('PMS_ADMIN_ENTRY')) {
 
 define('PMS_BACKEND_DIR', __DIR__);
 
+// Composer-Abhängigkeiten (Slim). Im Image liegt vendor/ außerhalb des
+// Webroots, weil dieser bei der Entwicklung überlagert wird.
+foreach ([
+    dirname(__DIR__, 2) . '/vendor/autoload.php',
+    '/var/composer/vendor/autoload.php',
+    dirname(__DIR__) . '/vendor/autoload.php',
+] as $autoload) {
+    if (is_file($autoload)) {
+        require_once $autoload;
+        break;
+    }
+}
+
 spl_autoload_register(static function (string $class): void {
     $prefix = 'Pms\\Backend\\';
     if (!str_starts_with($class, $prefix)) {

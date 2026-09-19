@@ -9,3 +9,7 @@
 # Zur Laufzeit erzeugte Pfade des Mock-Systems
 /src/template_files
 /src/images/
+
+# Editor wird über composer bezogen (tinymce/tinymce) und im Image aus
+# vendor/ kopiert; lokal als Symlink von tests/mock/setup.php angelegt
+/src/tinymce
