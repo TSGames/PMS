@@ -43,16 +43,16 @@ final class Template
     /**
      * Das gefuellte Dokument.
      *
-     * @param bool $editMode Im Bearbeitungsmodus ersetzt der Inhalt das
-     *        ganze Dokument statt nur den Platzhalter #content.
+     * Auch beim Bearbeiten direkt auf der Seite: Frueher gab der
+     * Bearbeitungsmodus nur den Inhalt zurueck, ohne Kopf, Menue und
+     * Stylesheet - die Seite stand dann nackt im Browser. Dass der
+     * rohe Inhalt im Eingabefeld nicht ausgewertet wird, sorgt
+     * index.php, indem es make_dynamic() dort ueberspringt; das
+     * Template selbst ist zu diesem Zeitpunkt laengst aufbereitet.
      */
-    public function render(bool $editMode = false): string
+    public function render(): string
     {
         $document = $this->prepare($this->ensurePlaceholders($this->source));
-
-        if ($editMode) {
-            return $this->values['content'] ?? '';
-        }
 
         $search = [];
         $replace = [];

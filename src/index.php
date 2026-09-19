@@ -1671,7 +1671,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             "comments_list" => $comment_str ?? "",
             "newsletter" => $newsletter ?? "",
             "pms_styles" => Template::styles($template_content),
-        )))->render((bool)$item_edit_mode);
+        )))->render();
         echo ($out);
     }
     ?>
