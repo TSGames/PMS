@@ -59,21 +59,30 @@ final class Menu
 
         $list = '<ul class="menu_list">' . $items . '</ul>';
 
-        // Viele Punkte passen auf einem Telefon nicht ueber den Inhalt.
-        // <details> braucht dafuer kein Skript und laesst sich mit der
-        // Tastatur bedienen; offen sieht es aus wie die einfache Liste.
+        $label = Html::e(language('MENU_LABEL'));
+
         if (count($entries) < self::COLLAPSE_FROM) {
-            return '<nav class="menu" aria-label="' . Html::e(language('MENU_LABEL')) . '">' . $list . '</nav>';
+            return '<nav class="menu" aria-label="' . $label . '">' . $list . '</nav>';
         }
 
-        return '<nav class="menu menu_collapsible" aria-label="' . Html::e(language('MENU_LABEL')) . '">'
-            . '<details class="menu_details">'
-            . '<summary class="menu_summary">' . Html::e(language('MENU_LABEL'))
+        // Viele Punkte passen auf einem Telefon nicht ueber den Inhalt.
+        // Zum Auf- und Zuklappen dient ein Kontrollkaestchen mit seiner
+        // Beschriftung: Das braucht kein Skript, laesst sich mit der
+        // Tastatur bedienen, und das Stylesheet entscheidet, ab welcher
+        // Breite ueberhaupt geklappt wird - auf breiten Schirmen blendet es
+        // den Schalter aus und zeigt die Liste.
+        //
+        // <details> waere naheliegender, taugt hier aber nicht: Sein
+        // Zustand haengt am open-Attribut, und ein Stylesheet kann es nicht
+        // aufziehen. Auf breiten Schirmen bliebe das Menue zugeklappt.
+        return '<nav class="menu menu_collapsible" aria-label="' . $label . '">'
+            . '<input type="checkbox" id="menu_toggle" class="menu_toggle visually_hidden">'
+            . '<label class="menu_summary" for="menu_toggle">' . $label
             . '<span class="menu_count">'
             . Html::e(str_replace('%1', (string)count($entries), (string)language('MENU_COUNT')))
-            . '</span></summary>'
+            . '</span></label>'
             . $list
-            . '</details></nav>';
+            . '</nav>';
     }
 
     /**
