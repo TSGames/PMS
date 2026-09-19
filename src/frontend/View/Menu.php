@@ -69,7 +69,9 @@ final class Menu
         return '<nav class="menu menu_collapsible" aria-label="' . Html::e(language('MENU_LABEL')) . '">'
             . '<details class="menu_details">'
             . '<summary class="menu_summary">' . Html::e(language('MENU_LABEL'))
-            . '<span class="menu_count">' . count($entries) . '</span></summary>'
+            . '<span class="menu_count">'
+            . Html::e(str_replace('%1', (string)count($entries), (string)language('MENU_COUNT')))
+            . '</span></summary>'
             . $list
             . '</details></nav>';
     }

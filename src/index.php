@@ -1471,8 +1471,6 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         {
             $poll=$poll."[<a href=\"admin.php?action=poll&edit=".$ids[$sel]."\" target=\"_blank\">".language("POLL_EDIT")."</a>]<br>";
         }
-        $poll=$poll."
-        <br>";
         if(!$_SESSION["poll".$ids[$sel]] && !$_COOKIE["poll".$ids[$sel]] && !$current_poll)
         {
             $poll=$poll.form()."<input type=\"hidden\" name=\"poll_id\" value=\"".$ids[$sel]."\">";
@@ -1489,8 +1487,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $poll=$poll."<div class=\"poll_answer\"><input type=\"radio\" name=\"answer\" value=\"".$i."\"".$sele.">".$answer[$sel][$i]."</div>";
                 }
             }
-            $poll=$poll.hidden_positions()."<div class=\"poll_buttons\"><input type=\"submit\" name=\"poll_vote\" value=\"".language("POLL_VOTE")."\">
-            <br><input type=\"submit\" name=\"poll_results\" value=\"".language("POLL_RESULTS")."\"></div></form>";
+            $poll=$poll.hidden_positions()."<div class=\"poll_buttons\"><input type=\"submit\" name=\"poll_vote\" value=\"".language("POLL_VOTE")."\"><input type=\"submit\" name=\"poll_results\" value=\"".language("POLL_RESULTS")."\"></div></form>";
         }
         else
         {
@@ -1503,10 +1500,13 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     {
                         $width=($answers2[$sel][$i]/$max_sel)*120;
                     }
-                    $poll=$poll."<table><tr><td><div class=\"poll_answer\">".$answer[$sel][$i]." (".$answers2[$sel][$i].")</div></td></tr></table><table><tr><td class=\"poll_bar".$i."\" width=\"".$width."px\" height=\"4px\"></td></tr></table>";
+                    // Die Breite des Balkens ist ein Messwert, keine Gestaltung -
+                    // deshalb steht sie weiterhin am Element, jetzt als Anteil.
+                    $poll=$poll."<div class=\"poll_result\"><div class=\"poll_answer\">".$answer[$sel][$i]." (".$answers2[$sel][$i].")</div>"
+                        ."<div class=\"poll_bar poll_bar".$i."\" style=\"width:".round($width/120*100,1)."%\"></div></div>";
                 }
             }
-            $poll=$poll."<br>".$all[$sel]." ".language("POLL_PARTICIPANTS");
+            $poll=$poll."<p class=\"poll_total\">".$all[$sel]." ".language("POLL_PARTICIPANTS")."</p>";
         }
     }
     // Module: latest_comments

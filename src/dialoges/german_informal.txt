@@ -565,3 +565,6 @@ Menü
 
 ##COUNTER_HEADING
 Besucher
+
+##MENU_COUNT
+%1 Seiten

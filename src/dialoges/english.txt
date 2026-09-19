@@ -561,3 +561,6 @@ Menu
 
 ##COUNTER_HEADING
 Visitors
+
+##MENU_COUNT
+%1 pages
