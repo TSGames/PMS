@@ -18,15 +18,41 @@ if (!defined('PMS_FRONTEND') && !defined('PMS_BACKEND')) {
 
 // Composer-Abhängigkeiten (Slim). Im Image liegt vendor/ außerhalb des
 // Webroots, weil dieser bei der Entwicklung überlagert wird.
-foreach ([
+$pms_autoload_paths = [
     dirname(__DIR__) . '/vendor/autoload.php',
     '/var/composer/vendor/autoload.php',
     __DIR__ . '/vendor/autoload.php',
-] as $pms_autoload) {
+];
+
+$pms_autoload_found = false;
+foreach ($pms_autoload_paths as $pms_autoload) {
     if (is_file($pms_autoload)) {
         require_once $pms_autoload;
+        $pms_autoload_found = true;
         break;
     }
+}
+
+// Ohne Autoloader lief das Skript bisher stillschweigend weiter und starb
+// erst viel spaeter an einer fehlenden Slim-Klasse - bei abgeschaltetem
+// log_errors ohne jede Spur, nur mit einer leeren Seite. Hier zu enden ist
+// unangenehm, aber es sagt wenigstens, was fehlt.
+if (!$pms_autoload_found) {
+    $pms_message = 'Die Composer-Abhaengigkeiten fehlen. Gesucht wurde in:' . "\n  "
+        . implode("\n  ", $pms_autoload_paths) . "\n\n"
+        . 'Abhilfe: "composer install" im Projektverzeichnis ausfuehren, oder das'
+        . ' Docker-Image neu bauen - dort liegt vendor/ unter /var/composer.';
+
+    error_log('PMS: ' . str_replace("\n", ' ', $pms_message));
+
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, $pms_message . "\n");
+    } else {
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo $pms_message, "\n";
+    }
+    exit(1);
 }
 
 /**
