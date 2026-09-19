@@ -206,6 +206,70 @@ $pms_db_connection = new pms_db_class();
 $pms_db_connection->connect($db_databasename);
 
 /**
+ * Eine Zeile eines Ergebnisses als Objekt.
+ *
+ * Der bevorzugte Name fuer neuen Code. Fuer den Altbestand gibt es
+ * darunter zusaetzlich die mysqli_*-Namen.
+ */
+function pms_fetch_object($link): object|bool {
+    global $pms_db_connection;
+    return $link instanceof SQLite3Result ? $pms_db_connection->fetchObject($link) : false;
+}
+
+/** Zahl der Zeilen eines Ergebnisses. */
+function pms_num_rows($link): int {
+    global $pms_db_connection;
+    return $link instanceof SQLite3Result ? count($pms_db_connection->fetchAllObject($link)) : 0;
+}
+
+/**
+ * Kompatibilitaet fuer Inhalte aus der Datenbank.
+ *
+ * PMS lief frueher auf MySQL. Redaktionelle Inhalte koennen deshalb
+ * [php]-Bloecke enthalten, die mysqli_fetch_object() und Verwandte rufen -
+ * make_dynamic() fuehrt sie per eval() aus. Diese Aufrufe stehen in der
+ * Datenbank, nicht im Quelltext, und bleiben bei einer Suche im Code
+ * unsichtbar.
+ *
+ * Die Namen werden nur belegt, wenn die mysqli-Erweiterung fehlt. Ist sie
+ * geladen, gibt es die echten Funktionen bereits; sie zu ueberschreiben
+ * wuerde das Laden der gesamten Website mit "Cannot redeclare function"
+ * abbrechen (BEFUNDE B19).
+ *
+ * Fuer neuen Code sind pms_fetch_object() und pms_num_rows() gedacht.
+ */
+if (!extension_loaded('mysqli')) {
+    function mysqli_fetch_object($link) {
+        return pms_fetch_object($link);
+    }
+
+    function mysqli_num_rows($link) {
+        return pms_num_rows($link);
+    }
+
+    function mysqli_fetch_assoc($link) {
+        $row = pms_fetch_object($link);
+        return $row === false ? null : (array)$row;
+    }
+
+    function mysqli_fetch_array($link) {
+        $row = pms_fetch_object($link);
+        if ($row === false) {
+            return null;
+        }
+        $assoc = (array)$row;
+        return array_merge($assoc, array_values($assoc));
+    }
+
+    function mysqli_free_result($link) {
+        if ($link instanceof SQLite3Result) {
+            $link->finalize();
+        }
+        return true;
+    }
+}
+
+/**
  * Executes a SQL query and returns the result.
  *
  * @param string $query The SQL query to execute.

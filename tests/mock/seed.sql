@@ -93,7 +93,14 @@ INSERT INTO item (id, cat, subcat, name, typ, special, showuser, rate, rating, n
   (9, 3, 6, 'Rückblick 2019',          0, 0, 1, 0, 0,  0, 0, 'Nicht mehr sichtbar',          '<p>Ein alter Beitrag, der nicht mehr angezeigt wird.</p>',                                 '', 10, 2, 1716552000, 1716552000, '', 0, 0),
   (10, 1, 1, 'Gästebuch',              3, 4, 0, 0, 0,  0, 0, 'Gästebuch der Website',        '<p>Hier können Besucher Einträge hinterlassen.</p>',                                      '', 40, 1, 1716465600, 1716465600, '', 1, 1),
   (11, 1, 1, 'Seite nicht verfügbar',  3, 3, 0, 0, 0,  0, 0, 'Fehlerseite',                  '<p>Dieser Inhalt ist derzeit nicht verfügbar.</p>',                                       '', 50, 1, 1716379200, 1716379200, '', 1, 1),
-  (12, 1, 1, 'Zugriff gesperrt',       3, 5, 0, 0, 0,  0, 0, 'Seite für gebannte IPs',       '<p>Ihre IP-Adresse wurde gesperrt.</p>',                                                  '', 60, 1, 1716292800, 1716292800, '', 1, 1);
+  (12, 1, 1, 'Zugriff gesperrt',       3, 5, 0, 0, 0,  0, 0, 'Seite für gebannte IPs',       '<p>Ihre IP-Adresse wurde gesperrt.</p>',                                                  '', 60, 1, 1716292800, 1716292800, '', 1, 1),
+  -- Ein Inhalt mit [php]-Block, wie er in gewachsenen Installationen
+  -- vorkommt. PMS lief früher auf MySQL, deshalb rufen solche Blöcke die
+  -- mysqli_*-Funktionen. make_dynamic() führt sie per eval() aus - was hier
+  -- steht, ist also ausführbarer Code aus der Datenbank und in keiner
+  -- Suche über den Quelltext zu finden. Genau daran ist der Umbau einmal
+  -- gescheitert (BEFUNDE B19).
+  (13, 2, 4, 'Mitgliederzahl',          0, 0, 1, 0, 0,  0, 0, 'Seite mit ausführbarem Code aus der Datenbank', '<p>Der Verein hat [php]$r=$pms_db_connection->query("SELECT COUNT(id) AS anzahl FROM user");$a=mysqli_fetch_object($r);echo $a->anzahl;[/php] Mitglieder.</p><p>Inhalte insgesamt: [php]echo mysqli_num_rows($pms_db_connection->query("SELECT id FROM item"));[/php]</p>', '', 70, 1, 1716292800, 1716292800, '', 1, 1);
 
 -- ---------------------------------------------------------------------------
 -- Menü (typ: 0=Kategorie/Inhalt, 1=Plugin, 2=Link-Code, 3=Platzhalter)
