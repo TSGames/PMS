@@ -342,7 +342,7 @@ final class ItemController extends Controller
         $html = Form::field(
             'Titel',
             Html::input('name', $name, ['id' => 'name']),
-            ['name' => 'name', 'required' => true]
+            ['name' => 'name', 'hint' => 'Optional. Bleibt er leer, steht in Listen und im Browserfenster nichts.']
         )
             . Form::field(
                 'Kurzbeschreibung',
@@ -654,9 +654,6 @@ final class ItemController extends Controller
         }
 
         $name = Request::string('name');
-        if ($name === '') {
-            Errors::add('name', 'Bitte geben Sie einen Titel an.');
-        }
 
         if ($type === self::TYPE_SPECIAL) {
             if ($special <= 0) {

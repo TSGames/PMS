@@ -1560,3 +1560,83 @@ body.login-page {
     td.cell-actions::before { display: none; }
     td.cell-number { justify-content: space-between; }
 }
+
+/* ---------- Unterschiede zu einer gesicherten Fassung ---------- */
+/* "Frühere Fassung einspielen" zeigt jetzt, was sich gegenüber der
+   aktuellen Fassung geändert hat - vorher war nur der Zeitpunkt zu
+   sehen und man musste raten, ob überhaupt etwas anders ist. */
+.version-diff {
+    margin: 8px 0 0;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    background: var(--c-surface-alt);
+}
+
+.version-diff > summary {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--c-muted);
+}
+
+.version-diff[open] > summary {
+    border-bottom: 1px solid var(--c-border);
+    color: var(--c-text);
+}
+
+.version-diff-title {
+    margin: 12px 12px 4px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.version-diff-values {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 12px;
+    margin: 0 12px 12px;
+    font-size: 13px;
+}
+
+.version-diff-values dt {
+    color: var(--c-muted);
+}
+
+.version-diff-values dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.version-diff-lines {
+    margin: 0 12px 12px;
+    padding: 8px 10px;
+    max-height: 22em;
+    overflow: auto;
+    border-radius: 6px;
+    background: var(--c-surface);
+    font-size: 12.5px;
+    line-height: 1.5;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.version-diff-lines span {
+    display: block;
+}
+
+.diff-out {
+    background: var(--c-danger-soft);
+}
+
+.diff-in {
+    background: var(--c-ok-soft);
+}
+
+.diff-same {
+    color: var(--c-muted);
+}
+
+.diff-gap {
+    color: var(--c-muted);
+    text-align: center;
+}
