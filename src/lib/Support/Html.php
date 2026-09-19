@@ -145,9 +145,20 @@ final class Html
         return $html;
     }
 
-    public static function textarea(string $name, ?string $value, int $rows = 6, int $cols = 60): string
+    /**
+     * Mehrzeiliges Eingabefeld.
+     *
+     * @param array<string, string> $attributes Zusaetzliche Merkmale, etwa
+     *        data-editor für die Felder, die einen Code-Editor bekommen.
+     */
+    public static function textarea(string $name, ?string $value, int $rows = 6, int $cols = 60, array $attributes = []): string
     {
-        return '<textarea name="' . self::e($name) . '" rows="' . $rows . '" cols="' . $cols . '">'
+        $extra = '';
+        foreach ($attributes as $key => $val) {
+            $extra .= ' ' . self::e($key) . ($val === '' ? '' : '="' . self::e($val) . '"');
+        }
+
+        return '<textarea name="' . self::e($name) . '" rows="' . $rows . '" cols="' . $cols . '"' . $extra . '>'
             . self::e((string)$value) . '</textarea>';
     }
 

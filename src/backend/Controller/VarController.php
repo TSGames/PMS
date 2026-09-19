@@ -102,12 +102,12 @@ final class VarController extends Controller
 
         $fields = Form::field(
             'Suchen nach',
-            Html::textarea('search', $isEdit ? $rule->searcher : '', 8, 70),
+            Html::textarea('search', $isEdit ? $rule->searcher : '', 8, 70, ['data-editor' => '']),
             ['name' => 'search', 'for' => '', 'required' => true, 'hint' => 'Der Platzhalter, wie er im Inhalt steht.']
         )
             . Form::field(
                 'Ersetzen mit',
-                Html::textarea('replace', $isEdit ? $rule->replacer : '', 8, 70),
+                Html::textarea('replace', $isEdit ? $rule->replacer : '', 8, 70, ['data-editor' => '']),
                 ['name' => 'replace', 'for' => '', 'hint' => 'Darf HTML enthalten.']
             )
             . Form::check(
@@ -123,7 +123,7 @@ final class VarController extends Controller
             . Html::hidden('id', $id)
             . Form::card(Form::section('', $fields), Form::actions('var', 'Speichern', $this->url()))
             . Html::formClose()
-            . get_monaco();
+            . get_code_editor();
     }
 
     private function overview(): string

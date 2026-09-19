@@ -76,58 +76,20 @@
 	}
 
 	/**
-	 * Initialize Monaco code editor
-	 * @return string Monaco editor HTML/JavaScript
+	 * Bindet den Code-Editor der Variablen-Seite ein.
+	 *
+	 * Er haengt sich an jedes Textfeld mit dem Merkmal data-editor. Frueher
+	 * stand hier der Monaco-Editor, der von einem CDN nachgeladen wurde -
+	 * rund fuenf Megabyte, eine Anfrage an einen Dritt-Server bei jeder
+	 * Bearbeitung, und ohne Internetzugang blieb das Feld leer. Die jetzige
+	 * Zusammenstellung liefert das Projekt selbst aus
+	 * (src/js/vendor/editor.js, gebaut mit "npm run vendor:editor").
+	 *
+	 * @return string HTML zum Einbinden des Editors
 	 */
-	function get_monaco(){
-		return <<<JS
-		
-		<!-- Load Monaco from CDN -->
-		<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js"></script>
-		<script>
-		// Configure the Monaco base path for its internal modules
-		require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } });
-		
-		
-		// Configure Monaco base path
-		require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs' } });
-		
-		// Load Monaco editor
-		require(['vs/editor/editor.main'], function() {
-			// Get all textarea elements
-			document.querySelectorAll('textarea').forEach(function(textarea) {
-				// Create a wrapper div to host the editor
-				const wrapper = document.createElement('div');
-				wrapper.className = 'monaco-wrapper';
-				wrapper.style.minHeight = '200px';
-				
-				// Insert wrapper before textarea
-				textarea.parentNode.insertBefore(wrapper, textarea);
-				// Hide the original textarea
-				textarea.style.display = 'none';
-				
-				// Determine language from optional data attribute or simple detection
-				let language = 'php';
-				
-				// Create Monaco editor in the wrapper
-				const editor = monaco.editor.create(wrapper, {
-					value: textarea.value,
-					language: language,
-					theme: 'vs-light',
-					minimap: { enabled: false },
-					automaticLayout: true
-				});
-				
-				// Sync back to textarea on change (for form submission, etc.)
-				editor.onDidChangeModelContent(() => {
-					textarea.value = editor.getValue();
-				});
-			});
-		});
-		
-		</script>
-		JS;
-		
+	function get_code_editor(){
+		return '<link rel="stylesheet" type="text/css" href="css/code-editor.css">'
+			.'<script defer src="js/vendor/editor.js"></script>';
 	}
 
 	/**

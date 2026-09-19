@@ -10,11 +10,14 @@ const REPO_ROOT = path.resolve(__dirname, '../../..');
  * Bekannte JavaScript-Fehler des Altbestands.
  * Siehe tests/BEFUNDE.md; die Einträge entfallen, sobald die Ursachen behoben sind.
  */
-const KNOWN_JS_ERRORS = [
-  // B6: Der Monaco-Editor der Variablen-Seite wird von einem CDN geladen und
-  // steht ohne Internetzugang nicht zur Verfügung
-  'require is not defined',
-];
+/**
+ * JavaScript-Fehler, die kein Testfehler sind.
+ *
+ * Seit der Editor der Variablen-Seite lokal ausgeliefert wird (B6), ist die
+ * Liste leer. Sie bleibt als Stelle, an der ein begründeter Einzelfall
+ * stehen könnte.
+ */
+const KNOWN_JS_ERRORS = [];
 
 // Meldungen, die auf einen PHP-Fehler in der Ausgabe hindeuten.
 const PHP_ERROR_PATTERNS = [
@@ -122,6 +125,38 @@ async function tableColumn(page, columnIndex) {
  * Wird von allen Specs benutzt, die Daten verändern.
  * Rührt bewusst nur die Datenbank an, nicht die Laufzeitkonfiguration.
  */
+/**
+ * Schreibt Text in das Feld, an dem der Code-Editor hängt.
+ *
+ * Das <textarea> bleibt im Formular, ist aber nicht mehr die Quelle: Der
+ * Editor schreibt bei jeder Änderung hinein und beim Abschicken noch
+ * einmal. Wer das Textfeld direkt füllt, verliert den Wert deshalb.
+ */
+async function fillEditor(page, name, text) {
+  const textarea = page.locator(`textarea[name="${name}"]`);
+  const editor = page.locator(`.code-editor[data-editor-for="${name}"] .cm-content`);
+
+  // Ohne Editor (kein JavaScript, anderes Formular) das Feld direkt füllen
+  if ((await editor.count()) === 0) {
+    await textarea.fill(text);
+    return;
+  }
+
+  await editor.click();
+  await page.keyboard.press('ControlOrMeta+a');
+  await page.keyboard.press('Delete');
+  await page.keyboard.type(text);
+}
+
+/** Liest den Wert eines Feldes mit Code-Editor. */
+async function editorValue(page, name) {
+  const editor = page.locator(`.code-editor[data-editor-for="${name}"] .cm-content`);
+  if ((await editor.count()) === 0) {
+    return page.locator(`textarea[name="${name}"]`).inputValue();
+  }
+  return editor.innerText();
+}
+
 function resetDatabase() {
   waitForIdleServer();
   execFileSync('php', [path.join(REPO_ROOT, 'tests/mock/reset-db.php')], { stdio: 'pipe' });
@@ -149,6 +184,8 @@ module.exports = {
   KNOWN_JS_ERRORS,
   login,
   logout,
+  editorValue,
+  fillEditor,
   resetDatabase,
   searchList,
   selectFilter,

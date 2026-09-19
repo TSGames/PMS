@@ -161,6 +161,18 @@ Abfrage kein Token unterbringen. Der Versand wird jetzt am Feldnamen
 erkannt; die beiden Schalter der Umfrage haben dafür eigene Namen
 (`poll_vote`, `poll_results`) statt eines gemeinsamen mit zwei Werten.
 
+### B6 – Die Variablen-Seite lud den Editor von einem CDN
+Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
+Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und
+ohne Internetzugang blieb das Eingabefeld leer. Das Skript griff außerdem
+**alle** Textfelder der Seite, nicht nur die beiden gemeinten, und stellte
+die Sprache auf PHP, obwohl dort HTML steht.
+
+Ersetzt durch eine schlanke Zusammenstellung von CodeMirror, die das
+Projekt selbst ausliefert (`src/js/vendor/editor.js`, etwa ein Elftel der
+Größe). Die Versionen stehen in `package.json`, gebaut wird mit
+`npm run vendor`. Den Editor bekommen nur noch Felder mit `data-editor`.
+
 ### Weitere Kleinigkeiten
 * Die Benutzerliste erzeugte eine mehrdeutige Abfrage
   (`ambiguous column name: id`).
@@ -169,14 +181,6 @@ erkannt; die beiden Schalter der Umfrage haben dafür eigene Namen
 * Tippfehler in der Oberfläche ("eingeloogt", "Gelöschen Inhalt").
 
 ## Offene Punkte
-
-### B6 – Variablen-Seite lädt den Editor von einem CDN
-Die Seite "Variablen" bindet den Monaco-Editor von `cdn.jsdelivr.net` ein.
-Ohne Internetzugang bleibt das Eingabefeld ohne Editor; zusätzlich geht
-bei jeder Bearbeitung eine Anfrage an einen Dritt-Server. Das Skript liegt
-in `functions_editor.php` und gehört nicht zum Admin-Backend im engeren
-Sinn; es ist im Test als bekannter Fehler hinterlegt
-(`KNOWN_JS_ERRORS` in `tests/e2e/lib/admin.js`).
 
 ### Passwörter als ungesalzenes MD5
 `do_login()` und `make_user()` speichern Passwörter als MD5-Hash ohne

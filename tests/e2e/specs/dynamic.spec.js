@@ -3,7 +3,7 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { login, resetDatabase, expectNoPhpError, submit } = require('../lib/admin');
+const { editorValue, expectNoPhpError, fillEditor, login, resetDatabase, submit } = require('../lib/admin');
 
 // Jeder Test startet auf dem Ausgangsdatenbestand
 test.beforeEach(async ({ page }) => {
@@ -20,14 +20,14 @@ test.describe('Variablen', () => {
 
   test('Regel bearbeiten zeigt Suchmuster und Ersetzung', async ({ page }) => {
     await page.goto('admin/variablen?edit=1');
-    await expect(page.locator('textarea[name="search"]')).toHaveValue('#verein');
-    await expect(page.locator('textarea[name="replace"]')).toHaveValue('Mustermann e.V.');
+    expect(await editorValue(page, 'search')).toBe('#verein');
+    expect(await editorValue(page, 'replace')).toBe('Mustermann e.V.');
   });
 
   test('Neue Regel anlegen', async ({ page }) => {
     await page.goto('admin/variablen?new=yes');
-    await page.fill('textarea[name="search"]', '#testvariable');
-    await page.fill('textarea[name="replace"]', 'Ersetzter Text');
+    await fillEditor(page, 'search', '#testvariable');
+    await fillEditor(page, 'replace', 'Ersetzter Text');
     await submit(page, 'input[name="var"]');
 
     await expectNoPhpError(page);

@@ -195,13 +195,34 @@ Symbole liefert `View\Icons::render('name')` als eingebettetes SVG. Alle
 Zeichnungen sind selbst angelegt, damit keine fremde Bibliothek und keine
 Lizenzfrage dazukommt.
 
-Für Interaktion im Browser ist **Alpine.js 3.17.3** eingebunden
-(`src/js/vendor/alpine.min.js`, bezogen von
-`https://cdn.jsdelivr.net/npm/alpinejs@3.17.3/dist/cdn.min.js`). Die Datei
-liegt bewusst im Projekt statt an einem CDN: Das Backend muss auch ohne
-Internetzugang vollständig bedienbar bleiben (siehe `tests/BEFUNDE.md`, B6).
-Zum Aktualisieren die neue Fassung an dieselbe Stelle legen und die Version
-hier nachtragen.
+## Fremdbibliotheken
+
+Alles, was der Browser lädt, liefert das Projekt selbst aus. Kein CDN: Das
+Backend muss auch ohne Internetzugang vollständig bedienbar bleiben, und
+bei jeder Bearbeitung eine Anfrage an einen Dritt-Server zu schicken ist
+weder nötig noch erwünscht.
+
+Die Versionen stehen in der `package.json` im Projektwurzelverzeichnis,
+die fertigen Dateien unter `src/js/vendor/`. Beide werden eingecheckt,
+damit das Docker-Image ohne npm gebaut werden kann.
+
+| Datei | Herkunft | Wofür |
+| --- | --- | --- |
+| `alpine.min.js` | `alpinejs` | Reiter, Auf- und Zuklappen, abhängige Auswahlfelder |
+| `editor.js` | `@codemirror/*` | Der Code-Editor der Variablen-Seite |
+
+Aktualisieren:
+
+```bash
+npm install          # holt die Fassungen aus package.json
+npm run vendor       # legt beide Dateien unter src/js/vendor/ ab
+```
+
+`editor.js` entsteht dabei aus `build/editor.js` - einer schlanken
+Zusammenstellung von CodeMirror mit Zeilennummern, HTML-Hervorhebung und
+Verlauf. Vorher stand dort der Monaco-Editor, der rund fünf Megabyte von
+`cdn.jsdelivr.net` nachlud; die jetzige Fassung ist etwa ein Elftel davon
+(siehe `tests/BEFUNDE.md`, B6).
 
 ## Was außerhalb liegt
 

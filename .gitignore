@@ -1,4 +1,5 @@
 /vendor/
+/node_modules/
 
 # Mock-/Testsystem (siehe tests/README.md)
 /.phpunit.cache/
