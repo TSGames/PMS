@@ -17,13 +17,19 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN echo "display_errors=On" >> /usr/local/etc/php/conf.d/docker-php.ini \
-    && echo memory_limit=32M >> /usr/local/etc/php/conf.d/docker-php.ini \
-    && echo "log_errors=On" >> /usr/local/etc/php/conf.d/docker-php.ini \
-    && echo "error_log=/proc/self/fd/2" >> /usr/local/etc/php/conf.d/docker-php.ini \
-    && echo "error_reporting=E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT" >> /usr/local/etc/php/conf.d/docker-php.ini \
-    && echo "upload_max_filesize=20M" > /usr/local/etc/php/conf.d/docker-php.ini \
-    && echo "post_max_size=20M" >> /usr/local/etc/php/conf.d/docker-php.ini
+# PHP-Einstellungen. Als ein Dokument geschrieben statt mit sieben echo:
+# Eine der Zeilen benutzte ">" statt ">>" und warf alles davor weg, sodass
+# weder display_errors noch log_errors ankamen. Ein Fehler führte dann zu
+# einer weißen Seite ohne jeden Eintrag im Protokoll.
+RUN { \
+    echo "display_errors=Off"; \
+    echo "log_errors=On"; \
+    echo "error_log=/proc/self/fd/2"; \
+    echo "error_reporting=E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED"; \
+    echo "memory_limit=128M"; \
+    echo "upload_max_filesize=20M"; \
+    echo "post_max_size=20M"; \
+    } > /usr/local/etc/php/conf.d/docker-php.ini
 
 COPY mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 COPY template/ /var/template_init/
