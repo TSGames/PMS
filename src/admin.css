@@ -635,7 +635,34 @@ small { font-size: var(--fs-xs); }
     line-height: 1.1;
 }
 
-.stat-hint { font-size: var(--fs-xs); color: var(--c-muted); margin-top: var(--s-1); }
+.stat-hint { display: block; font-size: var(--fs-xs); color: var(--c-muted); margin-top: var(--s-1); }
+.stat-value { display: block; }
+
+/* Eine Kennzahl, die auf ihren Bereich führt */
+a.stat-link { display: block; color: inherit; transition: border-color 0.12s ease; }
+a.stat-link:hover { border-color: var(--c-accent); text-decoration: none; }
+a.stat-link:hover .stat-value { color: var(--c-accent); }
+
+/* Startseite: zwei Spalten, die auf schmalen Bildschirmen untereinander stehen */
+.dashboard-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--s-4);
+    align-items: start;
+}
+
+.dashboard-columns .card { margin-bottom: 0; }
+
+.definition-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--s-2) var(--s-3);
+    margin: 0 0 var(--s-3);
+    font-size: var(--fs-sm);
+}
+
+.definition-list dt { color: var(--c-muted); }
+.definition-list dd { margin: 0; color: var(--c-heading); font-weight: 500; }
 
 /* Tabellen */
 .table-wrap {
@@ -1386,6 +1413,7 @@ body.login-page {
     .user-chip strong { display: none; }
     .app-search { display: none; }
     .page-header { flex-direction: column; align-items: stretch; }
+    .dashboard-columns { grid-template-columns: 1fr; }
     .toolbar { flex-direction: column; align-items: stretch; }
     /* In einer Spalte würde das Suchfeld sonst in die Höhe wachsen */
     .toolbar-search { flex: 0 0 auto; }

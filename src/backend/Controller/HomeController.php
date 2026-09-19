@@ -2,14 +2,28 @@
 
 namespace Pms\Backend\Controller;
 
+use Pms\Backend\Data\Db;
+use Pms\Backend\Data\EventFeed;
 use Pms\Backend\Support\Auth;
 use Pms\Backend\Support\Html;
+use Pms\Backend\View\Components;
+use Pms\Backend\View\Icons;
 
 /**
- * Startseite des Backends mit Hinweisen zu Updates und Sicherungen.
+ * Startseite des Backends.
+ *
+ * Der Altbestand begrüßte mit drei Absätzen Fließtext und verwies auf das
+ * Menü links. Hier stehen stattdessen die Zahlen der Website, die jüngsten
+ * Ereignisse und die Aktionen, die am häufigsten gebraucht werden.
  */
 final class HomeController extends Controller
 {
+    /** So viele Ereignisse zeigt die Startseite. */
+    private const RECENT_EVENTS = 5;
+
+    /** Eine Sicherung gilt danach als überfällig. */
+    private const BACKUP_MAX_AGE = 30 * 86400;
+
     #[\Override]
     public function action(): string
     {
@@ -19,90 +33,197 @@ final class HomeController extends Controller
     #[\Override]
     public function handle(): string
     {
-        $version = (string)($GLOBALS['pms_version'] ?? '');
+        return Components::pageHeader(
+            'Willkommen im Admin Center!',
+            'Der Stand Ihrer Website auf einen Blick.',
+            $this->quickActions()
+        )
+            . $this->notices()
+            . $this->statistics()
+            . '<div class="dashboard-columns">'
+            . $this->recentEvents()
+            . $this->systemCard()
+            . '</div>';
+    }
 
-        $html = Html::heading('Willkommen im Admin Center!')
-            . '<p>Sie befinden sich nun im gesicherten Bereich der Website.<br>'
-            . 'Bitte wählen Sie eine Aktion im Menü links aus.</p>';
+    /** Die Aktionen, die am häufigsten gebraucht werden. */
+    private function quickActions(): string
+    {
+        $actions = Components::primary('Inhalt anlegen', Html::url('item', ['new' => 'yes']));
+
+        if (Auth::isSuperAdmin()) {
+            $actions .= Components::secondary('Sicherung erstellen', Html::url('backup'), 'archive');
+        }
+
+        return $actions . Components::secondary('Website ansehen', 'index.php', 'globe');
+    }
+
+    /** Hinweise, die eine Handlung verlangen. */
+    private function notices(): string
+    {
+        $html = '';
 
         if (!empty($GLOBALS['set_reloadable'])) {
-            $html .= $this->resumeDialog();
+            $html .= $this->resumeNotice();
         }
 
         if (Auth::isSuperAdmin()) {
-            $html .= $this->updateHint($version) . $this->backupHint();
+            $html .= $this->updateNotice() . $this->backupNotice();
         }
-
-        $html .= '<p><strong>Technische Systeminformationen:</strong><br>'
-            . 'Sie benutzen das Professional Management System, Version ' . Html::e($version) . '.<br>'
-            . 'Um Informationen zu den Neuerungen zu sehen, klicken Sie '
-            . '<a href="http://www.tsgames.de/?item=270&amp;version=' . Html::e($version) . '" target="_blank" rel="noopener">hier</a>'
-            . ' und Sie gelangen zur Versionshistory.</p>';
 
         if (!empty($GLOBALS['pms_db_use_reference'])) {
             $referenceId = (int)($GLOBALS['pms_db_reference_id'] ?? 0);
-            $html .= '<p><strong>Erweiterte Informationen:</strong><br>'
-                . 'Dieses System läuft als sekundäres Referenzsystem eines anderen, primären Systems '
-                . '(vermutlich stellt es den Inhalt in einer anderen Sprache bereit).<br>'
-                . 'Sie müssen Kategorien, Inhalte usw. zunächst im primären System anlegen.<br>'
-                . '<a href="admin.php?config_id=' . $referenceId . '">Klicken Sie hier</a>, '
-                . 'um Daten im primären System anzulegen.</p>';
+            $html .= '<div class="notice notice-warn">' . Icons::render('info')
+                . '<span>Dieses System läuft als sekundäres Referenzsystem eines anderen Systems. '
+                . 'Kategorien und Inhalte werden zuerst im primären System angelegt. '
+                . '<a href="admin.php?config_id=' . $referenceId . '">Zum primären System</a>.</span></div>';
         }
 
         return $html;
     }
 
-    /**
-     * Beim letzten Abbruch war ein Vorgang offen; er kann nachgeholt werden.
-     */
-    private function resumeDialog(): string
+    /** Die Zahlen der Website als Karten. */
+    private function statistics(): string
     {
-        return '<div class="info_ok"><p>Beim Ausführen des letzten Vorgangs (z.B. Schreiben einer Seite) '
-            . 'wurden Sie abgemeldet. Die Änderungen wurden daher noch nicht übernommen.</p>'
-            . '<div class="action-section">'
-            . Html::button('Vorgang jetzt ausführen', Html::url('load_last'))
-            . '</div>'
-            . '<p>Hinweis: Wenn Sie diese Seite verlassen, gehen die Daten verloren.</p></div>';
+        $config = $GLOBALS['config_values'] ?? null;
+
+        $cards = [
+            ['document', 'Inhalte', Db::count('item'), 'davon ' . Db::count('item', 'available = 1') . ' verfügbar', Html::url('item')],
+            ['folder', 'Kategorien', Db::count('cat'), Db::count('subcat') . ' Unterkategorien', Html::url('cat')],
+            ['users', 'Benutzer', Db::count('user'), Db::count('user', 'typ >= 2') . ' mit Backend-Zugang', Html::url('user')],
+            ['globe', 'Besucher heute', (int)($config->visitors_today ?? 0), 'gestern ' . (int)($config->visitors_yesterday ?? 0), Html::url('activity')],
+        ];
+
+        $html = '<div class="stat-grid">';
+        foreach ($cards as [$icon, $label, $value, $hint, $href]) {
+            $html .= '<a class="stat stat-link" href="' . Html::e($href) . '">'
+                . '<span class="stat-label">' . Icons::render($icon, 'icon icon-sm') . Html::e($label) . '</span>'
+                . '<span class="stat-value">' . Html::e(number_format((int)$value, 0, ',', '.')) . '</span>'
+                . '<span class="stat-hint">' . Html::e((string)$hint) . '</span>'
+                . '</a>';
+        }
+
+        return $html . '</div>';
     }
 
-    private function updateHint(string $version): string
+    /** Die jüngsten Ereignisse als kurzer Zeitstrahl. */
+    private function recentEvents(): string
     {
+        $events = array_slice(EventFeed::collect(), 0, self::RECENT_EVENTS);
+
+        $body = $events === []
+            ? '<p class="field-hint">Auf der Website ist bisher nichts passiert.</p>'
+            : '';
+
+        if ($events !== []) {
+            $body = '<ol class="timeline">';
+            foreach ($events as $event) {
+                $body .= '<li>'
+                    . '<div class="timeline-head">' . Components::chip($event['type'])
+                    . '<span class="timeline-time">' . Html::e(Html::date($event['time'], 'd.m.Y, H:i')) . '</span>'
+                    . '</div>'
+                    // Der Text ist bereits maskiert und enthält Verlinkungen
+                    . '<div class="timeline-text">' . $event['text'] . '</div>'
+                    . '</li>';
+            }
+            $body .= '</ol>';
+        }
+
+        return '<div class="card">'
+            . '<div class="card-header"><span class="card-title">Zuletzt passiert</span>'
+            . '<a href="' . Html::e(Html::url('events')) . '">Alle Ereignisse</a></div>'
+            . '<div class="card-body">' . $body . '</div>'
+            . '</div>';
+    }
+
+    /** Version und letzte Sicherung. */
+    private function systemCard(): string
+    {
+        $version = (string)($GLOBALS['pms_version'] ?? '');
+        $backup = $this->lastBackup();
+
+        $rows = [
+            ['PMS-Version', Html::e($version)],
+            ['Letzte Sicherung', $backup === null ? 'keine' : Html::e(date('d.m.Y, H:i', $backup))],
+            ['Angemeldet als', Html::e(Auth::userName())],
+        ];
+
+        $html = '<div class="card">'
+            . '<div class="card-header"><span class="card-title">System</span></div>'
+            . '<div class="card-body"><dl class="definition-list">';
+
+        foreach ($rows as [$label, $value]) {
+            $html .= '<dt>' . Html::e($label) . '</dt><dd>' . $value . '</dd>';
+        }
+
+        return $html . '</dl>'
+            . '<p class="field-hint">Was sich in Version ' . Html::e($version) . ' geändert hat, steht in der '
+            . '<a href="http://www.tsgames.de/?item=270&amp;version=' . Html::e($version) . '"'
+            . ' target="_blank" rel="noopener">Versionshistorie</a>.</p>'
+            . '</div></div>';
+    }
+
+    /** Beim letzten Abbruch war ein Vorgang offen; er kann nachgeholt werden. */
+    private function resumeNotice(): string
+    {
+        return '<div class="notice notice-warn">' . Icons::render('warning')
+            . '<span>Beim letzten Vorgang wurden Sie abgemeldet, die Änderung ist noch nicht übernommen. '
+            . '<a href="' . Html::e(Html::url('load_last')) . '">Jetzt ausführen</a> - '
+            . 'wenn Sie diese Seite verlassen, geht sie verloren.</span></div>';
+    }
+
+    private function updateNotice(): string
+    {
+        $version = (string)($GLOBALS['pms_version'] ?? '');
         $latest = get_latest_version();
+
         if (!$latest || $latest <= $version) {
             return '';
         }
 
-        return '<p><strong>Update-Hinweis</strong><br>'
-            . 'Es ist eine aktuellere Version von PMS verfügbar (' . Html::e((string)$latest) . ').<br>'
-            . 'Sie können das Update auf der Seite <a href="admin.php?modul=update">Update</a> starten.</p>';
+        return '<div class="notice notice-warn">' . Icons::render('refresh')
+            . '<span>Version ' . Html::e((string)$latest) . ' ist verfügbar (Sie nutzen ' . Html::e($version) . '). '
+            . '<a href="' . Html::e(Html::asset('admin/modul/update')) . '">Update starten</a>.</span></div>';
     }
 
-    private function backupHint(): string
+    private function backupNotice(): string
     {
-        $backups = get_backups();
+        $backup = $this->lastBackup();
 
-        if (!is_array($backups) || $backups === []) {
-            return $this->backupAdvice('Sie haben bisher keinerlei Backups Ihrer Website erstellt.');
+        if ($backup === null) {
+            return $this->backupAdvice('Es wurde noch keine Sicherung Ihrer Website angelegt.');
         }
-
-        $parts = explode('_', (string)$backups[0]);
-        if (count($parts) < 5) {
-            return '';
-        }
-
-        $last = mktime((int)$parts[3], (int)$parts[4], 0, (int)$parts[1], (int)$parts[2], (int)$parts[0]);
-        if ($last >= time() - 60 * 60 * 24 * 30) {
+        if ($backup >= time() - self::BACKUP_MAX_AGE) {
             return '';
         }
 
         return $this->backupAdvice(
-            'Das zuletzt durchgeführte Backup ist älter als ein Monat (vom ' . date('d.m.Y', $last) . ').'
+            'Die letzte Sicherung ist vom ' . date('d.m.Y', $backup) . ' und damit älter als einen Monat.'
         );
     }
 
     private function backupAdvice(string $message): string
     {
-        return '<p><strong>Backup-Hinweis</strong><br>' . Html::e($message) . '<br>'
-            . '<a href="' . Html::e(Html::url('backup')) . '">Klicken Sie hier</a>, um ein neues Backup anzulegen.</p>';
+        return '<div class="notice notice-warn">' . Icons::render('archive')
+            . '<span>' . Html::e($message)
+            . ' <a href="' . Html::e(Html::url('backup')) . '">Jetzt eine anlegen</a>.</span></div>';
+    }
+
+    /** Zeitpunkt der jüngsten Sicherung, oder null. */
+    private function lastBackup(): ?int
+    {
+        $backups = get_backups();
+        if (!is_array($backups) || $backups === []) {
+            return null;
+        }
+
+        // Ordnername: JJJJ_MM_TT_HH_MM
+        $parts = explode('_', (string)$backups[0]);
+        if (count($parts) < 5) {
+            return null;
+        }
+
+        $time = mktime((int)$parts[3], (int)$parts[4], 0, (int)$parts[1], (int)$parts[2], (int)$parts[0]);
+        return $time === false ? null : $time;
     }
 }
