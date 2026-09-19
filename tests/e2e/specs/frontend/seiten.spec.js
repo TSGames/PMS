@@ -114,3 +114,22 @@ test('Die Besucherzahlen stehen in der Seitenleiste', async ({ page }) => {
   await expect(page.locator('body')).toContainText('Besucher Gesamt');
   await expect(page.locator('body')).toContainText('Anzahl Artikel: 12');
 });
+
+test('Die Sitemap listet Kategorien, Unterkategorien und Inhalte', async ({ page }) => {
+  // Brach mit einem TypeError ab, weil mysqli_num_rows() ein SQLite-Ergebnis
+  // bekam (BEFUNDE B18)
+  await page.goto('action/sitemap.html');
+
+  await expect(page).toHaveTitle(/Sitemap/);
+  await expect(page.locator('body')).toContainText('Aktuelles');
+  await expect(page.locator('body')).toContainText('Termine');
+  await expectNoPhpError(page);
+});
+
+test('Eine Unterkategorie mit wenigen Inhalten wird vollständig gelistet', async ({ page }) => {
+  // Derselbe Fehler traf jede Liste, die auf eine Seite passt (BEFUNDE B18)
+  await page.goto('index.php?subcat=2');
+
+  await expect(page).toHaveTitle(/Termine/);
+  await expectNoPhpError(page);
+});

@@ -20,6 +20,7 @@ require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
  */
 const PMS_NAMESPACES = [
     'Pms\\Backend\\' => __DIR__ . '/../../src/backend/',
+    'Pms\\Frontend\\' => __DIR__ . '/../../src/frontend/',
     'Pms\\' => __DIR__ . '/../../src/lib/',
 ];
 

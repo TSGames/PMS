@@ -73,7 +73,10 @@ $confirmation_dialogs[0]=array("user_guestbook","mail_guestbook","Gästebuch");
 $confirmation_dialogs[1]=array("user_comments","mail_comments","Kommentare");
 $confirmation_dialogs[2]=array("user_register","mail_register","Registration");
 
-$valid_actions=array("download","search","register","password_recover","sitemap","logout","guestbook","user","topuser","user_panel","item","register_finish");
+// Die Aktionen des Frontends stehen in Frontend\Http\Routes; counter.php und
+// convert_action() legen den Index dieser Liste ab, deshalb bleibt sie hier
+// als Feld verfuegbar.
+$valid_actions=\Pms\Frontend\Http\Routes::ACTIONS;
 
 $language_folder="dialoges";
 

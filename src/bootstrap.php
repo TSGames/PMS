@@ -37,6 +37,7 @@ foreach ([
  */
 const PMS_NAMESPACES = [
     'Pms\\Backend\\' => __DIR__ . '/backend/',
+    'Pms\\Frontend\\' => __DIR__ . '/frontend/',
     'Pms\\' => __DIR__ . '/lib/',
 ];
 

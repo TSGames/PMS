@@ -5,8 +5,8 @@ aufgefallen. Alle sind inzwischen behoben; die Tests in
 `tests/e2e/specs/known-defects.spec.js`, `security.spec.js` und
 `specs/frontend/` halten fest, dass sie nicht zurückkehren.
 
-B13 bis B16 sind später dazugekommen - B13 und B14 beim Umbau des
-Backends, B15 und B16 durch die neuen Frontend-Tests. Die beiden letzten
+B13 bis B19 sind später dazugekommen - B13 und B14 beim Umbau des
+Backends, B15 bis B19 durch die neuen Frontend-Tests. Die beiden letzten
 betreffen `index.php` und seine Hilfsdateien, also Code außerhalb des
 Refactorings; sie waren Abbrüche und deshalb nicht aufschiebbar.
 
@@ -100,6 +100,35 @@ insbesondere das Gästebuch. Gefunden von den neuen Frontend-Tests.
 seit PHP 8 ein Fehler, die Anfrage brach ab und der Prüf-Code des
 Gästebuchs blieb leer. Zusätzlich hängte ein `echo` eine 1 an die
 Bilddaten, und der Content-Type fehlte.
+
+### B17 – Die Seite für gesperrte Adressen brach mit einem fatalen Fehler ab
+Stand die anfragende Adresse auf der Sperrliste, antwortete `index.php` mit
+`Too few arguments to function dynamic_string()` statt mit der dafür
+vorgesehenen Spezialseite. Die Schleife, die dort die Platzhalter ersetzt,
+ist eine verdorbene Kopie der beiden intakten Stellen: Sie las `$a->replacer`
+nie, arbeitete stattdessen mit einer noch undefinierten Variablen und rief
+`dynamic_string()` mit zwei statt drei Argumenten. Der Weg war von keinem
+Test abgedeckt, weil die Sperrliste im Mock-System keine der Testadressen
+enthält. Er hat jetzt einen eigenen Test
+(`tests/e2e/specs/frontend/sperrung.spec.js`).
+
+### B18 – Sitemap und Unterkategorie-Listen brachen ab
+Vier Stellen riefen `mysqli_num_rows()` mit einem `SQLite3Result` auf. Die
+Sitemap (`/action/sitemap.html`) und jede Unterkategorie, deren Inhalte auf
+eine Seite passen, endeten deshalb mit einem `TypeError`. Betroffen waren
+außerdem das ausklappbare Menü (`menu_mode=1`) und das Referenzsystem.
+`pms_db_class::fetchAllObject()` liefert die Zeilen als Feld - `count()`
+ersetzt den Aufruf, an einer Stelle stand das Feld sogar zwei Zeilen darüber
+schon bereit.
+
+### B19 – Die Website starb, sobald die mysqli-Erweiterung geladen war
+`functions_global.php` definierte auf oberster Ebene eine eigene Funktion
+`mysqli_fetch_object()` (und ein totes `mysqli_field_name()`). Ist die
+mysqli-Erweiterung geladen, bricht PHP das Laden mit
+`Cannot redeclare function mysqli_fetch_object()` ab - die gesamte Website
+antwortet dann mit einem fatalen Fehler. Im Mock-System fiel das nie auf,
+weil der Entwicklungsserver ohne mysqli startet. Beide Nachbauten sind
+entfernt; die einzige Aufrufstelle benutzt jetzt `fetchObject()` direkt.
 
 ### Weitere Kleinigkeiten
 * Die Benutzerliste erzeugte eine mehrdeutige Abfrage

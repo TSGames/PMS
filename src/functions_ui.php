@@ -69,12 +69,15 @@
 		$link=$pms_db_connection->query("SELECT id,".$name." FROM ".$pms_db_reference.$what." ORDER BY ".$sort.",".$name);
 		$link2=$pms_db_connection->query("SELECT id FROM ".$pms_db_prefix.$what." ORDER BY ".$sort.",".$name);
 		$ok=0;
-		if($link && mysqli_num_rows($link))
+		// Die Zeilen einmal einsammeln: Das Ergebnis laesst sich nur einmal
+		// durchlaufen, und weiter unten wird es noch gebraucht.
+		$rows=$link?$pms_db_connection->fetchAllObject($link):array();
+		if($rows)
 			{
 			for($i=0;$link2 && $a=$pms_db_connection->fetchObject($link2);$i++) $ids[$i]=$a->id;
 			$str.=form("","get")."<input type=\"hidden\" name=\"action\" value=\"".$action."\">
 <table><tr><td>".$info."</td><td><select name=\"reference\">";
-			while($a=$pms_db_connection->fetchObject($link))
+			foreach($rows as $a)
 				{
 				if(@in_array($a->id,$ids)) continue;
 				$ok++;

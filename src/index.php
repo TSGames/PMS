@@ -1,6 +1,10 @@
 <?
 define("PMS_FRONTEND",1);
+require(__DIR__.'/bootstrap.php');
 require('functions.php');
+
+use Pms\Frontend\Http\Kernel;
+
 $template="/var/template/template.html";
 
 // compress output using gzip
@@ -11,93 +15,29 @@ if($config_values->allow_compress && extension_loaded("zlib") && strstr($_SERVER
 }
 // end of compressing
 
+// Adresse zerlegen, Sperrliste pruefen, unbekannte Aktionen verwerfen
+$target=Kernel::boot();
 
-if($_GET["follow"]=="404"){
-    $_GET["item"]=get_errorpage();
-}
-else if($config_values->speciallinks)
-{
-    $_GET2=$_GET;
-    if($_GET["download"])
-    {
-        $_GET["action"]="download";
-        $temp=explode("-",$_GET["download"]);
-        $_GET["id"]=$temp[1];
-    }
-    $query=$_GET["follow"];
-    $query=explode("-",$query);
-    $what=substr($query[1],-1);
-    if($what=="c") $_GET["cat"]=substr($query[1],0,-1);
-    else if($what=="s") $_GET["subcat"]=substr($query[1],0,-1);
-    else if($what=="u")
-    {
-        $_GET["action"]="user";
-        $_GET["id"]=substr($query[1],0,-1);
-    }
-    else 
-    {
-        if(from_db("item",$query[1],"id"))
-        $_GET["item"]=$query[1];
-        else
-        unset($query[1]);
-    }
-    if(count($query)<2 && $query[0])
-    {
-        $search_query=$query[0];
-        $action="search";
-    }
-}
-if(is_array($_GET2))
-{
-    foreach($_GET2 as $key => $value)
-    {
-        if($value)
-        $_GET[$key]=$value;
-    }
-}
-$cat=(int)$_GET["cat"];
-$subcat=(int)$_GET["subcat"];
-$item=(int)$_GET["item"];
-if(!$action) $action=$_GET['action'];
-$id=$_GET['id']*1;
+$action=$target->action;
+$cat=$target->cat;
+$subcat=$target->subcat;
+$item=$target->item;
+$id=$target->id;
+$content_page=$target->page;
+if($target->search!=="") $search_query=$target->search;
+
 $comments=$_GET['comments'];
 $comment_get=$_GET['comment'];
-$content_page=$_GET['page'];
 $login=0;
 
-$link=$pms_db_connection->query(make_sql("bans","","id"));
-while($link && $a=$pms_db_connection->fetchObject($link))
+if($ban=Kernel::ban())
 {
-    if(stristr($_SERVER['REMOTE_ADDR'],$a->ip))
-    {
-        unset($_POST);
-        unset($_GET);
-        unset($action);
-        $item=-1;
-        $link=$pms_db_connection->query(make_sql("item","special = '5'","id LIMIT 1"));
-        if($link && $b=$pms_db_connection->fetchObject($link))
-        {
-            $item=$b->id;
-        }
-        $ip_is_banned=1;
-        $banned_ip=$_SERVER['REMOTE_ADDR'];
-        $banned_reason=def($a->reason);
-        if(!$banned_reason || ctype_space($banned_reason))
-        {
-            $banned_reason=language("BAN_NO_REASON");
-        }
-        $banned_time=ban_time($a->time);
-        if($banned_time==1)
-        {
-            $banned_time=$banned_time." Tag";
-        }
-        elseif($banned_time!=language("BAN_UNLIMITED"))
-        {
-            $banned_time=$banned_time." Tage";
-        }
-        break;
-    }
+    $ip_is_banned=1;
+    $banned_ip=$ban->ip;
+    $banned_reason=$ban->reason;
+    $banned_time=$ban->time;
 }
+
 if(($_POST['user_login']==language("USER_LOGIN") || (!$_SESSION['pmsglobal'] && $_COOKIE['login_id'] && $_COOKIE['login_pw'])) && !$login)
 {
     if($_POST['user_login']==language("USER_LOGIN"))
@@ -578,7 +518,7 @@ if($action=="user_panel" && $login)
     unset($bday);
     
     $link=$pms_db_connection->query("SELECT COUNT(id) as `count` FROM ".$pms_db_prefix."comments WHERE user = '$user_id';");
-    if($link && $a=mysqli_fetch_object($link))
+    if($link && $a=$pms_db_connection->fetchObject($link))
     {
         $points=$a->count*60;
     }
@@ -881,7 +821,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             <br>
             <table width=\"100%\" height=\"100%\"><tr><td>".$con_limit.$add_limit;
             $max=$config_values->list_rows;
-            if($link && count($linkData)<$max) $max=mysqli_num_rows($link);
+            if(count($linkData)<$max) $max=count($linkData);
             if($max>1)
             {
                 $add1="<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>";
@@ -1040,9 +980,10 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     unset($av);
                 }
                 $link3=$pms_db_connection->query(make_sql("item",$av."cat = '$a->id' AND subcat = '$b->id'","sort,name"));
-                if(!$b->jump || mysqli_num_rows($link3)!=1)
+                $items=$link3?$pms_db_connection->fetchAllObject($link3):array();
+                if(!$b->jump || count($items)!=1)
                 {
-                    while($link3 && $c=$pms_db_connection->fetchObject($link3))
+                    foreach($items as $c)
                     {
                         $content.="<tr class=\"sitemap_table\"><td class=\"sitemap_table\" style=\"padding-left:40px\">".make_link($c->name,"",$a->id,$b->id,$c->id)."</td></tr>
                         ";
@@ -1249,11 +1190,11 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                 while($link && $a=$pms_db_connection->fetchObject($link))
                 {
                     $search=$a->searcher;
-                    $replace=dynamic_string(def($replace),$item_allowed_edit,$a->id);
+                    $replace=$a->replacer;
                     if($a->makebr)
                     {
                         $search=def($search);
-                        $replace=dynamic_string(def($replace),$item_allowed_edit);
+                        $replace=dynamic_string(def($replace),$item_allowed_edit,$a->id);
                     }
                     $content=str_replace($search,$replace,$content);
                     $current_pos_name=str_replace($search,$replace,$current_pos_name);
@@ -1487,10 +1428,11 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     }
                     if(from_db("user",$user_id,"typ")>1) unset($filter);
                     $link2=$pms_db_connection->query(make_sql($what,$filter.$what2." = '".$id."'","sort,name"));
-                    if($link2 && mysqli_num_rows($link2))
+                    $sub=$link2?$pms_db_connection->fetchAllObject($link2):array();
+                    if($sub)
                     {
                         $menu.='<!--[if IE 7]><!--></a><!--<![endif]--><ul><!--[if lte IE 6]><table class="menu_table"><tr><td><![endif]-->';
-                        while($b=$pms_db_connection->fetchObject($link2))
+                        foreach($sub as $b)
                         {
                             unset($id2);
                             $id1=$b->id;

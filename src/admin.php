@@ -17,8 +17,10 @@ define('PMS_FRONTEND', 0);
 define('PMS_BACKEND', 1);
 define('PMS_ADMIN_ENTRY', 1);
 
-require 'functions.php';
+// Der Autoloader steht vor functions.php: Der Altbestand greift inzwischen
+// selbst auf Klassen unter Pms\ zu
 require 'backend/bootstrap.php';
+require 'functions.php';
 
 use Pms\Backend\Http\Kernel;
 use Pms\Backend\Http\Navigation;

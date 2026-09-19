@@ -183,17 +183,6 @@ class pms_db_class {
     }
 
     /**
-     * Returns the name of a table at a specified index in the result set.
-     *
-     * @param mixed $link The result set to fetch from.
-     * @param int $i The index of the table to retrieve.
-     * @return ?string The name of the table, or Null if no more tables are available.
-     */
-    public function tablename($link, int $i): ?string {
-        return mysqli_tablename($link, $i);
-    }
-
-    /**
      * Escapes a string for use in an SQL query.
      *
      * @param ?string $str The string to escape.
@@ -215,17 +204,6 @@ class pms_db_class {
 
 $pms_db_connection = new pms_db_class();
 $pms_db_connection->connect($db_databasename);
-
-/**
- * Fetches an object from a result set.
- *
- * @param mixed $link The result set to fetch from.
- * @return object|bool An object representing the fetched row, or False if no more rows are available.
- */
-function mysqli_fetch_object($link) {
-    global $pms_db_connection ;
-    return $pms_db_connection->fetchObject($link);
-}
 
 /**
  * Executes a SQL query and returns the result.
@@ -330,12 +308,6 @@ function update_engine(bool $do = false, int $last_version = 0, string $pms_db_p
 }
 
     return array($a_count, 0);
-}
-
-function mysqli_field_name($result, int $field_offset): ?string
-{
-    $properties = mysqli_fetch_field_direct($result, $field_offset);
-    return is_object($properties) ? $properties->name : null;
 }
 
 ?>
