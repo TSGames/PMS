@@ -100,3 +100,16 @@ test('Direkter Aufruf einer Backend-Datei ist verboten', async ({ page }) => {
 test.afterEach(async ({ page }) => {
   await logout(page).catch(() => {});
 });
+
+test('Eine Adresse mit Schrägstrich am Ende führt zum selben Bereich', async ({ page, request }) => {
+  // Liegt im Webroot zufällig ein Verzeichnis, das wie eine Route heißt,
+  // schickt Apaches mod_dir eine dauerhafte Weiterleitung dorthin — und
+  // die merkt sich jeder Browser, auch nachdem der Server längst wieder
+  // in Ordnung ist. Genauso tippt jemand den Schrägstrich mit.
+  const antwort = await request.get('admin/', { maxRedirects: 0 });
+  expect(antwort.status()).toBe(301);
+  expect(antwort.headers()['location']).toMatch(/\/admin$/);
+
+  await page.goto('admin/');
+  await expect(page.locator('body')).toContainText('PMS Back End Login');
+});

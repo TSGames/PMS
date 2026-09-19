@@ -52,6 +52,12 @@ final class Kernel
 
         $app->add(new CsrfMiddleware($app->getResponseFactory()));
         $app->addRoutingMiddleware();
+
+        // Slim führt Middleware in umgekehrter Reihenfolge aus: Was zuletzt
+        // hinzukommt, läuft zuerst. Diese muss deshalb NACH dem Routing
+        // eingehängt werden, damit sie DAVOR an die Reihe kommt - sonst
+        // meldet das Routing für /admin/ längst einen 404.
+        $app->add(new Middleware\TrailingSlashMiddleware($app->getResponseFactory()));
         $app->addErrorMiddleware((bool)ini_get('display_errors'), true, true);
 
         $app->run();
