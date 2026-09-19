@@ -2,8 +2,13 @@
 
 Beim Aufbau des Mock-Systems und der Tests sind die folgenden Defekte
 aufgefallen. Alle sind inzwischen behoben; die Tests in
-`tests/e2e/specs/known-defects.spec.js` und `security.spec.js` halten fest,
-dass sie nicht zurückkehren.
+`tests/e2e/specs/known-defects.spec.js`, `security.spec.js` und
+`specs/frontend/` halten fest, dass sie nicht zurückkehren.
+
+B13 bis B16 sind später dazugekommen - B13 und B14 beim Umbau des
+Backends, B15 und B16 durch die neuen Frontend-Tests. Die beiden letzten
+betreffen `index.php` und seine Hilfsdateien, also Code außerhalb des
+Refactorings; sie waren Abbrüche und deshalb nicht aufschiebbar.
 
 ## Behobene Defekte
 
@@ -69,7 +74,7 @@ Ersatzzeichen statt Umlauten ("Gï¿½stebuch"). Betroffen war auch die
 Ersetzungstabelle in `link_name()`, die Umlaute in Dateinamen ersetzen
 soll und dafür ebenfalls nur Ersatzzeichen enthielt.
 
-### B10 – Die Zuschneide-Schnittstelle lieferte HTML statt JSON
+### B13 – Die Zuschneide-Schnittstelle lieferte HTML statt JSON
 Mit den sprechenden Adressen aus Phase 1 landete `admin.php?action=crop_image_ajax`
 in der Zuordnung der Bereiche, fand dort keinen Controller und bekam die
 Startseite zurück. Der Zuschneide-Dialog scheiterte an der Antwort, ohne
@@ -77,11 +82,24 @@ eine Meldung zu zeigen. `Kernel::ENDPOINTS` beantwortet die Schnittstellen
 jetzt auch über die frühere Adresse; `specs/security.spec.js` prüft, dass
 `Content-Type: application/json` zurückkommt.
 
-### B11 – `browser()` gab die rohe Kennung zurück
+### B14 – `browser()` gab die rohe Kennung zurück
 Die Funktion in `functions_utility.php` begann mit `return $a;`, gefolgt von
 totem Code für Firefox. Der Website-Status zeigte deshalb mehrere hundert
 Zeilen voller `Mozilla/5.0 (…) AppleWebKit/537.36 …`. `Support\UserAgent`
 macht daraus "Chrome 120 auf Windows 10/11" und erkennt Suchmaschinen.
+
+### B15 – Das Gästebuch brach mit einem fatalen Fehler ab
+`make_mail()` in `functions_mail.php` rechnete mit `date(Y)` statt
+`date("Y")`. Unter PHP 8 ist ein Bezeichner ohne Anführungszeichen kein
+String mehr, sondern eine unbekannte Konstante - und damit ein Abbruch.
+Betroffen war jede Seite mit einer verschlüsselt ausgegebenen Mailadresse,
+insbesondere das Gästebuch. Gefunden von den neuen Frontend-Tests.
+
+### B16 – Das Bild des Prüf-Codes wurde nicht ausgeliefert
+`image.php` rief `imagejpeg($img, "", 90)` auf. Ein leerer Dateiname ist
+seit PHP 8 ein Fehler, die Anfrage brach ab und der Prüf-Code des
+Gästebuchs blieb leer. Zusätzlich hängte ein `echo` eine 1 an die
+Bilddaten, und der Content-Type fehlte.
 
 ### Weitere Kleinigkeiten
 * Die Benutzerliste erzeugte eine mehrdeutige Abfrage

@@ -1,6 +1,7 @@
 /vendor/
 
 # Mock-/Testsystem (siehe tests/README.md)
+/.phpunit.cache/
 /tests/.runtime/
 /tests/e2e/node_modules/
 /tests/e2e/test-results/

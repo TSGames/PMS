@@ -1,7 +1,8 @@
 # Testsystem für das PMS-Admin-Backend
 
-Dieses Verzeichnis enthält ein vollständig lokales Mock-System der Anwendung
-sowie End-to-End-Tests und Screenshots aller Bildschirme des Admin-Backends.
+Dieses Verzeichnis enthält ein vollständig lokales Mock-System der Anwendung,
+Unit-Tests der Backend-Bausteine, End-to-End-Tests von Backend und Frontend
+sowie Screenshots aller Bildschirme.
 
 ## Überblick
 
@@ -12,12 +13,14 @@ tests/
 │   ├── seed.sql     Mock-Daten mit festen Zeitstempeln
 │   ├── paths.php    Gemeinsame Pfade/Ports
 │   └── server.sh    Start/Stop des PHP-Entwicklungsservers
+├── unit/            PHPUnit-Tests der Bausteine unter src/backend/
 ├── e2e/             Playwright-Tests und Screenshot-Aufnahme
-│   ├── lib/         Screen-Katalog, Login-Helfer, Mock-Benutzer
-│   ├── specs/       Testfälle
+│   ├── lib/         Screen-Kataloge, Login-Helfer, Mock-Benutzer
+│   ├── specs/       Testfälle des Backends
+│   │   └── frontend/  Testfälle des Frontends (index.php)
 │   ├── screenshots/ Screenshot-Aufnahme
 │   └── bin/         Hilfsskripte
-├── screenshots/     Aufgenommene Screenshots aller Bildschirme
+├── screenshots/     Aufgenommene Screenshots (Backend und Frontend)
 └── .runtime/        Laufzeitdaten, nicht versioniert
 ```
 
@@ -70,18 +73,42 @@ Die Mock-Daten enthalten Kategorien, Unterkategorien, Inhalte aller Typen
 (inkl. Spezialseiten wie Startseite, Gästebuch und Fehlerseite), Menüeinträge
 aller Varianten, Variablen, Umfragen, Sperrungen, Kommentare und Besucherdaten.
 
-## Tests ausführen
+## Unit-Tests
+
+Die Bausteine unter `src/backend/` werden ohne Webserver und ohne Browser
+geprüft - Eingaben, Adressen, Listen, Formularfehler, Datenbankzugriff und
+die Auswertung der Browser-Kennungen:
+
+```bash
+composer install
+vendor/bin/phpunit
+```
+
+`tests/unit/bootstrap.php` registriert den Autoloader und stellt eine
+SQLite-Datenbank im Arbeitsspeicher bereit. Die Tests brauchen weder
+`/var/db` noch ein Template.
+
+## End-to-End-Tests
 
 ```bash
 cd tests/e2e
-npm test                        # alle Testfälle
+npm test                        # alle Testfälle (Backend und Frontend)
 npx playwright test --project=tests specs/items.spec.js
+npx playwright test --project=tests specs/frontend/
 npm run report                  # HTML-Bericht der letzten Ausführung
 ```
 
 Jede Spec setzt die Datenbank zu Beginn auf den Ausgangszustand zurück
 (`resetDatabase()` ruft `tests/mock/setup.php` auf), Tests sind daher
 voneinander unabhängig.
+
+Die Tests unter `specs/frontend/` prüfen `index.php`. Das Frontend ist nicht
+Teil des Refactorings des Admin-Backends; die Tests halten seinen heutigen
+Stand fest, damit ein späterer Umbau abgesichert ist.
+
+`tests/mock/router.php` bildet die Rewrite-Regeln aus `src/.htaccess` nach,
+damit auch die sprechenden Adressen (`/content/…`, `/action/…`, `/rss/…`)
+so funktionieren wie unter Apache.
 
 ## Screenshots aufnehmen
 
@@ -90,9 +117,15 @@ cd tests/e2e
 npm run screenshots
 ```
 
-Legt für jeden Bildschirm aus `lib/screens.js` Screenshots unter
-`tests/screenshots/<variante>/<id>.png` ab und erzeugt eine Übersicht in
-`tests/screenshots/README.md`. Der Aufbau des Backends selbst ist in
+Legt Screenshots ab und erzeugt eine Übersicht in
+`tests/screenshots/README.md`:
+
+* Backend aus `lib/screens.js` unter `tests/screenshots/<variante>/<id>.png`
+  (`desktop`, `desktop-dark`, `mobile`)
+* Frontend aus `lib/frontend-screens.js` unter
+  `tests/screenshots/frontend/<variante>/<id>.png` (`desktop`, `mobile`)
+
+Der Aufbau des Backends selbst ist in
 [src/backend/README.md](../src/backend/README.md) beschrieben.
 
 ## Statische Analyse
@@ -104,8 +137,18 @@ composer install
 vendor/bin/psalm
 ```
 
+## Alles zusammen
+
+```bash
+composer install && vendor/bin/psalm && vendor/bin/phpunit
+php tests/mock/setup.php
+cd tests/e2e && npm install && npm test
+```
+
 ## Neue Bildschirme aufnehmen
 
-`tests/e2e/lib/screens.js` ist die zentrale Liste. Ein neuer Eintrag wird
-automatisch vom Smoke-Test (`specs/screens.spec.js`) und von der
-Screenshot-Aufnahme berücksichtigt.
+`tests/e2e/lib/screens.js` (Backend) und `lib/frontend-screens.js`
+(Frontend) sind die zentralen Listen. Ein neuer Eintrag wird automatisch vom
+jeweiligen Smoke-Test (`specs/screens.spec.js`,
+`specs/frontend/bildschirme.spec.js`) und von der Screenshot-Aufnahme
+berücksichtigt.

@@ -6,7 +6,8 @@
         "slim/psr7": "^1.0"
     },
     "require-dev": {
-        "vimeo/psalm": "^6.0"
+        "vimeo/psalm": "^6.0",
+        "phpunit/phpunit": "^12.5.8"
     },
     "autoload": {
         "psr-4": {
@@ -18,5 +19,14 @@
             "name": "Torsten Simon",
             "email": "anfragen@tsgames.de"
         }
-    ]
+    ],
+    "autoload-dev": {
+        "psr-4": {
+            "Pms\\Tests\\Unit\\": "tests/unit/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "psalm": "psalm"
+    }
 }

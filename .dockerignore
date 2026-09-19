@@ -6,4 +6,7 @@
 
 # Entwicklungsdaten
 /tests/.runtime/
+/.phpunit.cache/
+/phpunit.xml
+/psalm.xml
 .git
