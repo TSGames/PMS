@@ -444,7 +444,7 @@ if($config_values->topusers)
         }
         if($top_rand==$i)
         {
-            $top_user="<table class=\"top_users\"><tr><td><div align=\"center\">".user_out($i+1,$users[$i][1],0,1,0,0,$users[$i][0])."[".make_link(language("TOP_USER_MORE"),"action=topuser","","","")."]</div></td></tr></table>";
+            $top_user="<table class=\"top_users\"><tr><td><div class=\"align_center\">".user_out($i+1,$users[$i][1],0,1,0,0,$users[$i][0])."[".make_link(language("TOP_USER_MORE"),"action=topuser","","","")."]</div></td></tr></table>";
         }
     }
 }
@@ -551,16 +551,16 @@ if($action=="user_panel" && $login)
     {
         $content.="</td></tr><tr><td>".make_contentimg("user",$user_id,$image,0)."</td><td><input type=\"checkbox\" name=\"image_delete\" value=\"1\"> ".language("USER_PANEL_AVATAR_DELETE");
     }
-    $top="<tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"top\" value=\"1\" ".$top."> ".language("USER_PANEL_SHOW_TOP")."</center></td></tr>";
+    $top="<tr><td colspan=\"2\" class=\"align_center\"><input type=\"checkbox\" name=\"top\" value=\"1\" ".$top."> ".language("USER_PANEL_SHOW_TOP")."</td></tr>";
     if(!$config_values->topusers)
     {
         $top="<input type=\"hidden\" name=\"top\" value=\"".from_db("user",$user_id,"top")."\">";
     }
     $content.="
-    <tr><td colspan=\"2\"><center><input type=\"checkbox\" name=\"showmail\" value=\"1\" ".$showmail."> ".language("USER_PANEL_SHOW_MAIL")."</center></td></tr>".$top."
+    <tr><td colspan=\"2\" class=\"align_center\"><input type=\"checkbox\" name=\"showmail\" value=\"1\" ".$showmail."> ".language("USER_PANEL_SHOW_MAIL")."</td></tr>".$top."
     <br><br><td></tr>
-    <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"user_config\" value=\"".language("USER_PANEL_SAVE")."\"></center></td></tr>
-    </table></center>
+    <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"user_config\" value=\"".language("USER_PANEL_SAVE")."\"></td></tr>
+    </table>
     </td></tr></table>
     </form>";
 }
@@ -918,18 +918,18 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             {
                 $content.=language("PASSWORD_RECOVER_ERROR");
             }
-            $content.="</div></center>";
+            $content.="</div>";
         }
         else
         {
             if($password_recover)
             $content.="<div class=\"password_info\">".$password_recover."<br><br></div>";
             
-            $content.=form()."<div align=\"center\"><table>
+            $content.=form()."<div class=\"align_center\"><table>
             <tr><td>".language("PASSWORD_RECOVER_NAME")."</td><td><input type=\"text\" name=\"name\" maxlength=\"32\"></td></tr>
             <tr><td></td></tr>
-            <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"recover_pass\" value=\"".language("PASSWORD_RECOVER_BUTTON")."\"></center></td></tr>
-            </table></center></div>
+            <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"recover_pass\" value=\"".language("PASSWORD_RECOVER_BUTTON")."\"></td></tr>
+            </table></div>
             </form>";
         }
         $content.="</td></tr></table>";
@@ -1015,13 +1015,13 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         {
             $content.="<div class=\"register_fail\">".$register_fail."<br></div>";
         }
-        $content.="<div class=\"register_form\" align=\"center\">
+        $content.="<div class=\"register_form align_center\">
         <table>
-        <tr><td width=\"170px\">".language("REGISTER_NAME")."</td><td><input type=\"text\" name=\"name\" maxlength=\"32\" value=\"".$name."\"></td></tr>".make_antispam()."
+        <tr><td class=\"form_label\">".language("REGISTER_NAME")."</td><td><input type=\"text\" name=\"name\" maxlength=\"32\" value=\"".$name."\"></td></tr>".make_antispam()."
         <tr><td>".language("REGISTER_PW")."</td><td><input type=\"password\" name=\"password\" maxlength=\"32\" value=\"".$password."\"></td></tr>
         <tr><td>".language("REGISTER_PW_REPEAT")."</td><td><input type=\"password\" name=\"passwordr\" maxlength=\"32\" value=\"".$passwordr."\"></td></tr>
         <tr><td>".language("REGISTER_MAIL")."</td><td><input type=\"text\" name=\"mail\" maxlength=\"100\" value=\"".$mail."\"><br><br></td></tr>
-        <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"user\" value=\"".language("REGISTER_BUTTON")."\"></center></td></tr>
+        <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"user\" value=\"".language("REGISTER_BUTTON")."\"></td></tr>
         </table></div>
         </form></td></tr></table>";
     }
@@ -1063,11 +1063,11 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                 }
                 if($current>0)
                 {
-                    $last="<th align=\"left\"><div class=\"switch\">".make_link(language("ITEM_PREVIOUS"),"",$cat,$subcat,$ids[$current-1])."</div></th>";
+                    $last="<th class=\"switch_prev\"><div class=\"switch\">".make_link(language("ITEM_PREVIOUS"),"",$cat,$subcat,$ids[$current-1])."</div></th>";
                 }
                 if($max>$current+1)
                 {
-                    $next="<th align=\"right\"><div class=\"switch\">".make_link(language("ITEM_NEXT"),"",$cat,$subcat,$ids[$current+1])."</div></th>";
+                    $next="<th class=\"switch_next\"><div class=\"switch\">".make_link(language("ITEM_NEXT"),"",$cat,$subcat,$ids[$current+1])."</div></th>";
                 }
             }
             unset($edit);
@@ -1161,7 +1161,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     if(!$item_edit_mode)$i_con=str_replace("#item_picture",make_contentimg("item",$item,$image,1),$i_con);
                 }
                 else
-                $content.="<tr><td><center>".make_contentimg("item",$item,$image,1)."<br><br></td></tr>";
+                $content.="<tr><td class=\"align_center\">".make_contentimg("item",$item,$image,1)."</td></tr>";
             }
             if($i_con && !ctype_space($i_con))
             {
@@ -1233,7 +1233,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     }
                     $comment_str=$comment_str."
                     <a name=\"comments\"></a>
-                    <center><table align=\"center\" width=\"540px\">";
+                    <table class=\"comment_form\">";
                     $com_title_top=language("COMMENT_TOP");
                     $com_title_middle=language("COMMENT_TITLE");
                     $com_title_bottom=language("COMMENT_BOTTOM");
@@ -1248,7 +1248,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     }
                     if($last_comment && $last_comment!=-1)
                     {
-                        $comment_str=$comment_str."<tr><td colspan=\"2\"><div class=\"comment_error\"><center>".$last_comment."</center></div><br><br></td></tr>";
+                        $comment_str=$comment_str."<tr><td colspan=\"2\"><div class=\"comment_error align_center\">".$last_comment."</div><br><br></td></tr>";
                     }
                     if($last_comment!=-1)
                     {
@@ -1276,16 +1276,16 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             $comment_str=$comment_str."
                             <input type=\"hidden\" name=\"id\" value=\"".$id."\">
                             <tr><td colspan=\"2\"><div class=\"comment_write\">".$com_title_top."</div></td></tr>
-                            <tr><td width=\"210px\">".language("COMMENT_NAME")."</td><td width=\"370px\">".$name."</td></tr>
+                            <tr><td class=\"comment_label\">".language("COMMENT_NAME")."</td><td class=\"comment_value\">".$name."</td></tr>
                             <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".clear_comment($a->title)."\">
                             <tr><td>".$com_title_bottom."</td><td><textarea name=\"comment\" rows=\"5\" cols=\"39\">".clear_comment($a->comment)."</textarea></td></tr>
-                            <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"edit_comment\" value=\"".$com_send."\"><br><br></center></form></td></tr></table>";
+                            <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"edit_comment\" value=\"".$com_send."\"></form></td></tr></table>";
                         }
                         else
                         {
                             $comment_str=$comment_str."
                             <tr><td colspan=\"2\"><div class=\"comment_write\">".$com_title_top."</div></td></tr>
-                            <tr><td width=\"210px\">".language("COMMENT_NAME")."</td><td width=\"370px\">".$name."</td></tr>
+                            <tr><td class=\"comment_label\">".language("COMMENT_NAME")."</td><td class=\"comment_value\">".$name."</td></tr>
                             <tr><td>".language("COMMENT_MAIL");
                             if(!$login)
                             {
@@ -1294,11 +1294,11 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             $comment_str=$comment_str."</td><td>".$mail."</td></tr>".$anti_spam."
                             <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".str_replace('"','&quot;',stripslashes($com_title))."\">
                             <tr><td>".$com_title_bottom."</td><td><textarea name=\"comment\" rows=\"5\" cols=\"39\">".stripslashes($com_comment)."</textarea></td></tr>
-                            <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"post_comment\" value=\"".$com_send."\"><br><br></center></form></td></tr></table>";
+                            <tr><td colspan=\"2\" class=\"align_center\"><input type=\"submit\" name=\"post_comment\" value=\"".$com_send."\"></form></td></tr></table>";
                         }
                     }
                 }
-                $comment_str=$comment_str."<table width=\"538px\">";
+                $comment_str=$comment_str."<table class=\"comment_list\">";
                 // comments:
                 $limit=$config_values->numcomments;
                 $limit_name=language("COMMENT_SHOWALL");
@@ -1383,7 +1383,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             $rowspan+=1;
                         }
                     }
-                    $comment_str=$comment_str."<tr><td width=\"434px\" colspan=\"2\"><a name=\"comment_".$a->id."\"></a><div class=\"comment_heading\">".clear_comment($title)."</div></td><td width=\"40px\">".$c_edit.$delete."</td><td width=\"64px\" rowspan=\"".$rowspan."\">".$ava."</td></tr>
+                    $comment_str=$comment_str."<tr><td class=\"comment_main\" colspan=\"2\"><a name=\"comment_".$a->id."\"></a><div class=\"comment_heading\">".clear_comment($title)."</div></td><td class=\"comment_actions\">".$c_edit.$delete."</td><td class=\"comment_avatar\" rowspan=\"".$rowspan."\">".$ava."</td></tr>
                     <tr><td>".language("COMMENT_LIST_FROM")." ".$name.$add_name."</td><td>".language("COMMENT_LIST_DATE")." ".make_date($date,0)."</td></tr>".$ip."
                     <tr><td colspan=\"2\">";
                     if(($mail && !$a->user) || ($a->user && from_db("user",$a->user,"showmail")))
@@ -1400,7 +1400,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                         $comment_str=$comment_str.make_link_mark($limit_name,"comments=all",$cat,$subcat,$item,"comments");
                     }
                 }
-                $comment_str=$comment_str."</center>";
+                
             }
         }
     }
@@ -1489,8 +1489,8 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $poll=$poll."<div class=\"poll_answer\"><input type=\"radio\" name=\"answer\" value=\"".$i."\"".$sele.">".$answer[$sel][$i]."</div>";
                 }
             }
-            $poll=$poll.hidden_positions()."<br><center><input type=\"submit\" name=\"poll_vote\" value=\"".language("POLL_VOTE")."\">
-            <br><input type=\"submit\" name=\"poll_results\" value=\"".language("POLL_RESULTS")."\"></center></form>";
+            $poll=$poll.hidden_positions()."<div class=\"poll_buttons\"><input type=\"submit\" name=\"poll_vote\" value=\"".language("POLL_VOTE")."\">
+            <br><input type=\"submit\" name=\"poll_results\" value=\"".language("POLL_RESULTS")."\"></div></form>";
         }
         else
         {
@@ -1616,7 +1616,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     }
     else
     {
-        $most_discussed="<table><tr><td><center>".language("MOST_DISCUSSED_NONE")."</center></td></tr></table>";
+        $most_discussed="<div class=\"most_discussed_none\">".language("MOST_DISCUSSED_NONE")."</div>";
     }
     include('counter.php');
     
