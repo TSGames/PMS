@@ -553,3 +553,9 @@ Erweiterter Modus
 
 ##EDIT_VAR
 Klicke hier, um den Inhalt der Variable zu bearbeiten
+
+##FORM_REJECTED
+Die Anfrage stammt nicht von dieser Seite oder Deine Sitzung ist abgelaufen. Bitte lade die Seite neu und versuche es erneut.
+
+##COMMENT_DELETE
+Kommentar löschen

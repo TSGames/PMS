@@ -3,7 +3,10 @@ define("PMS_FRONTEND",1);
 require(__DIR__.'/bootstrap.php');
 require('functions.php');
 
+use Pms\Data\Db;
+use Pms\Frontend\Http\Forms;
 use Pms\Frontend\Http\Kernel;
+use Pms\Support\Request;
 
 $template="/var/template/template.html";
 
@@ -38,9 +41,10 @@ if($ban=Kernel::ban())
     $banned_time=$ban->time;
 }
 
-if(($_POST['user_login']==language("USER_LOGIN") || (!$_SESSION['pmsglobal'] && $_COOKIE['login_id'] && $_COOKIE['login_pw'])) && !$login)
+$login_submitted=Forms::submitted('user_login');
+if(($login_submitted || (!$_SESSION['pmsglobal'] && $_COOKIE['login_id'] && $_COOKIE['login_pw'])) && !$login)
 {
-    if($_POST['user_login']==language("USER_LOGIN"))
+    if($login_submitted)
     {
         
         load_hidden();
@@ -128,7 +132,7 @@ if(@array_key_exists("recover_pass",$_POST))
     }
 }
 
-if($_POST['user']==language("REGISTER_BUTTON"))
+if(Forms::submitted('user'))
 {
     $action="register";
     $name=$_POST['name'];
@@ -178,16 +182,17 @@ if($action=="logout")
 
 $item_allowed_edit=$login==1 && from_db("user",$user_id,"typ")>1;
 $item_edit_mode=$item_allowed_edit && $_GET["edit"];
-if($_POST['item_edit'] && $_POST['item_id'] && $item_allowed_edit)
+if(Forms::submitted('item_edit') && $_POST['item_id'] && $item_allowed_edit)
 {
     $item=from_db("item",$_POST['item_id']*1,"id");
     if($item)
     {
-        $name=$pms_db_connection->escape($_POST["edit_name"]);
-        $description=$pms_db_connection->escape($_POST["edit_description"]);
-        $content=$pms_db_connection->escape($_POST["edit_content"]);
-        $pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET name = '$name', description = '$description', content = '$content', time_changed = '".time()."' WHERE id = '".$item."'");
-        unset($name);unset($description);unset($content);
+        Db::update("item",(int)$item,array(
+            "name" => Request::text("edit_name"),
+            "description" => Request::text("edit_description"),
+            "content" => Request::text("edit_content"),
+            "time_changed" => time(),
+        ));
     }
 }
 
@@ -197,7 +202,7 @@ if($item) $check=from_db("item",$item,"subcat");
 if(!$check) $check=$subcat;
 check_subcatjump($check);
 
-if($_POST['rate']==language("RATE_BUTTON"))
+if(Forms::submitted('rate'))
 {
     $item=$_POST['id'];
     $cname='rate_'.$item;
@@ -210,11 +215,11 @@ if($_POST['rate']==language("RATE_BUTTON"))
             $rating=from_db("item",$item,"rating",0)+$_POST['rating'];
             $numratings=from_db("item",$item,"numratings",0)+1;
             user_points($user_id,10);
-            $pms_db_connection->query("UPDATE ".$pms_db_prefix."item SET rating = '$rating', numratings = '$numratings' WHERE id = '$item' LIMIT 1;");
+            Db::update("item",(int)$item,array("rating" => $rating, "numratings" => $numratings));
         }
     }
 }
-if($_POST['user_config']==language("USER_PANEL_SAVE") && $login)
+if(Forms::submitted('user_config') && $login)
 {
     $action="user_panel";
     $password=$_POST['password'];
@@ -233,16 +238,17 @@ if($_POST['user_config']==language("USER_PANEL_SAVE") && $login)
         $register_fail=$a;
     }
 }
-if($_GET['search']==language("SEARCH_BUTTON") || $_GET['search_query'])
+if(array_key_exists('search',$_GET) || $_GET['search_query'])
 $action="search";
 
 
-if($_POST['poll']==language("POLL_VOTE") || $_POST['poll']==language("POLL_RESULTS"))
+$poll_vote=Forms::submitted('poll_vote');
+if($poll_vote || Forms::submitted('poll_results'))
 {
     load_hidden();
     $poll_id=$_POST['poll_id'];
     $cname='poll'.$poll_id;
-    if(!$_SESSION[$cname] && !$_COOKIE[$cname] && $_POST['poll']==language("POLL_VOTE"))
+    if(!$_SESSION[$cname] && !$_COOKIE[$cname] && $poll_vote)
     {
         setcookie($cname,1,time()+60*60*24*1000,"/",$cookie_domain);
         $_SESSION[$cname]=1;
@@ -260,10 +266,10 @@ if(@array_key_exists("edit_comment",$_POST) && $login && (from_db("user",$_SESSI
     {
         $action="guestbook";
     }
-    $commentid=$pms_db_connection->escape($_POST['id']);
-    $com_title=$pms_db_connection->escape($_POST['title']);
-    $com_comment=$pms_db_connection->escape($_POST['comment']);
-    if($pms_db_connection->query("UPDATE ".$pms_db_prefix."comments SET title = '$com_title', comment = '$com_comment' WHERE id = '$commentid' LIMIT 1;"))
+    $commentid=Request::int('id');
+    $com_title=Request::text('title');
+    $com_comment=Request::text('comment');
+    if(Db::update("comments",$commentid,array("title" => $com_title, "comment" => $com_comment)))
     {
         $last_comment=language("COMMENT_SUCCESS");
         if($action=="guestbook")
@@ -297,9 +303,9 @@ elseif($action=="user")
 {
     $item=get_errorpage();
 }
-if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==language("GUESTBOOK_SEND"))
+if(Forms::submitted('post_comment'))
 {
-    $item=$pms_db_connection->escape($_POST['item']);
+    $item=Request::int('item');
     if(from_db("item",$item,"special")==4) // guestbook
     $action="guestbook";
     
@@ -308,11 +314,11 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
     $date=time();
     if(!$user)
     {
-        $com_name=$pms_db_connection->escape($_POST['name']);
-        $com_mail=$pms_db_connection->escape($_POST['mail']);
+        $com_name=Request::string('name');
+        $com_mail=Request::string('mail');
     }
-    $com_title=$pms_db_connection->escape($_POST['title']);
-    $com_comment=$pms_db_connection->escape($_POST['comment']);
+    $com_title=Request::text('title');
+    $com_comment=Request::text('comment');
     $ok=1;
     if(!comp_spam($_POST['spam'],$_POST['session'],$_POST['spamcount']) && !$com_user)
     {
@@ -344,11 +350,11 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
         $ok=0;
         $last_comment=language("GUESTBOOK_ERROR_NOT_ACTIVATED");
     }
-    $link=$pms_db_connection->query(make_sql("comments","item = '$item' AND title = '$com_title' AND comment = '$com_comment' AND user = '$com_user'","id"));
-    if($link && $ok)
+    if($ok)
     {
-        $a=$pms_db_connection->fetchObject($link);
-        if($a->id)
+        $a=Db::first("SELECT id FROM ".Db::table("comments")." WHERE item = ? AND title = ? AND comment = ? AND user = ? ORDER BY id",
+            array($item,$com_title,$com_comment,(int)$com_user));
+        if($a)
         {
             $last_comment=language("COMMENT_ERROR_MULTIPLE_POST");
             if($action=="guestbook")
@@ -359,7 +365,11 @@ if($_POST['post_comment']==language("COMMENT_SEND") || $_POST['post_comment']==l
     }
     if($ok)
     {
-        if($pms_db_connection->query("INSERT INTO ".$pms_db_prefix."comments (item,title,comment,name,user,date,mail,ip) VALUES ('$item','$com_title','$com_comment','$com_name','$com_user','$date','$com_mail','$ip');"))
+        if(Db::insert("comments",array(
+            "item" => $item, "title" => $com_title, "comment" => $com_comment,
+            "name" => $com_name, "user" => (int)$com_user, "date" => $date,
+            "mail" => $com_mail, "ip" => $ip,
+        )))
         {
             $last_comment=-1; 
             // Keine ausgabe ist besser!
@@ -556,11 +566,11 @@ elseif($action=="user_panel")
 {
     $site_not_found=1;
 }
-if($comment_get=="delete" && $id && $login)
+if($comment_get=="delete" && $id && $login && Forms::allowed())
 {
     if(from_db("user",$user_id,"typ")>=1)
     {
-        $pms_db_connection->query("DELETE FROM ".$pms_db_prefix."comments WHERE id = '$id' LIMIT 1;");
+        Db::delete("comments",(int)$id);
     }
 }
 if($subcat)
@@ -897,7 +907,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $c=rand(0,9);
                     $pass=$pass.$a.$b.$c;
                 }
-                $pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET password = '".md5($pass)."' WHERE id = '$user_sel' LIMIT 1;");
+                Db::update("user",(int)$user_sel,array("password" => md5($pass)));
                 $content.=language("PASSWORD_RECOVER_SUCCESS");
                 my_mail(from_db("user",$user_sel,"mail"),str_replace("%1",$config_values->name,language("PASSWORD_RECOVER_MAIL_SUBJECT")),
                 str_replace(array('%1','%2'),array(from_db("user",$user_sel,"name"),$pass),language("PASSWORD_RECOVER_MAIL_BODY")));
@@ -937,7 +947,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         if($key==$_GET['key'])
         {
             $content.=language("REGISTER_FINISH_SUCCESS");
-            $pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET active = 1 WHERE id = '$id' LIMIT 1;");
+            Db::update("user",(int)$id,array("active" => 1));
         }
         else
         {
@@ -1265,7 +1275,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             <input type=\"hidden\" name=\"id\" value=\"".$id."\">
                             <tr><td colspan=\"2\"><div class=\"comment_write\">".$com_title_top."</div></td></tr>
                             <tr><td width=\"210px\">".language("COMMENT_NAME")."</td><td width=\"370px\">".$name."</td></tr>
-                            <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".str_replace('"','&quot;',clear_comment($a->title))."\">
+                            <tr><td>".$com_title_middle."</td><td><input type=\"text\" name=\"title\" maxlength=\"64\" size=\"40\" value=\"".clear_comment($a->title)."\">
                             <tr><td>".$com_title_bottom."</td><td><textarea name=\"comment\" rows=\"5\" cols=\"39\">".clear_comment($a->comment)."</textarea></td></tr>
                             <tr><td colspan=\"2\"><center><input type=\"submit\" name=\"edit_comment\" value=\"".$com_send."\"><br><br></center></form></td></tr></table>";
                         }
@@ -1357,11 +1367,16 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                         }
                         if(from_db("user",$user_id,"typ")>=1 || $a->user == $user_id)
                         {
-                            $c_edit=make_link_mark(make_img("edit.png",0)." ",$add_act."comment=edit&id=".$a->id,0,0,$item_add,"comments");
+                            // Ein Bedienelement braucht einen Textersatz: Die
+                            // Symbolbilder fehlen in der Auslieferung, und
+                            // ohne alt bleibt der Verweis unsichtbar.
+                            $c_edit=make_link_mark(make_imgalt("edit.png",0,language("COMMENT_EDIT"),"","",language("COMMENT_EDIT"))." ",$add_act."comment=edit&id=".$a->id,0,0,$item_add,"comments");
                         }
                         if(from_db("user",$user_id,"typ")>=1)
                         {
-                            $delete=make_link_mark(make_img("delete.png",0),$add_act."comment=delete&id=".$a->id,0,0,$item_add,"comments");
+                            // Das Loeschen laeuft ueber einen Verweis, deshalb
+                            // traegt er das Token der Sitzung mit.
+                            $delete=make_link_mark(make_imgalt("delete.png",0,language("COMMENT_DELETE"),"","",language("COMMENT_DELETE")),$add_act."comment=delete&id=".$a->id."&".\Pms\Support\Csrf::FIELD."=".\Pms\Support\Csrf::token(),0,0,$item_add,"comments");
                             $ip="<tr><td colspan=\"2\">".language("COMMENT_LIST_IP")." ".$a->ip."</td></tr>";
                             $rowspan+=1;
                         }
@@ -1614,8 +1629,8 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $poll=$poll."<div class=\"poll_answer\"><input type=\"radio\" name=\"answer\" value=\"".$i."\"".$sele.">".$answer[$sel][$i]."</div>";
                 }
             }
-            $poll=$poll.hidden_positions()."<br><center><input type=\"submit\" name=\"poll\" value=\"".language("POLL_VOTE")."\">
-            <br><input type=\"submit\" name=\"poll\" value=\"".language("POLL_RESULTS")."\"></center></form>";
+            $poll=$poll.hidden_positions()."<br><center><input type=\"submit\" name=\"poll_vote\" value=\"".language("POLL_VOTE")."\">
+            <br><input type=\"submit\" name=\"poll_results\" value=\"".language("POLL_RESULTS")."\"></center></form>";
         }
         else
         {
@@ -1785,6 +1800,9 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     $search_plugin=form("","get")."<table class=\"search\"><tr class=\"search\"><td class=\"search\"><center><input type=\"text\" class=\"search_field\" size=\"17\" name=\"search_query\" value=\"".str_replace('"',"&quot;",$search_query3)."\"><br>
     <input type=\"submit\" class=\"search_button\" name=\"search\" value=\"".language("SEARCH_BUTTON")."\"></form></center></td></tr></table>";
     $poll=smileys($poll);
+    // Wurde etwas abgelehnt, weil das Token fehlte, soll der Besucher das
+    // sehen - sonst wirkt die Seite, als sei nichts passiert.
+    $content=Forms::notice().$content;
     unset($dyn);
     
     for($i=0;!$item_edit_mode && $i<2;$i++)

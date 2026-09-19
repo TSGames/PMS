@@ -160,9 +160,13 @@
 	 */
 	function clear_comment($str)
 	{
-		$search=array('<','>','&lt;br&gt;');
-		$replace=array('&lt;','&gt;','<br>');
-		return str_replace($search,$replace,$str);
+		// Auch das Anfuehrungszeichen wird maskiert: Kommentartitel landen
+		// nicht nur im Text, sondern auch im value-Attribut des
+		// Bearbeitungsformulars. Im Text macht das keinen Unterschied, der
+		// Browser stellt &quot; als " dar.
+		$search=array('<','>','"','&lt;br&gt;');
+		$replace=array('&lt;','&gt;','&quot;','<br>');
+		return str_replace($search,$replace,(string)$str);
 	}
 
 	/**

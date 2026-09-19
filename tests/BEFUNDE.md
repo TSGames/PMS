@@ -5,8 +5,8 @@ aufgefallen. Alle sind inzwischen behoben; die Tests in
 `tests/e2e/specs/known-defects.spec.js`, `security.spec.js` und
 `specs/frontend/` halten fest, dass sie nicht zurückkehren.
 
-B13 bis B19 sind später dazugekommen - B13 und B14 beim Umbau des
-Backends, B15 bis B19 durch die neuen Frontend-Tests. Die beiden letzten
+B13 bis B22 sind später dazugekommen - B13 und B14 beim Umbau des
+Backends, B15 bis B22 durch den Umbau des Frontends. Die beiden letzten
 betreffen `index.php` und seine Hilfsdateien, also Code außerhalb des
 Refactorings; sie waren Abbrüche und deshalb nicht aufschiebbar.
 
@@ -130,6 +130,37 @@ antwortet dann mit einem fatalen Fehler. Im Mock-System fiel das nie auf,
 weil der Entwicklungsserver ohne mysqli startet. Beide Nachbauten sind
 entfernt; die einzige Aufrufstelle benutzt jetzt `fetchObject()` direkt.
 
+### B20 – Jede verändernde Aktion ließ sich von außen auslösen (kritisch)
+Kein Formular des Frontends trug ein Token, und keine Verarbeitung prüfte
+eines. Abstimmen, Bewerten, Registrieren, Kommentieren, Anmelden und das
+Ändern der eigenen Benutzerdaten ließen sich damit von einer fremden Seite
+aus auslösen. Am schwersten wog das **Löschen von Kommentaren**: Es lief
+über einen einfachen Verweis (`index.php?comment=delete&id=…`), ohne
+Rückfrage und ohne Token - ein eingebettetes Bild auf einer beliebigen
+Seite genügte, um einem angemeldeten Moderator Kommentare zu löschen. Das
+ist dieselbe Lücke wie B4 im Backend.
+
+`form()` hängt das Token jetzt an jedes POST-Formular, und
+`Frontend\Http\Forms` koppelt die Prüfung an das Erkennen des Formulars -
+wer `submitted()` benutzt, kann sie nicht vergessen. Der Löschverweis trägt
+das Token mit.
+
+### B21 – Bearbeiten und Löschen von Kommentaren war unsichtbar
+Beide Bedienelemente bestanden aus einem Symbolbild ohne Textersatz
+(`make_img()` setzt `alt=""` fest). Die Bilddateien `edit.png` und
+`delete.png` liegen weder im Repository noch im Image - im Browser blieb
+also eine leere Fläche ohne Ausdehnung. Die Elemente haben jetzt einen
+Textersatz; die fehlenden Bilder sind ein eigener Punkt für den Umbau der
+Ausgabe.
+
+### B22 – Formulare erkannte index.php an der Beschriftung ihrer Schalter
+Neun Stellen verglichen `$_POST['poll'] == language("POLL_VOTE")`. Wer eine
+Beschriftung in der Sprachdatei änderte, legte die zugehörige Funktion
+still lahm - ohne Fehlermeldung. Außerdem ließ sich an einer solchen
+Abfrage kein Token unterbringen. Der Versand wird jetzt am Feldnamen
+erkannt; die beiden Schalter der Umfrage haben dafür eigene Namen
+(`poll_vote`, `poll_results`) statt eines gemeinsamen mit zwei Werten.
+
 ### Weitere Kleinigkeiten
 * Die Benutzerliste erzeugte eine mehrdeutige Abfrage
   (`ambiguous column name: id`).
@@ -157,3 +188,10 @@ nicht in diesem Refactoring erledigt.
 SQLite kennt kein `TRUNCATE`; die Tabelle `visitors` wird beim Tageswechsel
 deshalb nie geleert (Meldung `near "TRUNCATE": syntax error` im Log).
 Betrifft den Besucherzähler, nicht das Backend.
+
+### Formulare über Tabellengrenzen
+Mehrere Formulare öffnen vor einer Tabelle und schließen innerhalb davon -
+das Suchfeld etwa öffnet vor `<table class="search">` und schließt vor
+`</table>`. Der Browser verschiebt die Grenze beim Einlesen, weshalb im DOM
+Felder im falschen Formular landen. Ausgeliefert wird gültiges HTML, die
+Wirkung zeigt sich erst im Browser. Gehört zum Umbau der Ausgabe.
