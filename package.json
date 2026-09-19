@@ -11,6 +11,7 @@
   "dependencies": {
     "@codemirror/commands": "^6.8.1",
     "@codemirror/lang-html": "^6.4.12",
+    "@codemirror/lang-php": "^6.0.2",
     "@codemirror/language": "^6.11.3",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.6",

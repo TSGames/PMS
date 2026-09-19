@@ -33,9 +33,17 @@
 }
 
 .code-editor .cm-editor {
+    /* Mehrzeilig, auch wenn nur eine Zeile drinsteht: Die Felder nehmen
+       HTML-Schnipsel und [php]-Blöcke auf, da hilft Platz. */
+    min-height: 170px;
     max-height: 420px;
     font-family: var(--font-mono);
     font-size: 13px;
+}
+
+.code-editor .cm-editor,
+.code-editor .cm-scroller {
+    height: auto;
 }
 
 .code-editor .cm-editor.cm-focused {
@@ -80,4 +88,26 @@
 
 :root.dark .code-editor .cm-cursor {
     border-left-color: var(--c-text);
+}
+
+/**
+ * Die Sondermarken von PMS.
+ *
+ * [php]…[/php] und [code]…[/code] sind weder HTML noch PHP-Syntax, sondern
+ * eine Eigenheit von PMS. Was zwischen [php] steht, wird beim Anzeigen
+ * ausgeführt - deshalb ist der Block hinterlegt, damit man seine Grenzen
+ * sieht.
+ */
+.code-editor .cm-pms-tag {
+    color: var(--c-accent);
+    font-weight: 600;
+}
+
+.code-editor .cm-pms-php {
+    background: var(--c-accent-soft);
+    border-radius: 2px;
+}
+
+:root.dark .code-editor .cm-pms-php {
+    background: rgba(99, 102, 241, 0.16);
 }
