@@ -801,13 +801,13 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             {
                 if($subcat)
                 {
-                    $edit=" [<a class=\"item_edit\" href=\"admin.php?action=subcat&edit=".$subcat."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
-                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"admin.php?action=item&new=yes&cat=".$cat."&subcat=".$subcat."\" target=\"_blank\">".language("ITEM_ADD")."</a>]</div>";
+                    $edit=" [<a class=\"item_edit\" href=\"".admin_url("subcat",["edit"=>$subcat])."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
+                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"".admin_url("item",["new"=>"yes","cat"=>$cat,"subcat"=>$subcat])."\" target=\"_blank\">".language("ITEM_ADD")."</a>]</div>";
                 }
                 else
                 {
-                    $edit=" [<a class=\"item_edit\" href=\"admin.php?action=cat&edit=".$cat."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
-                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"admin.php?action=subcat&new=yes&cat=".$cat."\" target=\"_blank\">".language("SUBCAT_ADD")."</a>]</div>";
+                    $edit=" [<a class=\"item_edit\" href=\"".admin_url("cat",["edit"=>$cat])."\" target=\"_blank\">".language("ITEM_EDIT")."</a>]";
+                    $edit2="<br><div class=\"item_add\">[<a class=\"item_add\" href=\"".admin_url("subcat",["new"=>"yes","cat"=>$cat])."\" target=\"_blank\">".language("SUBCAT_ADD")."</a>]</div>";
                 }
             }
         }
@@ -1072,7 +1072,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             }
             unset($edit);
             if($item_edit_mode && $item)
-            $edit=" [<a class=\"item_edit\" href=\"admin.php?action=item&edit=".$item."\">".language("ITEM_EDIT_EXTENDED")."</a>]";
+            $edit=" [<a class=\"item_edit\" href=\"".admin_url("item",["edit"=>$item])."\">".language("ITEM_EDIT_EXTENDED")."</a>]";
             else if($item_allowed_edit && $item)
             $edit=" [<a class=\"item_edit\" href=\"index.php?item=".$item."&edit=true\">".language("ITEM_EDIT")."</a>]";
             
@@ -1172,7 +1172,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             <tr style=\"width:100%;\"><td><table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"><tr>".$last.$next."</tr></table></td></tr>";
             $content.="</table>";
             if($item_edit_mode)
-            $content.='<div align="center"><input type="submit" name="item_edit" value="'.language("ITEM_EDIT_SAVE").'"></form></div>';
+            $content.='<div class="item_edit_actions"><input type="submit" name="item_edit" value="'.language("ITEM_EDIT_SAVE").'"></div></form>';
             
             
             if($action=="download")
@@ -1439,7 +1439,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
     }
     if($login==1 && from_db("user",$user_id,"typ")>1)
     {
-        $poll=$poll."[<a href=\"admin.php?action=poll&new=yes\" target=\"_blank\">".language("POLL_ADD")."</a>]";
+        $poll=$poll."[<a href=\"".admin_url("poll",["new"=>"yes"])."\" target=\"_blank\">".language("POLL_ADD")."</a>]";
     }
     if($c==0)
     {
@@ -1469,7 +1469,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         $poll=$poll."<div class=\"poll_question\">".$question[$sel]."</div>";
         if($login==1 && from_db("user",$user_id,"typ")>1)
         {
-            $poll=$poll."[<a href=\"admin.php?action=poll&edit=".$ids[$sel]."\" target=\"_blank\">".language("POLL_EDIT")."</a>]<br>";
+            $poll=$poll."[<a href=\"".admin_url("poll",["edit"=>$ids[$sel]])."\" target=\"_blank\">".language("POLL_EDIT")."</a>]<br>";
         }
         if(!$_SESSION["poll".$ids[$sel]] && !$_COOKIE["poll".$ids[$sel]] && !$current_poll)
         {

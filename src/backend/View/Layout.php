@@ -6,6 +6,8 @@ use Pms\Backend\Http\Navigation;
 use Pms\Support\Auth;
 use Pms\Support\Flash;
 use Pms\Support\Html;
+use Pms\Support\Listing;
+use Pms\Support\Request;
 
 /**
  * Das Grundgerüst des Backends: Kopfbereich, Seitenleiste, Inhaltsbereich.
@@ -32,6 +34,9 @@ final class Layout
             'userName' => Auth::userName(),
             'navigation' => Navigation::groups(),
             'pageLabel' => Navigation::label($activeAction),
+            // Damit die Suche im Kopf den Begriff zeigt, nach dem gerade
+            // gesucht wird - sonst steht dort wieder ein leeres Feld
+            'searchTerm' => $activeAction === 'item' ? Request::string(Listing::SEARCH) : '',
             'messages' => Flash::render(),
         ];
         self::template('page', $data);

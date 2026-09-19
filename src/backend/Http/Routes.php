@@ -62,6 +62,23 @@ final class Routes
         return self::basePath() . (self::PATHS[$action] ?? self::PATHS['home']);
     }
 
+    /**
+     * Vollstaendige Adresse einer Aktion, mit Parametern.
+     *
+     * Das Frontend verweist an einigen Stellen ins Backend ("Bearbeiten").
+     * Diese Verweise muessen absolut sein: Unter einer sprechenden Adresse
+     * wie /content/probenplan.html zeigt ein relatives "admin.php?..." auf
+     * /content/admin.php und damit ins Leere.
+     *
+     * @param array<string, string|int> $params
+     */
+    public static function url(string $action, array $params = []): string
+    {
+        $path = self::path($action);
+
+        return $params === [] ? $path : $path . '?' . http_build_query($params);
+    }
+
     /** Aktion zu einem Pfad, oder eine leere Zeichenkette. */
     public static function actionFor(string $path): string
     {

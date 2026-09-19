@@ -10,9 +10,11 @@
  * @var string $siteName     Name der Website
  * @var string $userName     Angemeldeter Benutzer
  * @var string $messages     Fertig gerendertes HTML der Meldungen
+ * @var string $searchTerm   Suchbegriff, wenn gerade gesucht wird
  */
 
 use Pms\Support\Html;
+use Pms\Support\Listing;
 use Pms\Backend\View\Icons;
 use Pms\Backend\View\Layout;
 
@@ -72,7 +74,7 @@ echo Layout::head(Layout::title());
         <form class="app-search" method="get" action="<?= Html::e(Html::url('item')) ?>" role="search">
             <?= Icons::render('search', 'icon icon-sm') ?>
             <label class="visually-hidden" for="app-search-input">Inhalte durchsuchen</label>
-            <input type="search" id="app-search-input" name="search" placeholder="Inhalte durchsuchen" autocomplete="off">
+            <input type="search" id="app-search-input" name="<?= Listing::SEARCH ?>" value="<?= Html::e($searchTerm) ?>" placeholder="Inhalte durchsuchen" autocomplete="off">
         </form>
         <div class="user-menu" x-data="{ open: false }" @keydown.escape="open = false">
             <button type="button" class="user-chip" @click="open = !open" :aria-expanded="open ? 'true' : 'false'" aria-haspopup="true">

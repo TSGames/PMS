@@ -43,7 +43,7 @@ box-shadow: 2px 2px 6px rgba(0, 0, 0,0.5);
     -moz-box-shadow:  2px 2px 6px rgba(0, 0, 0,0.5);
 }
 </style>
-<div class="edit_var_layer" onmouseover="this.className=\'edit_var_layer_hover\';" onmouseout="this.className=\'edit_var_layer\'" title="'.language("EDIT_VAR").'" onclick="document.location=\'admin.php?action=var&edit='.$id.'\';">'.$str.'</div>';
+<div class="edit_var_layer" onmouseover="this.className=\'edit_var_layer_hover\';" onmouseout="this.className=\'edit_var_layer\'" title="'.language("EDIT_VAR").'" onclick="document.location=\''.admin_url("var",["edit"=>$id]).'\';">'.$str.'</div>';
 }
 
 /**
@@ -133,7 +133,7 @@ function convert_action($typ,$con)
 		return "Plugin: ".$name;
 	}
 	if($typ==4)
-		return 'PMS Administration (<a href="admin.php?action='.$action_list[$con].'">'.$action_name[$con].'</a>)';
+		return 'PMS Administration (<a href="'.admin_url($action_list[$con]).'">'.$action_name[$con].'</a>)';
 }
 
 /**

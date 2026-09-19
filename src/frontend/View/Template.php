@@ -2,6 +2,8 @@
 
 namespace Pms\Frontend\View;
 
+use Pms\Support\Url;
+
 /**
  * Fuellt das Template der Website.
  *
@@ -97,7 +99,10 @@ final class Template
             $styles .= '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n";
         }
 
-        return $styles . '<link rel="stylesheet" type="text/css" href="pms.css">';
+        // Absolut, nicht "pms.css": Unter einer sprechenden Adresse wie
+        // /content/probenplan.html zeigte der relative Verweis auf
+        // /content/pms.css.
+        return $styles . '<link rel="stylesheet" type="text/css" href="' . Url::asset('pms.css') . '">';
     }
 
     /**

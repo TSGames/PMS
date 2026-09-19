@@ -61,3 +61,36 @@
     color: #aaa;
     margin-top: 4px;
 }
+
+/*
+ * Bearbeiten direkt auf der Seite (index.php?item=…&edit=true).
+ *
+ * Die Felder sind so breit wie ihre Spalte. Ohne diese Regeln richtete
+ * sich die Breite nach cols bzw. einer festen Pixelangabe und lief im
+ * Inhaltsbereich über den Rand hinaus.
+ */
+.item_edit_field {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+textarea.item_edit_field {
+    display: block;
+    resize: vertical;
+    min-height: 6em;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.45;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+    tab-size: 4;
+}
+
+.item_edit_actions {
+    margin: 1em 0;
+    text-align: center;
+}

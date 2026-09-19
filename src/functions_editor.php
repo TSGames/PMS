@@ -107,8 +107,12 @@
 		if(!$edit_mode) return $string;
 		if($mode==2) $string=cleanup_content($string);
 		$str="";
-		$add='rows="4" cols="50"';
-		if($mode==2) $add='rows="20" width="100%"';
+		// Die Breite kommt aus pms.css, nicht aus cols oder width: cols
+		// setzt eine feste Spaltenzahl, width kennt ein textarea gar
+		// nicht - beides sprengte im Inhaltsbereich die Spalte.
+		$add='rows="4"';
+		if($mode==2) $add='rows="20"';
+		$class=trim($class." item_edit_field");
 		if(!$mode) $str.='<input type="text" name="edit_'.$name.'" id="edit_'.$name.'" class="'.$class.'" value="'.str_replace('"',"&quot;",$string).'">';
 		else $str.='<textarea name="edit_'.$name.'" id="edit_'.$name.'" class="'.$class.'" '.$add.'>'.str_replace('&','&amp;',$string).'</textarea>';
 		return $str;

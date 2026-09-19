@@ -2,6 +2,23 @@
 // Module: functions_ui.php
 
 	/**
+	 * Adresse eines Backend-Bereichs, absolut.
+	 *
+	 * Ein relatives "admin.php?action=item&edit=81" zeigt unter einer
+	 * sprechenden Adresse wie /content/probenplan.html auf
+	 * /content/admin.php und damit ins Leere. Deshalb baut diese Funktion
+	 * den vollen Pfad.
+	 *
+	 * @param string $action Bereich, z.B. "item"
+	 * @param array $params Parameter der Adresse
+	 * @return string z.B. /admin/inhalte?edit=81
+	 */
+	function admin_url($action, array $params = [])
+	{
+		return \Pms\Backend\Http\Routes::url($action, $params);
+	}
+
+	/**
 	 * Display warning message box
 	 *
 	 * @param str Warning message
@@ -89,7 +106,7 @@
 		if(!$ok)
 			$str="Es ist kein Referenzobjekt angelegt. Legen Sie das Element zuerst im Haupt-PMS an!
 <br><br>
-[<a href=\"admin.php?action=".$what."\">Zurück</a>]";
+[<a href=\"".admin_url($what)."\">Zurück</a>]";
 		$str=heading($head)."<br>".$str;
 		return $str;
 	}

@@ -156,11 +156,7 @@ final class HomeController extends Controller
             $html .= '<dt>' . Html::e($label) . '</dt><dd>' . $value . '</dd>';
         }
 
-        return $html . '</dl>'
-            . '<p class="field-hint">Was sich in Version ' . Html::e($version) . ' geändert hat, steht in der '
-            . '<a href="http://www.tsgames.de/?item=270&amp;version=' . Html::e($version) . '"'
-            . ' target="_blank" rel="noopener">Versionshistorie</a>.</p>'
-            . '</div></div>';
+        return $html . '</dl></div></div>';
     }
 
     /** Beim letzten Abbruch war ein Vorgang offen; er kann nachgeholt werden. */

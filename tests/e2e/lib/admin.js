@@ -70,10 +70,13 @@ async function selectFilter(page, name, option) {
  * Sucht in einer Übersicht über das Suchfeld der Werkzeugleiste.
  */
 async function searchList(page, term) {
-  await page.fill('input[name="q"]', term);
+  // Nicht input[name="q"]: Die Suche im Kopf traegt denselben Namen und
+  // steht im Dokument weiter oben - sie wuerde ins Suchfeld der Inhalte
+  // fuehren statt in die Liste, die gerade offen ist.
+  await page.fill('#listing-search', term);
   await Promise.all([
     page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
-    page.press('input[name="q"]', 'Enter'),
+    page.press('#listing-search', 'Enter'),
   ]);
 }
 
