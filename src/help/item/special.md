@@ -1,0 +1,18 @@
+Spezialseiten
+
+**Startseite**
+Diese Seite wird angezeigt, wenn der Besucher die Website betritt.
+
+**Download-Seite**
+Diese Seite ist die sogenannte "Download-Vorschaltseite". Sie wird nur dann benötigt, wenn in der Konfiguration "Download-Vorschaltseite verwenden" aktiv ist.
+Bei Wahl dieser Option werden während der Bearbeitung verschiedene Platzhalter angezeigt, die man verwenden kann. Es muss hierbei jedoch die Groß-/Kleinschreibung der Platzhalter-Namen beachtet werden!
+
+**Gesperrter/Ungültiger Content**
+Ruft ein Benutzer ein Inhalt auf, der nicht existiert, momentan gesperrt ist oder auch einer Kategorie/Unterkategorie angehört, die gesperrt ist, blendet das System diese Seite ein.
+
+**Gästebuch**
+Diese Seite ist optional. Wenn man ein Gästebuch in das System einbinden möchte, kann man diese Spezialseite dafür verwenden.
+
+**IP gebannt**
+Ruft ein Besucher die Website auf, dessen IP bzw. IP-Bereich über das "Ban"-Modul gesperrt wurde, blendet das System diese Seite ein. 
+Bei Wahl dieser Option werden während der Bearbeitung verschiedene Platzhalter angezeigt, die man verwenden kann. Es muss hierbei jedoch die Groß-/Kleinschreibung der Platzhalter-Namen beachtet werden!

@@ -155,12 +155,12 @@ final class CatController extends Controller
             . Form::field(
                 'Sortierung',
                 Html::input('sort', $isEdit ? (int)$cat->sort : 1000, ['id' => 'sort', 'type' => 'number']),
-                ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen in der Navigation weiter oben.']
+                ['name' => 'sort', 'help' => 'cat/sort', 'hint' => 'Kleinere Zahlen stehen in der Navigation weiter oben.']
             );
 
         $lists = get_lists($isEdit ? $cat->list : '');
         if ($lists) {
-            $fields .= Form::field('Listenansicht', (string)$lists, ['name' => 'list']);
+            $fields .= Form::field('Listenansicht', (string)$lists, ['name' => 'list', 'help' => 'cat/list']);
         }
 
         $fields .= Form::check(

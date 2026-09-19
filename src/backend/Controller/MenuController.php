@@ -214,17 +214,17 @@ final class MenuController extends Controller
         $general = Form::field(
             'Name',
             Html::input('name', $values['name'], ['id' => 'name']),
-            ['name' => 'name', 'required' => true]
+            ['name' => 'name', 'help' => 'menu/name', 'required' => true]
         )
             . Form::field(
                 'Sortierung',
                 Html::input('sort', $values['sort'], ['id' => 'sort', 'type' => 'number']),
-                ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen weiter vorne.']
+                ['name' => 'sort', 'help' => 'menu/sort', 'hint' => 'Kleinere Zahlen stehen weiter vorne.']
             )
             . Form::field(
                 'Sichtbar für',
                 Html::select('usertyp', $this->userTypeOptions(), $values['usertyp'], ['id' => 'usertyp']),
-                ['name' => 'usertyp']
+                ['name' => 'usertyp', 'help' => 'menu/usertyp']
             );
 
         $target = Form::field(
@@ -304,7 +304,7 @@ final class MenuController extends Controller
             . Form::field(
                 'Plugin',
                 Html::select('plugin', $this->pluginOptions(), (string)$values['plugin'], ['id' => 'plugin']),
-                ['name' => 'plugin']
+                ['name' => 'plugin', 'help' => 'menu/plugin']
             )
             . '</div>';
     }
@@ -318,7 +318,7 @@ final class MenuController extends Controller
                 '<textarea name="extern" rows="2" cols="60">'
                 . Html::e(my_stripslashes((string)$values['extern'])) . '</textarea>',
                 [
-                    'name' => 'extern',
+                    'name' => 'extern', 'help' => 'menu/extern',
                     'for' => '',
                     'hint' => 'Beispiel: a href="http://www.beispiel.de/" target="_blank"',
                 ]
@@ -401,7 +401,7 @@ final class MenuController extends Controller
 
         $list = Listing::from('menu')
             ->searchIn(['name'])
-            ->sortableBy(['name' => 'name', 'sort' => 'sort', 'typ' => 'typ', 'visible' => 'visible'])
+            ->sortableBy(['name' => 'name', 'help' => 'menu/name', 'sort' => 'sort', 'typ' => 'typ', 'visible' => 'visible'])
             ->orderedBy('sort, name')
             ->keep('typ', $typ < 0 ? '' : (string)$typ);
 

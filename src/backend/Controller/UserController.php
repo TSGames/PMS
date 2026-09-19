@@ -320,7 +320,7 @@ final class UserController extends Controller
             . Form::field(
                 'Benutzertyp',
                 Html::select('typ', $this->typeOptions($id === Auth::userId()), $isEdit ? (int)$user->typ : 0, ['id' => 'typ']),
-                ['name' => 'typ', 'hint' => 'Höher als die eigene Stufe lässt sich niemand einstufen.']
+                ['name' => 'typ', 'help' => 'user/typ', 'hint' => 'Höher als die eigene Stufe lässt sich niemand einstufen.']
             );
 
         $password = Form::field(
@@ -346,7 +346,7 @@ final class UserController extends Controller
             . Form::field(
                 'Signatur',
                 Html::textarea('signatur', $isEdit ? my_stripslashes((string)$user->signatur) : '', 3, 30),
-                ['name' => 'signatur', 'for' => '']
+                ['name' => 'signatur', 'help' => 'user/signatur', 'for' => '']
             )
             . Form::field(
                 'Geburtsdatum',
@@ -379,7 +379,7 @@ final class UserController extends Controller
             . Form::check(
                 Html::checkbox('active', !$isEdit || (bool)$user->active),
                 'Konto ist freigeschaltet',
-                ['name' => 'active']
+                ['name' => 'active', 'help' => 'user/active']
             );
 
         return Components::pageHeader($id > 0 ? 'Benutzer bearbeiten' : 'Benutzer erstellen')

@@ -198,17 +198,17 @@ final class SubcatController extends Controller
             . Form::field(
                 'In Kategorie',
                 Html::select('uppcat', $this->categoryOptions(), $selectedCat, ['id' => 'uppcat']),
-                ['name' => 'uppcat', 'for' => 'uppcat', 'required' => true]
+                ['name' => 'uppcat', 'help' => 'subcat/uppcat', 'for' => 'uppcat', 'required' => true]
             )
             . Form::field(
                 'Sortierung',
                 Html::input('sort', $isEdit ? (int)$subcat->sort : 1000, ['id' => 'sort', 'type' => 'number']),
-                ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen weiter oben.']
+                ['name' => 'sort', 'help' => 'subcat/sort', 'hint' => 'Kleinere Zahlen stehen weiter oben.']
             );
 
         $lists = get_lists($isEdit ? $subcat->list : '');
         if ($lists) {
-            $general .= Form::field('Listenansicht', (string)$lists, ['name' => 'list']);
+            $general .= Form::field('Listenansicht', (string)$lists, ['name' => 'list', 'help' => 'subcat/list']);
         }
 
         $imageField = Form::field(

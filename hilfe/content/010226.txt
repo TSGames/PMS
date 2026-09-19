@@ -1,3 +1,0 @@
-description
-
-Der Style für die Objektbeschreibung auf einer Listenseite (nicht im Artikel, siehe dazu Klasse "item_intro")

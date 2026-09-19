@@ -263,7 +263,7 @@ final class ItemController extends Controller
         $html = Form::field(
             'Typ des Inhalts',
             Form::segmented('typ', $contentTypes, $values['typ'], 'typ'),
-            ['for' => '', 'name' => 'typ']
+            ['for' => '', 'name' => 'typ', 'help' => 'item/typ']
         );
 
         $html .= '<div class="field-group" x-show="typ === ' . self::TYPE_SPECIAL . '" x-cloak>'
@@ -351,7 +351,7 @@ final class ItemController extends Controller
             );
 
         $html .= '<div class="field-group" x-show="typ === ' . self::TYPE_DOWNLOAD . '" x-cloak>'
-            . Form::field('Download-Link', Html::input('link', $link, ['id' => 'link']), ['name' => 'link'])
+            . Form::field('Download-Link', Html::input('link', $link, ['id' => 'link']), ['name' => 'link', 'help' => 'item/link'])
             . '</div>';
 
         $html .= '<div class="field-group" x-show="typ === ' . self::TYPE_SPECIAL
@@ -418,14 +418,14 @@ final class ItemController extends Controller
         $html = Form::field(
             'Sortierung',
             Html::input('sort', $sort, ['id' => 'sort', 'type' => 'number', 'style' => 'width:8rem']),
-            ['name' => 'sort', 'hint' => 'Kleinere Zahlen stehen weiter oben.']
+            ['name' => 'sort', 'help' => 'item/sort', 'hint' => 'Kleinere Zahlen stehen weiter oben.']
         )
             . Form::field('Erstellungsdatum', $this->createdAtFields($created, $isEdit), ['for' => ''])
             . '<div class="field-group" x-show="typ2 !== ' . self::SPECIAL_GUESTBOOK . '" x-cloak>'
             . Form::field(
                 'Autor',
                 Html::select('user', $this->userOptions(), $author, ['id' => 'user']),
-                ['name' => 'user']
+                ['name' => 'user', 'help' => 'item/user']
             )
             . '</div>';
 

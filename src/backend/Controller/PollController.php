@@ -119,7 +119,7 @@ final class PollController extends Controller
             . Form::field(
                 'Sortierung',
                 Html::input('sort', $isEdit ? (int)$poll->sort : 1000, ['id' => 'sort', 'type' => 'number']),
-                ['name' => 'sort']
+                ['name' => 'sort', 'help' => 'poll/sort']
             )
             . Form::check(
                 Html::checkbox('available', !$isEdit || (bool)$poll->available),

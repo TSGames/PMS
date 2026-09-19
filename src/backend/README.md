@@ -224,6 +224,41 @@ Verlauf. Vorher stand dort der Monaco-Editor, der rund fünf Megabyte von
 `cdn.jsdelivr.net` nachlud; die jetzige Fassung ist etwa ein Elftel davon
 (siehe `tests/BEFUNDE.md`, B6).
 
+## Erklärungen an den Feldern
+
+Unter `src/help/` liegen die Texte, die im Formular hinter dem
+Fragezeichen neben einer Beschriftung stehen. Sie sind nach Bereich
+geordnet: `src/help/config/page_limit.md` gehört zur Einstellung
+`page_limit` des Konfigurators. Erste Zeile ist die Überschrift, danach
+folgt der Text in schlichtem Markdown — Absätze, `**fett**`, `` `Code` ``,
+Listen mit `*` und eingerückte Beispielblöcke.
+
+Ein Feld bekommt seinen Text über die Option `help`:
+
+```php
+Form::field('Besucher gilt als online für', $control, [
+    'name' => 'visitors_lifetime',
+    'help' => 'config/visitors_lifetime',
+])
+```
+
+Der Konfigurator leitet den Verweis aus dem Feldnamen ab, weil er dort
+immer `config/<feld>` lautet. `Support\Help` liest die Datei; gibt es
+keine, bleibt das Feld ohne Fragezeichen. Ein Tippfehler im Verweis fällt
+deshalb nicht im Browser auf, sondern in `tests/unit/HelpTest.php` — der
+hält jeden Verweis aus den Controllern gegen den Bestand und prüft
+außerdem, dass zu **jeder** Einstellung des Konfigurators ein Text
+existiert.
+
+Der Text steht immer im Markup, auch zugeklappt: So findet ihn die Suche
+des Browsers, und ohne JavaScript ist er von vornherein zu sehen. Alpine
+blendet ihn erst beim Zeichnen aus.
+
+Die Texte stammen aus dem früheren Hilfe- und Referenzcenter im Ordner
+`hilfe/`, das seit PHP 7 nicht mehr lief. Was dort zu keinem Feld gehörte
+— CSS-Klassen, Template-Platzhalter, Funktionsreferenz — steht jetzt in
+`docs/REFERENZ.md`.
+
 ## Was außerhalb liegt
 
 `functions*.php` im Verzeichnis darüber teilen sich Frontend und Backend

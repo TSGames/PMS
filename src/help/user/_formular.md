@@ -1,0 +1,5 @@
+Benutzer Erstellen/Bearbeiten
+
+Folgende Angaben sind notwendig, um einen Benutzer zu erstellen:
+
+Name, Passwort, E-Mailadressse und Benutzertyp. Alle weiteren Angaben sind Optional.

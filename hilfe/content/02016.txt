@@ -1,3 +1,0 @@
-Menüausrichtung
-
-Bestimmt, ob das Menü Horizontal (z.B. für Menüs in einer Leiste oberhalb der Seite) oder Vertikal (z.B. für Menüs am Rand) ausgerichtet werden soll.

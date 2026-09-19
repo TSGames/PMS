@@ -109,3 +109,48 @@ test('Spalten der Benachrichtigungstabelle sind beschriftet', async ({ page }) =
   const headers = await page.locator('.confirm_head').allTextContents();
   expect(headers).toEqual(['Benutzer', 'Gästebuch', 'Kommentare', 'Registration']);
 });
+
+test('Eine Einstellung erklärt sich auf Wunsch selbst', async ({ page }) => {
+
+  await page.click('.tab:has-text("Betrieb")');
+  const zeile = page.locator('.field-row:has(#visitors_lifetime)');
+  const erklaerung = zeile.locator('.field-help');
+
+  // Der Text steht im Markup, damit ihn die Suche des Browsers findet und
+  // er ohne JavaScript lesbar bleibt - sichtbar wird er erst auf Klick.
+  await expect(erklaerung).toHaveCount(1);
+  await expect(erklaerung).toBeHidden();
+
+  await zeile.locator('.field-help-toggle').click();
+
+  await expect(erklaerung).toBeVisible();
+  await expect(erklaerung).toContainText('Online-Besucherzählung');
+  await expect(zeile.locator('.field-help-toggle')).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('Jede Einstellung des Konfigurators hat eine Erklärung', async ({ page }) => {
+
+  // Jedes Feld mit Namen gehört zu einer Einstellung; keines soll ohne
+  // Erklärung dastehen.
+  const zeilen = page.locator('.field-row');
+  const ohne = await zeilen.evaluateAll((rows) =>
+    rows
+      .filter((r) => r.querySelector('input[name], select[name], textarea[name]'))
+      // Die Benachrichtigungstabelle trägt Felder mit name="…[]" - das sind
+      // Zeilen einer Tabelle, keine einzelnen Einstellungen.
+      .filter((r) => !r.querySelector('[name$="[]"]'))
+      .filter((r) => !r.querySelector('.field-help'))
+      .map((r) => r.querySelector('input[name], select[name], textarea[name]').name)
+  );
+
+  expect(ohne, `Einstellungen ohne Erklärung: ${ohne.join(', ')}`).toEqual([]);
+});
+
+test('Die Menü-Größe ist aus dem Konfigurator verschwunden', async ({ page }) => {
+  // vertical, menu_width und menu_height steuerten Pixelmaße und
+  // Ausrichtung des Menüs. Seit Frontend\View\Menu das Markup baut, liest
+  // sie niemand mehr.
+  for (const feld of ['menu_width', 'menu_height', 'vertical']) {
+    await expect(page.locator(`[name="${feld}"]`)).toHaveCount(0);
+  }
+});

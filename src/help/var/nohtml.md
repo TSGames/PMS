@@ -1,0 +1,6 @@
+[nohtml]
+
+Umbrüche ersetzen
+
+Wird beim erstellen/bearbeiten einer Variable/Regel diese Option gewählt, werden die Umbrüche mit "
+" ersetzt. Wenn es sich beim Inhalt dieser Variable um Text handelt, sollten Sie diese Option aktivieren. Beim Einbinden von Scripten, welche nicht sichtbar sind, kann allerdings die Aktivität dieser Funktion ein Fehler im Script auslösen.

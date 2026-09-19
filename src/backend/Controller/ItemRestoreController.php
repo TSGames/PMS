@@ -102,7 +102,7 @@ final class ItemRestoreController extends Controller
                 Form::section('Schritt 1 von 2', Form::field(
                     'Gelöschter Inhalt',
                     Html::select('item_select', $options, null, ['id' => 'item_select']),
-                    ['name' => 'item_select', 'hint' => 'Danach wählen Sie den Zeitpunkt der Sicherung.']
+                    ['name' => 'item_select', 'help' => 'itemrestore/item_select', 'hint' => 'Danach wählen Sie den Zeitpunkt der Sicherung.']
                 )),
                 Form::actions('item_restore', 'Weiter', Html::url('item'))
             )
@@ -140,7 +140,7 @@ final class ItemRestoreController extends Controller
                 Form::section('Schritt 2 von 2', Form::field(
                     'Zeitpunkt der Sicherung',
                     Html::select('date_select', $options, null, ['id' => 'date_select']),
-                    ['name' => 'date_select', 'hint' => 'Die neueste Fassung steht oben.']
+                    ['name' => 'date_select', 'help' => 'itemrestore/date_select', 'hint' => 'Die neueste Fassung steht oben.']
                 )),
                 Form::actions('do_restore', 'Wiederherstellen', $this->url())
             )

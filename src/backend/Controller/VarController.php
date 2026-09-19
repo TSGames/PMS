@@ -103,12 +103,12 @@ final class VarController extends Controller
         $fields = Form::field(
             'Suchen nach',
             Html::textarea('search', $isEdit ? $rule->searcher : '', 8, 70, ['data-editor' => '']),
-            ['name' => 'search', 'for' => '', 'required' => true, 'hint' => 'Der Platzhalter, wie er im Inhalt steht.']
+            ['name' => 'search', 'help' => 'var/search', 'for' => '', 'required' => true, 'hint' => 'Der Platzhalter, wie er im Inhalt steht.']
         )
             . Form::field(
                 'Ersetzen mit',
                 Html::textarea('replace', $isEdit ? $rule->replacer : '', 8, 70, ['data-editor' => '']),
-                ['name' => 'replace', 'for' => '', 'hint' => 'Darf HTML enthalten.']
+                ['name' => 'replace', 'help' => 'var/replace', 'for' => '', 'hint' => 'Darf HTML enthalten.']
             )
             . Form::check(
                 Html::checkbox('makebr', !$isEdit || (bool)$rule->makebr),

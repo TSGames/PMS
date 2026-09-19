@@ -1,3 +1,0 @@
-Menü-Größe
-
-Bestimmt die Größe eines einzelnen Menü-"Kästchens" in Pixeln.

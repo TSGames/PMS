@@ -129,7 +129,7 @@ final class BansController extends Controller
         $fields = Form::field(
             'IP-Adresse',
             Html::input('ip', $isEdit ? $ban->ip : '', ['id' => 'ip', 'maxlength' => 45]),
-            ['name' => 'ip', 'required' => true, 'hint' => 'IPv4 oder IPv6, zum Beispiel 203.0.113.7']
+            ['name' => 'ip', 'help' => 'bans/ip', 'required' => true, 'hint' => 'IPv4 oder IPv6, zum Beispiel 203.0.113.7']
         )
             . Form::field(
                 'Begründung',
@@ -141,7 +141,7 @@ final class BansController extends Controller
                 '<span class="field-inline">'
                 . Html::input('time', $days, ['id' => 'time', 'type' => 'number', 'min' => 0, 'style' => 'width:7rem'])
                 . ' Tage</span>',
-                ['name' => 'time', 'hint' => '0 oder leer sperrt unbegrenzt.']
+                ['name' => 'time', 'help' => 'bans/time', 'hint' => '0 oder leer sperrt unbegrenzt.']
             );
 
         return Components::pageHeader($id > 0 ? 'Sperrung bearbeiten' : 'Neue Sperrung')

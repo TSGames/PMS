@@ -48,6 +48,7 @@ final class Icons
         'info' => '<circle cx="12" cy="12" r="8.2"/><path d="M12 11v5"/><path d="M12 8.3v.4"/>',
         'filter' => '<path d="M4.5 6.5h15l-5.8 6.6V19l-3.4-2v-3.9z"/>',
         'eye' => '<path d="M3 12s3.5-5.5 9-5.5S21 12 21 12s-3.5 5.5-9 5.5S3 12 3 12z"/><circle cx="12" cy="12" r="2.4"/>',
+        'help' => '<circle cx="12" cy="12" r="8.2"/><path d="M9.7 9.6a2.4 2.4 0 1 1 2.9 2.7v1.4"/><path d="M12.5 16.4v.4"/>',
     ];
 
     /** Gibt ein Symbol als eingebettetes SVG aus. */

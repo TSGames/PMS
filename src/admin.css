@@ -943,6 +943,98 @@ label { color: var(--c-text); }
 
 .field-hint { font-size: var(--fs-xs); color: var(--c-muted); margin-top: var(--s-1); }
 
+/* Beschriftung und Fragezeichen stehen nebeneinander */
+.field-label-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.field-label-cell .field-label { padding-top: 8px; }
+
+/* Kontrollkästchen: Text und Fragezeichen in einer Zeile */
+.field-check-row { display: flex; align-items: center; gap: 6px; }
+.field-check-row .field-help-toggle { margin-top: 0; }
+
+/* Das Fragezeichen neben der Beschriftung.
+   Es ist bewusst leise gesetzt: Wer die Erklärung nicht braucht, soll es
+   nicht lesen müssen. */
+.field-help-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin-top: 5px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--c-muted);
+    cursor: pointer;
+    flex: none;
+}
+
+.field-help-toggle:hover,
+.field-help-toggle:focus-visible {
+    background: var(--c-surface-hover);
+    color: var(--c-accent);
+}
+
+.field-help-toggle[aria-expanded="true"] {
+    background: var(--c-accent-soft);
+    color: var(--c-accent);
+}
+
+/* Der Erklärungstext unter dem Feld */
+.field-help {
+    margin-top: var(--s-2);
+    padding: var(--s-3);
+    border-left: 3px solid var(--c-accent);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    background: var(--c-surface-alt);
+    font-size: var(--fs-sm);
+    line-height: 1.6;
+    color: var(--c-text);
+}
+
+.field-help-title {
+    font-weight: 600;
+    margin-bottom: var(--s-2);
+}
+
+.field-help p { margin: 0 0 var(--s-2); }
+.field-help p:last-child { margin-bottom: 0; }
+.field-help ul { margin: 0 0 var(--s-2); padding-left: 1.2em; }
+.field-help li { margin-bottom: 4px; }
+.field-help code {
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: var(--c-surface-hover);
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+}
+
+.field-help-example {
+    margin: 0 0 var(--s-2);
+    padding: var(--s-2);
+    border-radius: var(--r-sm);
+    background: var(--c-surface-hover);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Auf schmalen Schirmen steht die Beschriftung über dem Feld; das
+   Fragezeichen bleibt daneben. */
+@media (max-width: 720px) {
+    .field-label-cell { align-items: center; }
+    .field-label-cell .field-label { padding-top: 0; }
+    .field-help-toggle { margin-top: 0; }
+}
+
 .field-error {
     display: flex;
     align-items: center;

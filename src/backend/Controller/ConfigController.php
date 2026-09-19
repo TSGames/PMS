@@ -27,8 +27,6 @@ final class ConfigController extends Controller
     private const NUMBERS = [
         'picquali' => [85, 10, 100],
         'menubreak' => [0, 0, null],
-        'menu_width' => [0, 0, null],
-        'menu_height' => [0, 0, null],
         'page_limit' => [15, 1, null],
         'list_rows' => [1, 0, null],
         'numcomments' => [10, 0, null],
@@ -39,7 +37,6 @@ final class ConfigController extends Controller
         'latest_comments_days' => [7, 0, null],
         'latest_comments_chars' => [120, 0, null],
         'menu_mode' => [0, 0, 1],
-        'vertical' => [0, 0, 1],
     ];
 
     /** Felder, die als Ja/Nein gespeichert werden. */
@@ -215,7 +212,7 @@ final class ConfigController extends Controller
         $sections['Modul: Sprachen'] = Form::field(
             'Sprachdatei',
             Html::select('language', $this->languageOptions(), $config->language ?? '', ['id' => 'language']),
-            ['name' => 'language', 'searchable' => true]
+            ['name' => 'language', 'help' => 'config/language', 'searchable' => true]
         );
 
         $lists = get_lists($config->search_list ?? '', 'search_list');
@@ -231,19 +228,15 @@ final class ConfigController extends Controller
         $sections['Modul: Menü'] = Form::field(
             'Menü-Modus',
             $this->menuModeRadios($config),
-            ['for' => '', 'searchable' => true]
+            ['for' => '', 'help' => 'config/menu_mode', 'searchable' => true]
         )
-            . $this->number('Menüumbruch alle', 'menubreak', (int)($config->menubreak ?? 0), 'Einträge. 0 schaltet den Umbruch ab.')
-            . Form::field('Menüausrichtung', $this->orientationRadios($config), ['for' => '', 'searchable' => true])
-            . Form::field(
-                'Menü-Größe',
-                '<span class="field-inline">'
-                . Html::input('menu_width', (int)($config->menu_width ?? 0), ['id' => 'menu_width', 'type' => 'number', 'style' => 'width:6rem'])
-                . ' px breit '
-                . Html::input('menu_height', (int)($config->menu_height ?? 0), ['id' => 'menu_height', 'type' => 'number', 'style' => 'width:6rem'])
-                . ' px hoch</span>',
-                ['for' => 'menu_width', 'searchable' => true]
-            );
+            . $this->number('Menüumbruch alle', 'menubreak', (int)($config->menubreak ?? 0), 'Einträge. 0 schaltet den Umbruch ab.');
+
+        // Menüausrichtung und Menü-Größe standen bis hierher: drei Felder
+        // (vertical, menu_width, menu_height), die Pixelmaße und Ausrichtung
+        // des Menüs bestimmten. Seit Frontend\View\Menu das Markup baut,
+        // liest sie niemand mehr - beides entscheidet jetzt das Stylesheet
+        // des Templates. Sie sind deshalb entfallen.
 
         $sections['Modul: Listenansicht'] = $this->number('Einträge je Seite', 'page_limit', (int)($config->page_limit ?? 15), 'Gilt auch für die Übersichten im Backend.')
             . $this->flag('commentssmall', 'Zahl der Kommentare in der Inhaltsliste anzeigen', $config)
@@ -283,7 +276,7 @@ final class ConfigController extends Controller
         return Form::field(
             $label,
             Html::input($field, $value, ['id' => $field]),
-            ['name' => $field, 'hint' => $hint, 'searchable' => true]
+            ['name' => $field, 'hint' => $hint, 'help' => 'config/' . $field, 'searchable' => true]
         );
     }
 
@@ -292,7 +285,7 @@ final class ConfigController extends Controller
         return Form::field(
             $label,
             Html::input($field, $value, ['id' => $field, 'type' => 'number', 'style' => 'width:8rem']),
-            ['name' => $field, 'hint' => $hint, 'searchable' => true]
+            ['name' => $field, 'hint' => $hint, 'help' => 'config/' . $field, 'searchable' => true]
         );
     }
 
@@ -301,7 +294,7 @@ final class ConfigController extends Controller
         return Form::check(
             Html::checkbox($field, !empty($config->$field)),
             $label,
-            ['name' => $field, 'hint' => $hint, 'searchable' => true]
+            ['name' => $field, 'hint' => $hint, 'help' => 'config/' . $field, 'searchable' => true]
         );
     }
 
@@ -309,16 +302,9 @@ final class ConfigController extends Controller
     {
         $mode = (int)($config->menu_mode ?? 0);
         return '<label><input type="radio" name="menu_mode" value="0"' . ($mode === 0 ? ' checked' : '') . '>'
-            . ' Standard (einfache Menü-Konfiguration per Admin)</label><br>'
+            . ' Einfaches Menü</label><br>'
             . '<label><input type="radio" name="menu_mode" value="1"' . ($mode === 1 ? ' checked' : '') . '>'
-            . ' Erweitert (Spezielle Konfiguration für aufklappende Menüs, mit Stylesheets)</label>';
-    }
-
-    private function orientationRadios(object $config): string
-    {
-        $vertical = (int)($config->vertical ?? 0);
-        return '<label><input type="radio" name="vertical" value="0"' . ($vertical === 0 ? ' checked' : '') . '> Horizontal</label> '
-            . '<label><input type="radio" name="vertical" value="1"' . ($vertical === 1 ? ' checked' : '') . '> Vertikal</label>';
+            . ' Menü mit aufklappbaren Unterpunkten</label>';
     }
 
     private function languageOptions(): array
