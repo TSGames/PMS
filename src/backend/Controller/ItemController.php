@@ -25,7 +25,12 @@ use Pms\Support\Request;
  */
 final class ItemController extends Controller
 {
-    private const TYPE_NEWS = 1;
+    /**
+     * Der frueherere Typ "News". Es gibt ihn nicht mehr; bestehende
+     * Datensaetze tragen die Nummer aber noch. Sie werden wie Standard
+     * behandelt und beim naechsten Speichern auf 0 gesetzt.
+     */
+    private const TYPE_NEWS_ALT = 1;
     private const TYPE_DOWNLOAD = 2;
     private const TYPE_SPECIAL = 3;
 
@@ -140,7 +145,7 @@ final class ItemController extends Controller
     {
         return [
             'id' => (int)$item->id,
-            'typ' => (int)$item->typ,
+            'typ' => self::normalizeType((int)$item->typ),
             'typ2' => (int)$item->special,
             'cat' => (int)$item->cat,
             'subcat' => (int)$item->subcat,
@@ -149,11 +154,17 @@ final class ItemController extends Controller
         ];
     }
 
+    /** Der entfallene Typ "News" gilt als Standard. */
+    private static function normalizeType(int $type): int
+    {
+        return $type === self::TYPE_NEWS_ALT ? 0 : $type;
+    }
+
     private function valuesFromRequest(): array
     {
         return [
             'id' => Request::int('id'),
-            'typ' => Request::int('typ'),
+            'typ' => self::normalizeType(Request::int('typ')),
             'typ2' => Request::int('typ2'),
             'cat' => Request::int('cat'),
             'subcat' => Request::int('subcat'),
@@ -205,7 +216,7 @@ final class ItemController extends Controller
 
         $body = Form::section('Einordnung', $this->placementFields($values))
             . Form::section('Inhalt', $this->contentSection($name, $description, $content, $link, $type))
-            . Form::section('Bild', $this->imageSection($item, $image, $type))
+            . Form::section('Bild', $this->imageSection($item, $image))
             . Form::section('Veröffentlichung', $this->publishingSection(
                 $sort,
                 $author,
@@ -371,7 +382,7 @@ final class ItemController extends Controller
     }
 
     /** Bild des Inhalts: hochladen, einfügen, entfernen. */
-    private function imageSection(?object $item, string $image, int $type): string
+    private function imageSection(?object $item, string $image): string
     {
         $isEdit = $item !== null;
 
@@ -390,14 +401,10 @@ final class ItemController extends Controller
             );
         }
 
-        if ($type !== self::TYPE_NEWS) {
-            $html .= '<div class="field-group" x-show="typ !== ' . self::TYPE_NEWS . '" x-cloak>'
-                . Form::check(
-                    Html::checkbox('full_image', false),
-                    'Originalbild zusätzlich speichern und verlinken'
-                )
-                . '</div>';
-        }
+        $html .= Form::check(
+            Html::checkbox('full_image', false),
+            'Originalbild zusätzlich speichern und verlinken'
+        );
 
         return $html . Form::wide($this->imageDialog($isEdit ? (int)$item->id : 0));
     }
@@ -643,7 +650,7 @@ final class ItemController extends Controller
         }
 
         $id = Request::int('id');
-        $type = Request::int('typ');
+        $type = self::normalizeType(Request::int('typ'));
         $special = Request::int('typ2');
         $cat = Request::int('cat');
         $subcat = Request::int('subcat');
@@ -719,7 +726,7 @@ final class ItemController extends Controller
             return $this->editor($this->valuesFromRequest());
         }
 
-        $this->storeImage($id, $type);
+        $this->storeImage($id);
 
         Flash::success('Inhalt erfolgreich gespeichert! <a href="index.php?item=' . $id . '">Inhalt anzeigen</a>');
 
@@ -776,7 +783,7 @@ final class ItemController extends Controller
     }
 
     /** Übernimmt ein hochgeladenes Titelbild in seinen Größen. */
-    private function storeImage(int $id, int $type): void
+    private function storeImage(int $id): void
     {
         $upload = $_FILES['image'] ?? null;
         if (!$upload || $upload['error'] !== UPLOAD_ERR_OK || $upload['name'] === '') {
@@ -798,14 +805,12 @@ final class ItemController extends Controller
         @copy($upload['tmp_name'], $thumb);
         create_img($thumb, 256, 256);
 
-        if ($type !== self::TYPE_NEWS) {
-            $large = $path . $id . '_large.' . $extension;
-            @copy($upload['tmp_name'], $large);
-            create_img($large, 640, 480);
+        $large = $path . $id . '_large.' . $extension;
+        @copy($upload['tmp_name'], $large);
+        create_img($large, 640, 480);
 
-            if (Request::checkbox('full_image')) {
-                @copy($upload['tmp_name'], $path . $id . '_full.' . $extension);
-            }
+        if (Request::checkbox('full_image')) {
+            @copy($upload['tmp_name'], $path . $id . '_full.' . $extension);
         }
 
         Db::update('item', $id, ['image' => $extension]);

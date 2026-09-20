@@ -1154,7 +1154,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                 $content.="<tr><td class=\"item_intro_td\"><div class=\"item_intro\">".$des."</div><br></td></tr>";
             }
             $i_con=edit_out(from_db("item",$item,"content"),"content","",$item_edit_mode,2);
-            if($typ!=1 && $image)
+            if($image)
             {
                 if(strstr($i_con,"#item_picture"))
                 {

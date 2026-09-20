@@ -78,13 +78,13 @@ INSERT INTO subcat (id, cat, name, description, image, sort, available, jump, li
 
 -- ---------------------------------------------------------------------------
 -- Inhalte
--- typ:     0=Standard, 1=News, 2=Download, 3=Spezialseite
+-- typ:     0=Standard, 2=Download, 3=Spezialseite (1 war "News" und entfaellt)
 -- special: 1=Startseite, 2=Download-Seite, 3=Gesperrter Content, 4=Gästebuch, 5=IP gebannt
 -- ---------------------------------------------------------------------------
 INSERT INTO item (id, cat, subcat, name, typ, special, showuser, rate, rating, numratings, comments, description, content, image, sort, user, time, time_changed, link, available, visible) VALUES
   (1, 1, 1, 'Willkommen',              3, 1, 1, 0, 0,  0, 0, 'Startseite der Mock-Website', '<h1>Willkommen</h1><p>Dies ist die Startseite des Mock-Systems.</p>',                    '', 10, 1, 1717243200, 1717243200, '', 1, 1),
-  (2, 1, 1, 'Sommerfest 2024',         1, 0, 1, 1, 8,  2, 1, 'Das Sommerfest findet statt',  '<p>Am 21. Juni feiern wir das Sommerfest.</p><p>Beginn ist um 18 Uhr.</p>',              '', 20, 2, 1717156800, 1717200000, '', 1, 1),
-  (3, 1, 1, 'Neue Öffnungszeiten',     1, 0, 1, 1, 6,  3, 1, 'Ab Juli gelten neue Zeiten',   '<p>Ab dem 1. Juli gelten geänderte Öffnungszeiten.</p>',                                  '', 30, 2, 1717070400, 1717070400, '', 1, 1),
+  (2, 1, 1, 'Sommerfest 2024',         0, 0, 1, 1, 8,  2, 1, 'Das Sommerfest findet statt',  '<p>Am 21. Juni feiern wir das Sommerfest.</p><p>Beginn ist um 18 Uhr.</p>',              '', 20, 2, 1717156800, 1717200000, '', 1, 1),
+  (3, 1, 1, 'Neue Öffnungszeiten',     0, 0, 1, 1, 6,  3, 1, 'Ab Juli gelten neue Zeiten',   '<p>Ab dem 1. Juli gelten geänderte Öffnungszeiten.</p>',                                  '', 30, 2, 1717070400, 1717070400, '', 1, 1),
   (4, 1, 2, 'Jahreshauptversammlung',  0, 0, 1, 0, 0,  0, 0, 'Termin der Versammlung',       '<p>Die Jahreshauptversammlung findet am 15. September statt.</p>',                        '', 10, 1, 1716984000, 1716984000, '', 1, 1),
   (5, 2, 3, 'Aufnahmeantrag',          2, 0, 0, 0, 0,  0, 0, 'Antrag als PDF',               '<p>Bitte vollständig ausgefüllt einreichen.</p>',                                         '', 10, 1, 1716897600, 1716897600, 'uploads/aufnahmeantrag.pdf', 1, 1),
   (6, 2, 3, 'Beitragsordnung',         2, 0, 0, 0, 0,  0, 0, 'Beitragsordnung als PDF',      '<p>Gültig ab dem 1. Januar 2024.</p>',                                                    '', 20, 1, 1716811200, 1716811200, 'uploads/beitragsordnung.pdf', 1, 1),

@@ -50,7 +50,7 @@ test('Bearbeiten öffnet direkt den Editor mit den gespeicherten Werten', async 
 test('Die Einordnung steht im Kopf des Editors und ist änderbar', async ({ page }) => {
   await page.goto('admin/inhalte?edit=2&editor=0');
 
-  await expect(page.locator('input[name="typ"][value="1"]')).toBeChecked();
+  await expect(page.locator('input[name="typ"][value="0"]')).toBeChecked();
   await expect(page.locator('select[name="cat"]')).toHaveValue('1');
   await expect(page.locator('select[name="subcat"]')).toHaveValue('1');
 });

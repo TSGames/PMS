@@ -33,8 +33,11 @@ unset($db_server);unset($db_username);unset($db_password);unset($db_databasename
 
 $pms_version="1.67";
 
+// Die 1 ist frei: Sie war der Typ "News", der sich von "Standard" nur
+// dadurch unterschied, dass das Bild des Inhalts beim Lesen der Seite
+// unterdrueckt wurde. Die Luecke bleibt, damit bestehende Datensaetze
+// mit typ = 1 ihre Nummer behalten - sie werden wie Standard behandelt.
 $content_typ[0]="Standard";
-$content_typ[1]="News";
 $content_typ[2]="Download";
 $content_typ[3]="Spezialseite";
 
