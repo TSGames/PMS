@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Inhalte pflegen &ndash; Handbuch für Redakteure</title>
+<link rel="stylesheet" href="anleitung.css">
+</head>
+<body>
+
+<section class="titelseite">
+<h1>Inhalte pflegen</h1>
+<p class="untertitel">Handbuch für alle, die Texte, Termine<br>
+und Bilder der Chorseite betreuen.</p>
+<p class="fuss">PMS-Verwaltung &middot; Stand dieser Ausgabe siehe letzte Seite</p>
+</section>
+
+<h1>Inhalt</h1>
+
+<ol class="inhalt">
+<li>Wie die Website aufgebaut ist</li>
+<li>Zugang und Oberfläche</li>
+<li>Inhalte finden und ändern</li>
+<li>Der Texteditor</li>
+<li>Bilder</li>
+<li>Veröffentlichung und Reihenfolge</li>
+<li>Löschen, Wiederherstellen, frühere Fassungen</li>
+<li>Direkt auf der Website bearbeiten</li>
+<li>Dynamische Inhalte: was Sie nicht anfassen sollten</li>
+<li>Grenzen: wofür die Betreuung zuständig ist</li>
+<li>Störungen</li>
+<li>Kurzreferenz</li>
+</ol>
+
+<div class="kasten">
+<span class="kastentitel">Zu diesem Handbuch</span>
+<p>Es setzt voraus, dass Sie einen Rechner bedienen können, und erklärt
+nur, was an <em>diesem</em> System besonders ist. Die Bildschirmfotos
+stammen aus dem laufenden Betrieb; weicht eine Abbildung bei Ihnen ab, ist
+vermutlich das Handbuch veraltet.</p>
+</div>
+
+<!-- ============================================================ 1 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 1</span>Wie die Website aufgebaut ist</h1>
+
+<p>Alles, was auf der Website steht, hängt an vier Begriffen. Wer sie
+kennt, findet sich in der Verwaltung ohne weitere Erklärung zurecht.</p>
+
+<table class="uebersicht">
+<tr><th style="width:30%">Begriff</th><th>Bedeutung</th></tr>
+<tr>
+<td><strong>Inhalt</strong></td>
+<td>Eine einzelne Seite mit Titel, Kurzbeschreibung und Text. Das Objekt,
+mit dem Sie zu 95 Prozent arbeiten.</td>
+</tr>
+<tr>
+<td><strong>Unterkategorie</strong></td>
+<td>Enthält mehrere Inhalte, etwa „Neuigkeiten“ oder „Termine“.</td>
+</tr>
+<tr>
+<td><strong>Kategorie</strong></td>
+<td>Enthält mehrere Unterkategorien, etwa „Aktuelles“ oder „Verein“.</td>
+</tr>
+<tr>
+<td><strong>Menü</strong></td>
+<td>Die Navigation der Website. Ein Menüpunkt zeigt auf eine Kategorie,
+eine Unterkategorie, einen Inhalt oder eine feste Adresse. Die Zuordnung
+pflegt die Betreuung.</td>
+</tr>
+</table>
+
+<p>Die Zuordnung ist streng hierarchisch: Jeder Inhalt liegt in genau einer
+Unterkategorie, jede Unterkategorie in genau einer Kategorie. Ein Inhalt an
+zwei Stellen gleichzeitig ist nicht vorgesehen &ndash; dafür setzt man einen
+Verweis.</p>
+
+<h2>Die vier Typen eines Inhalts</h2>
+
+<p>Jeder Inhalt hat einen <strong>Typ</strong>. Er entscheidet, wie die
+Seite auf der Website behandelt wird, und lässt sich jederzeit ändern.</p>
+
+<table class="uebersicht">
+<tr><th style="width:24%">Typ</th><th>Verhalten</th></tr>
+<tr>
+<td><strong>Standard</strong></td>
+<td>Gewöhnliche Seite. Erscheint in der Übersicht ihrer Unterkategorie.</td>
+</tr>
+<tr>
+<td><strong>News</strong></td>
+<td>Wie Standard, wird zusätzlich in Nachrichtenlisten ausgegeben &ndash;
+etwa auf der Startseite.</td>
+</tr>
+<tr>
+<td><strong>Download</strong></td>
+<td>Seite mit einer Datei. Der Verweis darauf steht im Feld
+<em>Download-Link</em>, das nur bei diesem Typ erscheint.</td>
+</tr>
+<tr>
+<td><strong>Spezialseite</strong></td>
+<td>Systemseite mit fester Rolle: Startseite, Gästebuch, Fehlerseite,
+Sperrseite. Von jeder Rolle gibt es genau eine. Siehe Kapitel&nbsp;10.</td>
+</tr>
+</table>
+
+<div class="kasten">
+<span class="kastentitel">Was sofort öffentlich ist</span>
+<p>Es gibt keinen getrennten Veröffentlichungsschritt. Sobald Sie speichern,
+steht die Änderung auf der Website &ndash; es sei denn, der Inhalt ist als
+Entwurf gekennzeichnet (Kapitel&nbsp;6).</p>
+</div>
+</section>
+
+<!-- ============================================================ 2 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 2</span>Zugang und Oberfläche</h1>
+
+<p>Die Verwaltung liegt unter der Adresse der Website plus
+<span class="pfad">/admin</span>, also zum Beispiel
+<span class="pfad">www.maennerchor.net/admin</span>. Die alte Adresse
+<span class="pfad">admin.php</span> leitet dorthin weiter.</p>
+
+<figure class="schmal">
+<img src="bilder/01-anmelden.png" alt="Anmeldemaske mit Benutzername, Passwort und Einloggen">
+<figcaption>Die Anmeldung. Das Häkchen legt einen dauerhaften Cookie an
+&ndash; nur am eigenen Rechner sinnvoll.</figcaption>
+</figure>
+
+<p>Es gibt keine Funktion zum Zurücksetzen des Passworts. Wer sich
+ausgesperrt hat, wendet sich an die Betreuung.</p>
+
+<div class="kasten achtung">
+<span class="kastentitel">Zeitüberschreitung</span>
+<p>Nach längerer Untätigkeit endet die Sitzung. Sie landen wieder auf der
+Anmeldemaske; ein abgeschicktes Formular geht dabei verloren. Bei längeren
+Texten deshalb zwischendurch <strong>Übernehmen</strong> drücken &ndash;
+das speichert und lässt Sie im Formular.</p>
+</div>
+
+<h2>Die Oberfläche</h2>
+
+<figure>
+<img src="bilder/02-startseite.png" alt="Startseite der Verwaltung mit Seitenleiste, Suchfeld und Benutzermenü">
+<figcaption>Die Startseite nach der Anmeldung.</figcaption>
+</figure>
+
+<ol class="schritte">
+<li><strong>Seitenleiste.</strong> Nach Aufgaben gruppiert. Für die
+Inhaltspflege sind die Gruppe <em>Inhalt</em> und darin
+<em>Inhalte</em> zuständig.</li>
+<li><strong>Volltextsuche.</strong> Sucht in Titel und Kurzbeschreibung
+aller Inhalte und führt direkt in die gefilterte Liste.</li>
+<li><strong>Benutzermenü.</strong> Farbschema (hell/dunkel), eigenes Konto,
+Abmelden.</li>
+</ol>
+
+<p>Die Kacheln und die Liste „Zuletzt passiert“ darunter sind reine
+Anzeige. Die Schaltflächen oben rechts &ndash; <em>Inhalt anlegen</em>,
+<em>Sicherung erstellen</em>, <em>Website ansehen</em> &ndash; sind
+Abkürzungen zu Stellen, die Sie sonst über die Seitenleiste erreichen.</p>
+
+<h2>Hilfe am Feld</h2>
+
+<p>Hinter vielen Feldbezeichnungen steht ein Fragezeichen. Es klappt eine
+Erklärung zu genau diesem Feld auf &ndash; die schnellste Auskunft, wenn
+unklar ist, was ein Schalter bewirkt.</p>
+
+<figure class="schmal">
+<img src="bilder/12-hilfe.png" alt="Aufgeklappte Felderklärung unter einem Eingabefeld">
+<figcaption>Aufgeklappte Felderklärung im Website-Konfigurator.</figcaption>
+</figure>
+</section>
+
+<!-- ============================================================ 3 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 3</span>Inhalte finden und ändern</h1>
+
+<figure>
+<img src="bilder/03-liste.png" alt="Die Liste aller Inhalte mit Suchfeld, Filtern, Sortierpfeilen und Aktionen">
+<figcaption>Die Liste unter <em>Inhalte</em>.</figcaption>
+</figure>
+
+<ol class="schritte">
+<li><strong>Suche</strong> über Titel und Kurzbeschreibung. Daneben zwei
+Filter für Kategorie und Typ; rechts die Zahl der Treffer.</li>
+<li><strong>Name.</strong> Klick öffnet den Inhalt zum Bearbeiten. Die
+Spaltenköpfe sortieren die Liste.</li>
+<li><strong>Sortierung</strong> mit den Pfeilen: tauscht die Position mit
+dem Nachbarn und speichert sofort.</li>
+<li><strong>Aktionen:</strong> kopieren, bearbeiten, löschen.</li>
+</ol>
+
+<figure class="schmal">
+<img src="bilder/04-suche.png" alt="Gefilterte Liste nach einer Suche">
+<figcaption>Nach der Suche bleibt der Filter in der Adresse stehen &ndash;
+die Adresse lässt sich also als Lesezeichen ablegen.</figcaption>
+</figure>
+
+<h2>Der Bearbeitungsbildschirm</h2>
+
+<p>Er ist in vier Abschnitte geteilt: <strong>Einordnung</strong>,
+<strong>Inhalt</strong>, <strong>Bild</strong> und
+<strong>Veröffentlichung</strong>.</p>
+
+<figure class="schmal">
+<img src="bilder/05-editor-einordnung.png" alt="Abschnitt Einordnung mit Typ, Kategorie und Unterkategorie">
+<figcaption>Einordnung. Bei Typ <em>Spezialseite</em> treten an die Stelle
+von Kategorie und Unterkategorie die Rollen aus Kapitel&nbsp;1.</figcaption>
+</figure>
+
+<figure class="schmal">
+<img src="bilder/06-text.png" alt="Abschnitt Inhalt mit Titel, Kurzbeschreibung und Text">
+<figcaption>Der Abschnitt <em>Inhalt</em>.</figcaption>
+</figure>
+
+<ol class="schritte">
+<li><strong>Titel.</strong> Überschrift der Seite, Eintrag in Listen und
+Titel des Browserfensters. Darf leer bleiben, wenn die Seite keine
+Überschrift tragen soll.</li>
+<li><strong>Kurzbeschreibung.</strong> Erscheint in Übersichten und
+Suchergebnissen, nicht auf der Seite selbst.</li>
+<li><strong>Inhalt.</strong> Der Text der Seite.</li>
+</ol>
+
+<h2>Speichern</h2>
+
+<figure class="schmal">
+<img src="bilder/10-speichern.png" alt="Die Schaltflächen Übernehmen, Übernehmen und Schließen, Abbrechen">
+</figure>
+
+<ol class="schritte">
+<li><strong>Übernehmen</strong> speichert und bleibt im Formular.</li>
+<li><strong>Übernehmen &amp; Schließen</strong> speichert und geht zurück
+zur Liste.</li>
+</ol>
+
+<p><em>Abbrechen</em> verwirft alles seit dem letzten Speichern.</p>
+
+<h2>Anlegen und Kopieren</h2>
+
+<p><em>Inhalt hinzufügen</em> öffnet dasselbe Formular leer. Pflicht sind
+Kategorie und Unterkategorie (roter Stern); alles andere lässt sich
+nachtragen.</p>
+
+<p>Bei wiederkehrenden Seiten &ndash; Probenplan, Jahresrückblick,
+Protokoll &ndash; ist die Schaltfläche <strong>Kopieren</strong> in der
+Liste schneller: Sie erzeugt ein Duplikat mit identischer Einordnung und
+identischen Schaltern, das Sie nur noch inhaltlich anpassen.</p>
+</section>
+
+<!-- ============================================================ 4 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 4</span>Der Texteditor</h1>
+
+<p>Das Textfeld gibt es in zwei Betriebsarten, umschaltbar über
+<strong>Grafischen Editor ein-/ausschalten</strong> oben rechts. Die
+Einstellung bleibt für Ihre Sitzung erhalten.</p>
+
+<ul class="punkte">
+<li><strong>Grafisch</strong> (TinyMCE): Formatierung über eine
+Werkzeugleiste. Der Normalfall.</li>
+<li><strong>Quelltext:</strong> HTML im Rohzustand. Nötig, wenn Sie
+<span class="pfad">[php]</span>-Blöcke sehen müssen (Kapitel&nbsp;9) oder
+wenn der grafische Editor Ihr Markup umschreibt.</li>
+</ul>
+
+<figure>
+<img src="bilder/07-editor.png" alt="Der grafische Editor mit Werkzeugleiste">
+<figcaption>Der grafische Editor. Die Menüleiste ist englisch &ndash; die
+deutschen Sprachdateien sind in dieser Installation nicht
+eingespielt.</figcaption>
+</figure>
+
+<h2>Was in der Praxis zählt</h2>
+
+<table class="uebersicht">
+<tr><th style="width:38%">Fall</th><th>Vorgehen</th></tr>
+<tr>
+<td>Absatz oder Zeilenumbruch</td>
+<td><span class="taste">Enter</span> erzeugt einen Absatz
+(<span class="pfad">&lt;p&gt;</span>),
+<span class="taste">Umschalt</span>&nbsp;+&nbsp;<span class="taste">Enter</span>
+einen Zeilenumbruch (<span class="pfad">&lt;br&gt;</span>). Für Adressen
+und Terminlisten den Umbruch nehmen.</td>
+</tr>
+<tr>
+<td>Text aus Word oder von einer Website</td>
+<td>Mit
+<span class="taste">Strg</span>&nbsp;+&nbsp;<span class="taste">Umschalt</span>&nbsp;+&nbsp;<span class="taste">V</span>
+als reinen Text einfügen und hier neu formatieren. Sonst schleppen Sie
+Schriftgrößen und Farben ein, die das Seitenlayout aushebeln.</td>
+</tr>
+<tr>
+<td>Überschriften im Text</td>
+<td>Über <em>Format &rarr; Formats &rarr; Headings</em>. Nicht durch
+Fettschrift ersetzen &ndash; das Layout der Website richtet sich nach den
+Überschriftsebenen.</td>
+</tr>
+<tr>
+<td>Tabellen</td>
+<td>Über das Menü <em>Table</em>. Tabellen ohne Rahmenangabe werden auf
+schmalen Bildschirmen untereinander gestapelt, damit sie nicht aus der
+Seite laufen.</td>
+</tr>
+<tr>
+<td>Verweis auf eine eigene Seite</td>
+<td>Adresse aus der Adresszeile kopieren. Die sprechende Form
+(<span class="pfad">/content/…</span>) und die alte Form
+(<span class="pfad">index.php?item=…</span>) funktionieren beide.</td>
+</tr>
+</table>
+
+<div class="kasten">
+<span class="kastentitel">Tabellen aus einer Kalkulation</span>
+<p>Im Abschnitt <em>Inhalt</em> steht darunter die Schaltfläche
+<strong>XLSX-Inhalt importieren</strong>. Sie übernimmt eine
+Tabellendatei als Rohtext, Spalten durch Leerzeichen getrennt &ndash;
+gedacht für Terminlisten, die ohnehin zeilenweise ausgewertet werden.</p>
+</div>
+</section>
+
+<!-- ============================================================ 5 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 5</span>Bilder</h1>
+
+<figure class="schmal">
+<img src="bilder/08-bild.png" alt="Abschnitt Bild mit Dateiauswahl">
+<figcaption>Der Abschnitt <em>Bild</em>.</figcaption>
+</figure>
+
+<p>Jeder Inhalt trägt <strong>ein</strong> Bild. Datei auswählen,
+<strong>Übernehmen</strong> &ndash; erst damit wird hochgeladen. Danach
+erscheinen Vorschau und zwei Felder für Breite und Höhe; mit gesetztem
+Häkchen <em>Seitenverhältnis halten</em> genügt die Breite.</p>
+
+<p>Ohne weitere Angabe steht das Bild über dem Text. Soll es an einer
+bestimmten Stelle stehen, setzen Sie dort die Marke</p>
+
+<div class="kasten">
+<p><span class="pfad">#item_picture</span></p>
+</div>
+
+<p>Die Schaltfläche <em>Bild in den Text einfügen</em> setzt diese Marke an
+die aktuelle Position.</p>
+
+<div class="kasten achtung">
+<span class="kastentitel">Dateigröße</span>
+<p>Die Verwaltung skaliert die Anzeige, nicht die Datei. Ein 6-MB-Foto
+bleibt ein 6-MB-Foto und muss von jedem Besucher geladen werden. Verkleinern
+Sie vor dem Hochladen auf etwa 1600 Pixel Breite; das liegt je nach Motiv
+bei 200 bis 500 KB.</p>
+<p>Die Obergrenze des Servers liegt bei 20 MB je Datei.</p>
+</div>
+
+<h2>Mehrere Bilder in einem Text</h2>
+
+<p>Dafür ist das Bildfeld nicht gedacht. Laden Sie die Bilder über den
+Dateimanager hoch und binden Sie sie im Editor über <em>Insert &rarr;
+Image</em> ein. Wenn Ihnen der Zugang dazu fehlt, ist das ein Fall für die
+Betreuung.</p>
+
+<h2>Rechte</h2>
+
+<p>Nur eigene Aufnahmen oder Bilder mit ausdrücklicher Erlaubnis. Bei
+erkennbaren Personen gilt das Recht am eigenen Bild &ndash; bei
+Minderjährigen entscheiden die Erziehungsberechtigten. Eine Fundstelle im
+Internet ist keine Lizenz.</p>
+</section>
+
+<!-- ============================================================ 6 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 6</span>Veröffentlichung und Reihenfolge</h1>
+
+<figure>
+<img src="bilder/09-veroeffentlichung.png" alt="Abschnitt Veröffentlichung mit Sortierung, Datum, Autor und fünf Schaltern">
+<figcaption>Der Abschnitt <em>Veröffentlichung</em>.</figcaption>
+</figure>
+
+<table class="uebersicht">
+<tr><th style="width:38%">Schalter</th><th>Wirkung</th></tr>
+<tr>
+<td><strong>Inhalt ist verfügbar</strong></td>
+<td>Aus: Besucher bekommen die Seite nicht zu sehen, angemeldete
+Administratoren schon. In der Liste steht dann <em>Entwurf</em>.</td>
+</tr>
+<tr>
+<td><strong>Inhalt erscheint in Listen</strong></td>
+<td>Aus: Die Seite fehlt in Übersichten und Menüs, bleibt aber über ihre
+Adresse erreichbar. Nützlich für Seiten, auf die nur von anderer Stelle
+verwiesen wird.</td>
+</tr>
+<tr>
+<td><strong>„Geschrieben von …“ anzeigen</strong></td>
+<td>Blendet Verfasser und Datum über dem Text ein.</td>
+</tr>
+<tr>
+<td><strong>Bewertung</strong> / <strong>Kommentare</strong></td>
+<td>Schalten Sternebewertung und Kommentarformular je Seite frei.</td>
+</tr>
+</table>
+
+<h2>Sortierung</h2>
+
+<p>Eine Zahl je Inhalt; <strong>kleinere Zahlen stehen weiter oben</strong>.
+Sie gilt innerhalb der Unterkategorie. Bei gleicher Zahl entscheidet der
+Titel.</p>
+
+<p>Vergeben Sie Zehnerschritte. Dann lässt sich später etwas dazwischen
+einsortieren, ohne die ganze Reihe neu zu nummerieren. Für einzelne
+Verschiebungen sind die Pfeile in der Liste bequemer.</p>
+
+<h2>Erstellungsdatum</h2>
+
+<p>Das Datum steht auf der Seite, sofern „Geschrieben von …“ eingeschaltet
+ist, und bestimmt die Reihenfolge in Nachrichtenlisten. Solange das Häkchen
+<strong>Nicht verändern</strong> gesetzt ist, bleibt es beim Speichern
+unberührt &ndash; erwünscht bei einer Korrektur, unerwünscht, wenn Sie eine
+alte Seite inhaltlich neu aufsetzen.</p>
+
+<p>Unabhängig davon merkt sich das System, wann zuletzt geändert wurde, und
+gibt das als „zuletzt aktualisiert“ aus.</p>
+</section>
+
+<!-- ============================================================ 7 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 7</span>Löschen, Wiederherstellen,<br>frühere Fassungen</h1>
+
+<p>Löschen geschieht über den Mülleimer in der Liste, nach Rückfrage. Der
+Datensatz ist damit fort &ndash; es gibt keinen Papierkorb.</p>
+
+<p>Was es stattdessen gibt, sind die <strong>Sicherungen</strong>: Der
+Backup-Manager legt vollständige Kopien der Datenbank an, von Hand oder
+nach Zeitplan. Aus ihnen speist sich beides &ndash; die Wiederherstellung
+gelöschter Inhalte und der Rückgriff auf eine frühere Fassung.</p>
+
+<h2>Einen gelöschten Inhalt zurückholen</h2>
+
+<p>In der Liste oben rechts: <strong>Gelöschten Inhalt
+wiederherstellen</strong>. Sie wählen erst den Datensatz, dann den
+Zeitpunkt. Angeboten wird, was in einer Sicherung steht, aber nicht mehr in
+der Datenbank &ndash; das setzt eine Sicherung aus der Zeit vor dem Löschen
+voraus.</p>
+
+<h2>Eine frühere Fassung einspielen</h2>
+
+<p>Im Bearbeitungsbildschirm oben rechts: <strong>Frühere
+Fassungen</strong>. Die Liste zeigt jede Sicherung, in der dieser Inhalt
+vorkommt, die neueste zuerst.</p>
+
+<figure>
+<img src="bilder/13-fassungen.png" alt="Liste der gesicherten Fassungen mit aufgeklapptem Vergleich">
+<figcaption>Aufgeklappt zeigt jede Zeile die Unterschiede zum heutigen
+Stand.</figcaption>
+</figure>
+
+<ul class="punkte">
+<li><strong>Unverändert</strong> heißt: Diese Fassung stimmt mit dem
+heutigen Stand überein.</li>
+<li>Sonst nennt die Zeile die betroffenen Felder. Aufgeklappt stehen kurze
+Werte gegenübergestellt, Kurzbeschreibung und Inhalt zeilenweise:
+<span class="pfad">&minus;</span> stand in der Sicherung,
+<span class="pfad">+</span> steht heute da.</li>
+</ul>
+
+<div class="kasten achtung">
+<span class="kastentitel">Das Einspielen ersetzt den gesamten Datensatz</span>
+<p>Nicht nur den Text &ndash; auch Einordnung, Sortierung und Schalter. Alles
+seit der Sicherung ist danach fort, ohne weitere Rückfrage.</p>
+<p>Wollen Sie nur einen Absatz zurück, kopieren Sie ihn aus dem Vergleich
+heraus und setzen ihn im Bearbeitungsbildschirm ein. Vor einem
+tatsächlichen Einspielen lohnt es sich, vorher eine Sicherung anzulegen
+&ndash; dann ist auch der Weg zurück offen.</p>
+</div>
+</section>
+
+<!-- ============================================================ 8 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 8</span>Direkt auf der Website bearbeiten</h1>
+
+<p>Für Korrekturen am Text ist der Umweg über die Verwaltung nicht nötig.
+Melden Sie sich im Anmeldefeld der Website an; neben der Überschrift jeder
+Seite erscheint dann <strong>[Bearbeiten]</strong>.</p>
+
+<figure>
+<img src="bilder/15-website.png" alt="Eine Seite der Website im Bearbeitungsmodus">
+<figcaption>Bearbeiten an Ort und Stelle. Titel, Kurzbeschreibung und Text
+stehen in Eingabefeldern, der Rest der Seite bleibt sichtbar.</figcaption>
+</figure>
+
+<p>Gespeichert wird mit <strong>Änderungen Speichern</strong> am Ende der
+Seite. Für alles andere &ndash; Bild, Einordnung, Schalter &ndash; führt
+<strong>[Erweiterter Modus]</strong> in den vollen
+Bearbeitungsbildschirm.</p>
+
+<p>Der Text erscheint hier im Quelltext, nicht im grafischen Editor. Sie
+sehen also die HTML-Marken &ndash; und die
+<span class="pfad">[php]</span>-Blöcke aus dem nächsten Kapitel.</p>
+</section>
+
+<!-- ============================================================ 9 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 9</span>Dynamische Inhalte</h1>
+
+<p>Ein Teil der Seiten ist nicht einfach Text, sondern wird beim Aufruf
+zusammengesetzt. Das betrifft Sie, sobald Sie eine solche Seite öffnen
+&ndash; und es ist die häufigste Ursache für eine Seite, die plötzlich weiß
+bleibt.</p>
+
+<h2>[php]-Blöcke</h2>
+
+<p>Steht im Text ein Block zwischen <span class="pfad">[php]</span> und
+<span class="pfad">[/php]</span>, wird sein Inhalt beim Aufruf als Programm
+ausgeführt. So entstehen etwa der Probenplan aus einer Terminliste oder die
+Verweise „Neuer Probenplan“, die nur Angemeldete sehen.</p>
+
+<div class="kasten achtung">
+<span class="kastentitel">Regeln für diese Blöcke</span>
+<ul class="punkte">
+<li>Text außerhalb der Klammern können Sie bedenkenlos ändern.</li>
+<li>Innerhalb der Klammern ändern Sie nichts &ndash; ein fehlendes
+Semikolon oder eine fehlende Klammer, und die Seite bleibt weiß.</li>
+<li>Bearbeiten Sie solche Seiten im <strong>Quelltextmodus</strong>. Der
+grafische Editor kann die Blöcke umformatieren und damit zerstören.</li>
+<li>Vor einer Änderung an einer solchen Seite: Sicherung anlegen.</li>
+</ul>
+</div>
+
+<h2>Variablen</h2>
+
+<p>Unter <em>Variablen</em> liegen Textbausteine, die über ein Kürzel an
+beliebig vielen Stellen eingesetzt werden. Eine Änderung dort wirkt sich
+sofort überall aus, wo das Kürzel vorkommt &ndash; entsprechend
+zurückhaltend sollte man damit umgehen.</p>
+
+<h2>Platzhalter</h2>
+
+<p>Marken mit Doppelkreuz wie <span class="pfad">#item_picture</span>
+werden beim Aufbau der Seite ersetzt. Weitere gibt es für das Template der
+Website; im Inhaltstext begegnet Ihnen regelmäßig nur dieser eine.</p>
+</section>
+
+<!-- ============================================================ 10 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 10</span>Grenzen</h1>
+
+<p>Die folgenden Bereiche gehören nicht zur Inhaltspflege. Sie sind nicht
+gesperrt &ndash; aber eine Änderung dort wirkt sich auf die ganze Website
+aus und lässt sich nicht so einfach zurücknehmen wie ein Text.</p>
+
+<table class="uebersicht">
+<tr><th style="width:34%">Bereich</th><th>Warum</th></tr>
+<tr>
+<td><strong>Website-Konfigurator</strong></td>
+<td>Grundeinstellungen: Name, Template, Sprache, Startseite, Zeitzonen,
+Mailversand. Eine falsche Angabe kann die Website unerreichbar
+machen.</td>
+</tr>
+<tr>
+<td><strong>Menü, Kategorien, Unterkategorien</strong></td>
+<td>Struktur. Das Löschen einer Kategorie nimmt allen darin liegenden
+Inhalten ihren Platz.</td>
+</tr>
+<tr>
+<td><strong>Variablen</strong></td>
+<td>Wirken an vielen Stellen zugleich (Kapitel&nbsp;9).</td>
+</tr>
+<tr>
+<td><strong>Benutzerverwaltung, Bans</strong></td>
+<td>Zugänge und Sperren.</td>
+</tr>
+<tr>
+<td><strong>Spezialseiten</strong></td>
+<td>Startseite, Gästebuch, Fehler- und Sperrseite. Jede Rolle existiert
+genau einmal; wird sie einem anderen Inhalt zugewiesen, verliert die
+bisherige Seite ihre Funktion.</td>
+</tr>
+</table>
+
+<h2>Unbedenklich</h2>
+
+<ul class="punkte">
+<li>Inhalte anlegen, ändern, kopieren, sortieren, freigeben, zurückziehen</li>
+<li>Bilder hochladen und einbinden</li>
+<li>Sicherungen anlegen &ndash; jederzeit, im Zweifel lieber eine mehr</li>
+<li>Frühere Fassungen ansehen (das Einspielen ist der Eingriff, nicht das
+Ansehen)</li>
+</ul>
+</section>
+
+<!-- ============================================================ 11 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 11</span>Störungen</h1>
+
+<table class="uebersicht">
+<tr><th style="width:34%">Symptom</th><th>Ursache und Abhilfe</th></tr>
+
+<tr>
+<td>Seite bleibt weiß</td>
+<td>Meist ein Fehler in einem <span class="pfad">[php]</span>-Block
+(Kapitel&nbsp;9). Die zuletzt bearbeitete Seite im Quelltextmodus öffnen und
+den Block prüfen, oder über <em>Frühere Fassungen</em> zurückgehen. Tritt
+es unabhängig von einer Bearbeitung auf, melden Sie Adresse und
+Uhrzeit &ndash; das Serverprotokoll nennt dann die Zeile.</td>
+</tr>
+
+<tr>
+<td>„Aus Sicherheitsgründen wurde die Sitzung beendet“</td>
+<td>Zeitüberschreitung. Neu anmelden; das abgeschickte Formular ist
+verloren.</td>
+</tr>
+
+<tr>
+<td>Änderung erscheint nicht auf der Website</td>
+<td>Erst prüfen, ob <em>Inhalt ist verfügbar</em> gesetzt ist. Sonst ist es
+der Browser-Cache:
+<span class="taste">Strg</span>&nbsp;+&nbsp;<span class="taste">F5</span>.</td>
+</tr>
+
+<tr>
+<td>Layout zerschossen nach dem Einfügen</td>
+<td>Formatierung aus Word oder von einer Website. Absatz löschen, als
+reinen Text neu einfügen.</td>
+</tr>
+
+<tr>
+<td>Feld rot umrandet</td>
+<td>Prüfung fehlgeschlagen; die Meldung darunter nennt den Grund. Die
+übrigen Eingaben bleiben erhalten.</td>
+</tr>
+
+<tr>
+<td>Bild wird nicht angezeigt</td>
+<td>Nach der Dateiauswahl fehlt das <em>Übernehmen</em> &ndash; erst damit
+wird hochgeladen. Oder die Datei überschreitet 20 MB.</td>
+</tr>
+
+<tr>
+<td>Unklar, was geändert wurde</td>
+<td><em>Frühere Fassungen</em> zeigt den Vergleich zum letzten gesicherten
+Stand. <em>Ereignisse</em> in der Seitenleiste zeigt, wer wann was
+angefasst hat.</td>
+</tr>
+</table>
+
+<h2>Eine Störung melden</h2>
+
+<p>Hilfreich sind: die Adresse aus der Adresszeile, der Zeitpunkt, die
+letzte Aktion davor und der Wortlaut einer etwaigen Meldung. Bei einer
+weißen Seite zusätzlich, ob sie nach einer Bearbeitung auftrat &ndash;
+damit lässt sich der Eintrag im Serverprotokoll zuordnen.</p>
+</section>
+
+<!-- ============================================================ 12 -->
+<section class="kapitel">
+<h1><span class="kapitelnummer">Kapitel 12</span>Kurzreferenz</h1>
+
+<table class="uebersicht">
+<tr><th style="width:44%">Aufgabe</th><th>Weg</th></tr>
+<tr><td>Verwaltung öffnen</td><td>Adresse der Website + <span class="pfad">/admin</span></td></tr>
+<tr><td>Text ändern</td><td>Inhalte &rarr; Name anklicken &rarr; Übernehmen &amp; Schließen</td></tr>
+<tr><td>Seite anlegen</td><td>Inhalte &rarr; Inhalt hinzufügen</td></tr>
+<tr><td>Seite duplizieren</td><td>Inhalte &rarr; Kopieren-Schaltfläche in der Zeile</td></tr>
+<tr><td>Seite zurückziehen</td><td>Häkchen <em>Inhalt ist verfügbar</em> entfernen</td></tr>
+<tr><td>Reihenfolge</td><td>Pfeile in der Liste, oder Feld <em>Sortierung</em></td></tr>
+<tr><td>Bild einfügen</td><td>Datei wählen &rarr; Übernehmen &rarr; <span class="pfad">#item_picture</span> im Text</td></tr>
+<tr><td>Fassung vergleichen</td><td>Im Editor: Frühere Fassungen</td></tr>
+<tr><td>Gelöschtes zurückholen</td><td>Inhalte &rarr; Gelöschten Inhalt wiederherstellen</td></tr>
+<tr><td>Sicherung anlegen</td><td>Startseite &rarr; Sicherung erstellen</td></tr>
+<tr><td>Schnellkorrektur</td><td>Auf der Website anmelden &rarr; [Bearbeiten]</td></tr>
+</table>
+
+<h2>Merksätze</h2>
+
+<ul class="punkte">
+<li>Gespeichert ist veröffentlicht &ndash; außer der Inhalt steht auf
+Entwurf.</li>
+<li>Kleinere Sortierzahl heißt weiter oben, in Zehnerschritten vergeben.</li>
+<li><span class="pfad">[php]</span> im Text: Quelltextmodus, nichts
+innerhalb der Klammern ändern, vorher sichern.</li>
+<li>Fremden Text nur als reinen Text einfügen.</li>
+<li>Das Einspielen einer früheren Fassung ersetzt den ganzen
+Datensatz.</li>
+</ul>
+
+<div class="spickzettel">
+<h2>Ansprechpartner</h2>
+<p>Betreuung: ____________________________________________</p>
+<p>Erreichbar unter: ______________________________________</p>
+</div>
+
+<h2>Stand dieser Ausgabe</h2>
+<p>Die Abbildungen stammen aus der laufenden Verwaltung und werden
+zusammen mit dem Text erzeugt. Beschrieben ist der Stand vom
+<strong>__________</strong>.</p>
+<p>Quelle und Erzeugung: <span class="pfad">docs/anleitung/</span> im
+Projektverzeichnis.</p>
+</section>
+
+</body>
+</html>
