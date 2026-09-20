@@ -39,11 +39,15 @@ function pms_build_mock_database(): array
         }
     }
 
-    // Auch die Sicherungen zuruecksetzen: Sie gehoeren zum Datenbestand.
-    // Sonst sieht ein Test, der "noch keine Sicherung" erwartet, die
-    // Sicherung, die ein frueherer Testlauf angelegt hat.
+    // Auch Sicherungen und hochgeladene Bilder zuruecksetzen: Sie
+    // gehoeren zum Datenbestand. Sonst sieht ein Test, der "noch keine
+    // Sicherung" erwartet, die Sicherung eines frueheren Laufs - und im
+    // Bilddialog stapeln sich chorprobe_1, chorprobe_2, chorprobe_3.
     foreach (glob(dirname(PMS_DB_FILE) . '/backup*') ?: [] as $folder) {
         pms_remove_directory($folder);
+    }
+    foreach (glob(PMS_SRC_DIR . '/images/uploads/*') ?: [] as $file) {
+        pms_remove_directory($file);
     }
 
     $db = new SQLite3(PMS_DB_FILE);

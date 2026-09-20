@@ -317,48 +317,110 @@ gedacht für Terminlisten, die ohnehin zeilenweise ausgewertet werden.</p>
 <section class="kapitel">
 <h1><span class="kapitelnummer">Kapitel 5</span>Bilder</h1>
 
+<p>Alles, was Sie mit Bildern tun, erledigt <strong>eine</strong>
+Schaltfläche: <strong>Bild in den Text einfügen</strong>, unten im
+Abschnitt <em>Bild</em>. Sie öffnet einen Dialog, der hochlädt,
+zuschneidet, verkleinert, verwaltet und an der Schreibmarke einsetzt.</p>
+
+<figure>
+<img src="bilder/16-dialog.png" alt="Der Dialog Bild einfügen mit Hochladen, Zuschneiden, Ablagefläche, Bilderraster und Größenfeldern">
+<figcaption>Der Dialog <em>Bild einfügen</em>.</figcaption>
+</figure>
+
+<ol class="schritte">
+<li><strong>Bild hochladen.</strong> Datei wählen, fertig &ndash; sie
+landet unverändert im Bestand.</li>
+<li><strong>Zuschneiden und hochladen.</strong> Der interessantere Weg;
+siehe unten.</li>
+<li><strong>Ablagefläche.</strong> Eine Datei aus dem Dateimanager Ihres
+Rechners hierher ziehen öffnet ebenfalls das Zuschneiden.</li>
+<li><strong>Der Bestand.</strong> Alle hochgeladenen Bilder mit Name und
+Maßen. Ein Klick wählt aus, der Mülleimer in der Ecke löscht. Der Bestand
+gehört der ganzen Website, nicht diesem einen Inhalt &ndash; ein Bild, das
+Sie einmal hochgeladen haben, steht überall zur Verfügung.</li>
+<li><strong>Breite und Höhe</strong> des gewählten Bildes. Ändern Sie hier
+etwas, wird beim Einfügen eine passend verkleinerte Fassung erzeugt; das
+Original bleibt im Bestand.</li>
+</ol>
+
+<p><strong>Einfügen</strong> setzt das Bild an die Stelle, an der die
+Schreibmarke im Text steht &ndash; im grafischen Editor wie im
+Quelltext. So kommen beliebig viele Bilder in einen Text, jedes an seinen
+Platz.</p>
+
+<h2>Zuschneiden</h2>
+
+<p>Der Weg über <em>Zuschneiden und hochladen</em> nimmt Ihnen die Arbeit
+ab, die sonst ein Bildprogramm machen müsste.</p>
+
 <figure class="schmal">
-<img src="bilder/08-bild.png" alt="Abschnitt Bild mit Dateiauswahl">
+<img src="bilder/17-zuschneiden.png" alt="Der Zuschneide-Dialog mit Auswahlrahmen, Ausgabegrößen und Anzeige des Ausschnitts">
+<figcaption>Zuschneiden vor dem Hochladen.</figcaption>
+</figure>
+
+<ol class="schritte">
+<li><strong>Der Rahmen.</strong> An den Griffen ziehen, in der Mitte
+verschieben. Die Hilfslinien teilen das Bild in Drittel &ndash; wer den
+Horizont oder ein Gesicht auf eine dieser Linien legt, bekommt fast immer
+den besseren Ausschnitt.</li>
+<li><strong>Ausgabegröße.</strong> Klein 200, Mittel 700, Groß 1600 Pixel
+in der längeren Kante. Das Bild wird darauf verkleinert, bevor es
+hochgeladen wird &ndash; aus einem 6-MB-Foto werden ein paar hundert
+Kilobyte.</li>
+<li><strong>Die Anzeige</strong> nennt laufend die Maße des Ausschnitts und
+das Seitenverhältnis.</li>
+</ol>
+
+<p><strong>Zuschneiden</strong> lädt das Ergebnis hoch und legt es in den
+Bestand. Von dort fügen Sie es wie jedes andere Bild ein.</p>
+
+<div class="kasten">
+<span class="kastentitel">Welche Ausgabegröße?</span>
+<ul class="punkte">
+<li><strong>Mittel (700px)</strong> für Bilder im Text. Der Inhaltsbereich
+ist keine 700 Pixel breit &ndash; mehr bringt nichts.</li>
+<li><strong>Groß (1600px)</strong> nur, wenn das Bild formatfüllend stehen
+oder sich vergrößern lassen soll.</li>
+<li><strong>Klein (200px)</strong> für ein Symbol neben einem Text.</li>
+</ul>
+<p>Im Zweifel Mittel. Die Obergrenze des Servers liegt bei 20 MB je Datei,
+aber gegen die läuft man mit zugeschnittenen Bildern nie.</p>
+</div>
+
+<h2>Das Bild am Inhalt</h2>
+
+<p>Daneben trägt jeder Inhalt <strong>ein</strong> Bild als Eigenschaft
+&ndash; das Feld <em>Bild hochladen</em> im selben Abschnitt.</p>
+
+<figure class="schmal">
+<img src="bilder/08-bild.png" alt="Abschnitt Bild mit Dateiauswahl und der Schaltfläche zum Einfügen">
 <figcaption>Der Abschnitt <em>Bild</em>.</figcaption>
 </figure>
 
-<p>Jeder Inhalt trägt <strong>ein</strong> Bild. Datei auswählen,
-<strong>Übernehmen</strong> &ndash; erst damit wird hochgeladen. Danach
-erscheinen Vorschau und zwei Felder für Breite und Höhe; mit gesetztem
-Häkchen <em>Seitenverhältnis halten</em> genügt die Breite.</p>
-
-<p>Ohne weitere Angabe steht das Bild über dem Text. Soll es an einer
-bestimmten Stelle stehen, setzen Sie dort die Marke</p>
+<p>Dieses Bild erscheint in Listen neben dem Eintrag und auf der Seite
+selbst über dem Text. Soll es im Text an einer bestimmten Stelle stehen,
+setzen Sie dort die Marke</p>
 
 <div class="kasten">
 <p><span class="pfad">#item_picture</span></p>
 </div>
 
-<p>Die Schaltfläche <em>Bild in den Text einfügen</em> setzt diese Marke an
-die aktuelle Position.</p>
+<p>Nach der Dateiauswahl muss <strong>Übernehmen</strong> folgen &ndash;
+erst damit wird hochgeladen. Für alles außer dem Listenbild ist der Dialog
+von oben der bessere Weg.</p>
 
-<div class="kasten achtung">
-<span class="kastentitel">Dateigröße</span>
-<p>Die Verwaltung skaliert die Anzeige, nicht die Datei. Ein 6-MB-Foto
-bleibt ein 6-MB-Foto und muss von jedem Besucher geladen werden. Verkleinern
-Sie vor dem Hochladen auf etwa 1600 Pixel Breite; das liegt je nach Motiv
-bei 200 bis 500 KB.</p>
-<p>Die Obergrenze des Servers liegt bei 20 MB je Datei.</p>
-</div>
+<h2>Zwei Dinge, an die niemand denkt</h2>
 
-<h2>Mehrere Bilder in einem Text</h2>
-
-<p>Dafür ist das Bildfeld nicht gedacht. Laden Sie die Bilder über den
-Dateimanager hoch und binden Sie sie im Editor über <em>Insert &rarr;
-Image</em> ein. Wenn Ihnen der Zugang dazu fehlt, ist das ein Fall für die
-Betreuung.</p>
-
-<h2>Rechte</h2>
-
-<p>Nur eigene Aufnahmen oder Bilder mit ausdrücklicher Erlaubnis. Bei
-erkennbaren Personen gilt das Recht am eigenen Bild &ndash; bei
-Minderjährigen entscheiden die Erziehungsberechtigten. Eine Fundstelle im
-Internet ist keine Lizenz.</p>
+<ul class="punkte">
+<li><strong>Alternativtext.</strong> Der Dialog setzt das Bild ohne
+Beschreibung ein. Wer eine ergänzen will &ndash; für Vorleseprogramme und
+für den Fall, dass das Bild nicht lädt &ndash;, klickt es im grafischen
+Editor an und trägt sie unter <em>Insert &rarr; Image</em> ein.</li>
+<li><strong>Rechte.</strong> Nur eigene Aufnahmen oder Bilder mit
+ausdrücklicher Erlaubnis. Bei erkennbaren Personen gilt das Recht am
+eigenen Bild, bei Minderjährigen entscheiden die Erziehungsberechtigten.
+Eine Fundstelle im Internet ist keine Lizenz.</li>
+</ul>
 </section>
 
 <!-- ============================================================ 6 -->

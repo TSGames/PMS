@@ -19,6 +19,7 @@ const { test } = require('@playwright/test');
 const { login, resetDatabase } = require('../lib/admin');
 
 const OUT = path.resolve(__dirname, '../../../docs/anleitung/bilder');
+const FIXTURES = path.resolve(__dirname, '../fixtures');
 
 test.use({ viewport: { width: 1280, height: 860 } });
 
@@ -164,6 +165,49 @@ test('08 Bild', async ({ page }) => {
   await abschnitt.scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
   await abschnitt.screenshot({ path: path.join(OUT, '08-bild.png') });
+});
+
+test('08b Bild einfuegen: der Dialog', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('admin/inhalte?edit=2&editor=0');
+
+  // Zwei Bilder in den Bestand legen, damit das Raster nicht leer ist
+  for (const datei of ['chorprobe.png', 'konzert.png']) {
+    await page.setInputFiles('#image_upload_picker', path.join(FIXTURES, datei));
+    await page.waitForTimeout(800);
+  }
+
+  await page.locator('button:has-text("Bild in den Text einfügen")').click();
+  await page.waitForTimeout(400);
+  await page.locator('.image-tile-button').first().click();
+  await page.waitForTimeout(200);
+
+  await markiere(page, [
+    { selector: '.dialog-upload button:nth-of-type(1)', nummer: 1, rahmen: true },
+    { selector: '.dialog-upload button:nth-of-type(2)', nummer: 2, rahmen: true },
+    { selector: '#drop_zone', nummer: 3, rahmen: true },
+    { selector: '.image-grid', nummer: 4, versatz: [18, 18] },
+    { selector: '.dialog-size', nummer: 5, rahmen: true },
+  ]);
+  await bild(page, '16-dialog', '.dialog');
+});
+
+test('08c Zuschneiden', async ({ page }) => {
+  await login(page, 'admin');
+  await page.goto('admin/inhalte?edit=2&editor=0');
+  await page.locator('button:has-text("Bild in den Text einfügen")').click();
+  await page.waitForTimeout(400);
+
+  await page.setInputFiles('#image_file_picker', path.join(FIXTURES, 'chorprobe.png'));
+  await page.waitForSelector('.crop-size-presets', { timeout: 15000 });
+  await page.waitForTimeout(600);
+
+  await markiere(page, [
+    { selector: '.crop-canvas-container', nummer: 1, versatz: [22, 22] },
+    { selector: '.crop-size-presets', nummer: 2, versatz: [0, 14] },
+    { selector: '.crop-info', nummer: 3, versatz: [0, 14] },
+  ]);
+  await bild(page, '17-zuschneiden', '.crop-modal-container');
 });
 
 test('09 Veröffentlichung', async ({ page }) => {
