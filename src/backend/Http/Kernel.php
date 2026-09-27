@@ -37,6 +37,7 @@ final class Kernel
         'events' => \Pms\Backend\Controller\EventsController::class,
         'backup' => \Pms\Backend\Controller\BackupController::class,
         'activity' => \Pms\Backend\Controller\ActivityController::class,
+        'share_landing' => \Pms\Backend\Controller\ShareLandingController::class,
     ];
 
     /**

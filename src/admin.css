@@ -1700,3 +1700,50 @@ body.login-page {
     cursor: pointer;
     padding: var(--s-1);
 }
+
+/* Landeseite geteilter Bilder (Share Target) */
+
+.share-image-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+}
+
+.share-image-row {
+    display: flex;
+    gap: var(--s-4);
+    padding: var(--s-4);
+    align-items: flex-start;
+}
+
+.share-image-preview {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: var(--r-sm);
+    background: var(--c-surface-alt);
+    flex-shrink: 0;
+}
+
+.share-image-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.share-image-name {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.share-image-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2);
+    margin-top: var(--s-3);
+}
+
+.share-image-actions select {
+    flex: 1;
+    min-width: 12rem;
+}

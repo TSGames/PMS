@@ -2,6 +2,7 @@
 
 namespace Pms\Backend\Http;
 
+use Pms\Backend\Controller\ShareLandingController;
 use Pms\Support\Auth;
 use Pms\Support\Flash;
 
@@ -16,10 +17,12 @@ use Pms\Support\Flash;
  * Anders als die übrigen Schnittstellen unter Http\ liefert dieser
  * Endpunkt kein JSON: Der Aufruf ist eine echte Seiten-Navigation, die
  * das Betriebssystem auslöst, kein Ajax-Aufruf einer eigenen Seite - eine
- * Weiterleitung zurück in die Inhalte-Übersicht ist die einzig sinnvolle
- * Antwort. Aus demselben Grund läuft er, wie die anderen Einträge in
- * Kernel::ENDPOINTS, ohne CSRF-Prüfung: Das Betriebssystem kennt unser
- * Token nicht. Auth::isLoggedIn() bleibt trotzdem Pflicht.
+ * Weiterleitung ist die einzig sinnvolle Antwort, und zwar zu
+ * ShareLandingController: Dort wird entschieden, zu welchem Inhalt das
+ * Bild gehört, statt es nur irgendwo in der allgemeinen Bilderliste
+ * abzulegen. Aus demselben Grund läuft dieser Endpunkt, wie die anderen
+ * Einträge in Kernel::ENDPOINTS, ohne CSRF-Prüfung: Das Betriebssystem
+ * kennt unser Token nicht. Auth::isLoggedIn() bleibt trotzdem Pflicht.
  */
 final class ShareTargetEndpoint
 {
@@ -31,7 +34,7 @@ final class ShareTargetEndpoint
         }
 
         $files = $_FILES['images'] ?? null;
-        $stored = 0;
+        $stored = [];
 
         if (is_array($files) && is_array($files['tmp_name'] ?? null)) {
             // Psalm kennt $_FILES nur in der Ein-Datei-Form; bei mehreren
@@ -50,21 +53,24 @@ final class ShareTargetEndpoint
                 if (!in_array($extension, \Pms\Support\EntityImage::supportedTypes(), true)) {
                     continue;
                 }
-                if (ImageEndpoint::storeFile((string)$tmpName, $name, $extension) !== null) {
-                    $stored++;
+                $saved = ImageEndpoint::storeFile((string)$tmpName, $name, $extension);
+                if ($saved !== null) {
+                    $stored[] = $saved['name'];
                 }
             }
         }
 
-        if ($stored > 0) {
-            Flash::success($stored === 1
-                ? 'Ein geteiltes Bild wurde hochgeladen - im Bild-Dialog eines Inhalts steht es jetzt zur Auswahl.'
-                : $stored . ' geteilte Bilder wurden hochgeladen - im Bild-Dialog eines Inhalts stehen sie jetzt zur Auswahl.');
-        } else {
+        if ($stored === []) {
             Flash::error('Das geteilte Bild konnte nicht übernommen werden.');
+            self::redirect(Routes::path('item'));
         }
 
-        self::redirect(Routes::path('item'));
+        // ShareLandingController fragt als Nächstes ab, zu welchem Inhalt
+        // das Bild gehört - siehe dort SESSION_KEY.
+        $pending = $_SESSION[ShareLandingController::SESSION_KEY] ?? [];
+        $_SESSION[ShareLandingController::SESSION_KEY] = array_merge($stored, $pending);
+
+        self::redirect(Routes::path('share_landing'));
     }
 
     private static function redirect(string $target): never

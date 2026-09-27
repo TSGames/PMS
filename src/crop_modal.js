@@ -47,6 +47,22 @@
     showModal();
   };
 
+  /**
+   * Öffnet den Zuschneide-Dialog für eine bereits unter images/uploads
+   * liegende Datei, statt für eine gerade lokal gewählte - genutzt, um
+   * nach einem geteilten Bild (siehe ShareLandingController) direkt im
+   * Zuschneiden statt in der allgemeinen Bilderliste zu landen. Ohne
+   * eigenen Blob lädt showCropModal() das Bild per <img src> und
+   * processCrop() lässt CropEndpoint die vorhandene Datei benutzen.
+   */
+  window.PMS_OPEN_CROP = function(filename, itemId) {
+    const img = new Image();
+    img.onload = function () {
+      window.showCropModal(img, filename, null, itemId);
+    };
+    img.src = 'images/uploads/' + filename;
+  };
+
   window.closeCropModal = function() {
     detachDocHandlers();
     if (state.modal) state.modal.remove();
@@ -504,7 +520,13 @@
     formData.append('action',        'crop_image_ajax');
     formData.append('pms_token',     window.PMS_TOKEN || '');
     formData.append('image_file',    state.imageFile);
-    formData.append('image_data',    state.blob, state.imageFile);
+    // Kommt das Bild nicht aus einer frischen lokalen Auswahl (state.blob
+    // dann leer), sondern aus einer bereits abgelegten Datei - siehe
+    // window.PMS_OPEN_CROP -, fehlt kein "image_data": CropEndpoint nimmt
+    // dann die vorhandene Datei unter images/uploads.
+    if (state.blob) {
+      formData.append('image_data', state.blob, state.imageFile);
+    }
     formData.append('crop_x',        orig.x);
     formData.append('crop_y',        orig.y);
     formData.append('crop_w',        orig.w);

@@ -255,7 +255,28 @@ final class ItemController extends Controller
             . Form::card($body, $actions)
             . '</div>'
             . Html::formClose()
-            . '<script type="text/javascript" src="js/admin-item-editor.js"></script>';
+            . '<script type="text/javascript" src="js/admin-item-editor.js"></script>'
+            . ($isEdit ? $this->autoCropScript((int)$item->id) : '');
+    }
+
+    /**
+     * Öffnet nach einem geteilten Bild (siehe ShareLandingController)
+     * automatisch den Zuschneide-Dialog, statt den Redakteur erst danach
+     * suchen zu lassen. basename() plus is_file() genügen als Prüfung -
+     * die Datei muss nur unter images/uploads liegen, mehr macht
+     * CropEndpoint beim eigentlichen Zuschnitt ohnehin selbst.
+     */
+    private function autoCropScript(int $itemId): string
+    {
+        $image = basename(Request::string('insert_image'));
+        if ($image === '' || !is_file('images/uploads/' . $image)) {
+            return '';
+        }
+
+        return '<script type="text/javascript">window.addEventListener("load",function(){'
+            . 'if(typeof window.PMS_OPEN_CROP==="function"){'
+            . 'window.PMS_OPEN_CROP(' . json_encode($image) . ',' . json_encode($itemId) . ');'
+            . '}});</script>';
     }
 
     /**
