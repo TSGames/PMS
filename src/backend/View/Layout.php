@@ -55,7 +55,7 @@ final class Layout
     /** Kopfbereich mit Stylesheets und Skripten. */
     public static function head(string $title): string
     {
-        $tinymce = self::tinymceRequested() ? get_tinymce() : '';
+        $editor = self::editorRequested() ? get_editor() : '';
         // Token und Adressen für Anfragen, die die Skripte selbst absetzen
         // (Zuschneiden, Tabellenimport)
         $token = Auth::isLoggedIn()
@@ -83,7 +83,7 @@ final class Layout
     else if(stored==="light")document.documentElement.classList.add("light");
 })();
 </script>
-' . $token . $tinymce . '
+' . $token . $editor . '
 <script type="text/javascript" src="drag.js"></script>
 <script type="text/javascript" src="crop_modal.js"></script>
 <script type="text/javascript" src="js/admin-forms.js"></script>
@@ -108,9 +108,9 @@ final class Layout
     }
 
     /** Wird der grafische Editor auf dieser Seite benötigt? */
-    private static function tinymceRequested(): bool
+    private static function editorRequested(): bool
     {
-        return (int)($_SESSION['tinymce'] ?? 0) === 2
+        return (int)($_SESSION['richeditor'] ?? 0) === 2
             || ($_GET['modul'] ?? '') === 'newsletter';
     }
 

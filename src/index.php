@@ -1214,7 +1214,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             }
             
             if($item_edit_mode)
-            $content.=get_tinymce("edit_content",500);
+            $content.=get_editor("edit_content",500);
             //$content=make_dynamic($content);
             //$content=do_check($content);
             if(($config_values->comments && from_db("item",$item,"comments")) || $action=="guestbook")

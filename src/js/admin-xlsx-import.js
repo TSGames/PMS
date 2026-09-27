@@ -46,10 +46,13 @@
     function insertContent(text) {
         var separator = '--- Bestehender Inhalt ---';
 
-        if (typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor) {
-            var existing = tinyMCE.activeEditor.getContent().trim();
+        if (window.PMS_ACTIVE_EDITOR) {
+            var existing = window.PMS_ACTIVE_EDITOR.getText().trim();
             var html = text.replace(/\n/g, '<br>');
-            tinyMCE.activeEditor.setContent(html + (existing ? '<br><br>' + separator + '<br><br>' + existing : ''));
+            window.PMS_ACTIVE_EDITOR.setContents([]);
+            window.PMS_ACTIVE_EDITOR.clipboard.dangerouslyPasteHTML(
+                html + (existing ? '<br><br>' + separator + '<br><br>' + existing : '')
+            );
             return;
         }
 

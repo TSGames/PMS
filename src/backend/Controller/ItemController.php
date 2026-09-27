@@ -532,7 +532,6 @@ final class ItemController extends Controller
             . '<script type="text/javascript" src="js/admin-xlsx-import.js"></script>';
     }
 
-    /** Bereich zum Einfügen eines Bildes in den Text (nur mit TinyMCE). */
     /**
      * Der Bild-Dialog über dem Editor.
      *

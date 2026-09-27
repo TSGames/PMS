@@ -1,4 +1,4 @@
-Grafischen HTML-Editor (TinyMCE) verwenden
+Grafischen HTML-Editor (Quill) verwenden
 
 Ist diese Option gewählt, wird standardmäßig der HTML-Editor für die Content-Bearbeitung angehakt. Jedoch kann vor jeder Bearbeitung eines Inhaltobjektes diese Einstellung für die aktuelle Sitzung geändert werden.
 

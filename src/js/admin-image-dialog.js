@@ -143,8 +143,11 @@ document.addEventListener('alpine:init', function () {
 
             /** In den grafischen Editor, sonst an die Schreibmarke im Textfeld. */
             insertMarkup(markup) {
-                if (typeof window.tinyMCE !== 'undefined' && window.tinyMCE.activeEditor) {
-                    window.tinyMCE.activeEditor.execCommand('mceInsertContent', false, markup);
+                var editor = window.PMS_ACTIVE_EDITOR;
+                if (editor) {
+                    var range = editor.getSelection(true) || { index: editor.getLength() };
+                    editor.clipboard.dangerouslyPasteHTML(range.index, markup);
+                    editor.setSelection(range.index + 1);
                     return;
                 }
 

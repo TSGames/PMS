@@ -33,12 +33,12 @@ RUN { \
 
 COPY mpm_prefork.conf /etc/apache2/mods-available/mpm_prefork.conf
 COPY template/ /var/template_init/
-# Abhängigkeiten (Slim, TinyMCE). vendor/ bleibt außerhalb des Webroots,
-# weil dieser in der Entwicklung per Bind-Mount überlagert wird; der Editor
-# wird in den Webroot kopiert, weil er vom Browser geladen wird.
+# Abhängigkeiten (Slim). vendor/ bleibt außerhalb des Webroots, weil
+# dieser in der Entwicklung per Bind-Mount überlagert wird. Der Editor
+# (Quill) liegt fertig gebaut in src/js/vendor und src/css und braucht
+# keinen eigenen Schritt hier.
 COPY composer.json composer.lock /var/composer/
-RUN cd /var/composer && composer install --no-dev --optimize-autoloader \
-    && cp -r ./vendor/tinymce/tinymce /var/www/html/
+RUN cd /var/composer && composer install --no-dev --optimize-autoloader
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 

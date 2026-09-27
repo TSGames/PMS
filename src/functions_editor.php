@@ -11,71 +11,29 @@
 	}
 
 	/**
-	 * Generate TinyMCE configuration
+	 * Bindet den grafischen Inhaltseditor ein (Quill, vormals TinyMCE).
 	 *
-	 * @param match Editor element selector
-	 * @param height Editor height
-	 * @return string TinyMCE configuration
-	 */
-	function get_tinymceinit($match,$height)
-	{
-		// Die Breite kommt aus dem Umfeld: 640 Pixel liessen im Backend
-		// zwei Drittel der Karte leer stehen und sprengten im Frontend
-		// die schmale Spalte. Ziehen laesst sich nur noch die Hoehe -
-		// die Breite bestimmt die Spalte.
-		return 'tinymce.init({
-    selector: "#'.$match.'",
-    width: "100%",
-    height: "'.$height.'",
-    resize: true,
-    language: "de",
-    plugins: "advlist autolink lists link image charmap preview anchor \
-              searchreplace visualblocks code fullscreen insertdatetime media \
-              table help wordcount",
-    
-    toolbar: "undo redo | bold italic underline strikethrough | \
-              alignleft aligncenter alignright alignjustify | \
-              styleselect formatselect fontselect fontsizeselect | \
-              bullist numlist outdent indent blockquote | \
-              link image media | forecolor backcolor | \
-              removeformat code fullscreen",
-		
-    content_css: "template_files/style.css",
-    body_class: "content_table",
-		
-    // Externe Listen für Links/Medien/Templates (falls genutzt)
-    template_external_list_url: "lists/template_list.js",
-    external_link_list_url: "lists/link_list.js",
-    external_image_list_url: "lists/image_list.js",
-    media_external_list_url: "lists/media_list.js",
-		
-    // Platzhalter-Werte für Templates
-    template_replace_values: {
-        username: "Some User",
-        staffid: "991234"
-    }
-});';
-	}
-
-	/**
-	 * Initialize TinyMCE editor
+	 * Quill ersetzt die textarea nicht direkt, sondern legt ein eigenes
+	 * Element daneben und synchronisiert erst beim Absenden zurück -
+	 * siehe admin-content-editor.js. Deshalb reicht hier ein Aufruf von
+	 * pmsInitEditor() statt einer langen Konfiguration wie bei TinyMCE.
 	 *
-	 * @param match Element selector
-	 * @param init Initialize flag
-	 * @param height Editor height
-	 * @return string HTML editor code
+	 * @param match Element-ID der textarea
+	 * @param init Initialisieren? (bislang stets true, siehe Aufrufer)
+	 * @param height Höhe des Bearbeitungsbereichs in Pixeln
+	 * @return string HTML zum Einbinden des Editors
 	 */
-	function get_tinymce($match="content",$init=1,$height=300)
+	function get_editor($match="content",$init=1,$height=300)
 	{
 		$str='
-<!-- TinyMCE -->
-<script type="text/javascript" src="tinymce/tinymce.js"></script>
-<script type="text/javascript">
+<!-- Quill -->
+<link rel="stylesheet" type="text/css" href="css/quill.snow.css">
+<script type="text/javascript" src="js/vendor/quill.js"></script>
+<script type="text/javascript" src="js/admin-content-editor.js"></script>
 ';
-		if($init) $str.=get_tinymceinit($match,$height);
-		$str.='
-</script>
-<!-- /TinyMCE -->';
+		if($init) $str.='<script type="text/javascript">pmsInitEditor("'.$match.'",'.(int)$height.');</script>
+';
+		$str.='<!-- /Quill -->';
 		return $str;
 	}
 

@@ -531,8 +531,9 @@
         // Der Bild-Dialog kennt beide Fälle: grafischer Editor und Textfeld
         if (typeof window.PMS_INSERT_IMAGE === 'function') {
           window.PMS_INSERT_IMAGE(imageUrl);
-        } else if (typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor) {
-          tinyMCE.activeEditor.execCommand('mceInsertContent', false,
+        } else if (window.PMS_ACTIVE_EDITOR) {
+          var range = window.PMS_ACTIVE_EDITOR.getSelection(true) || { index: window.PMS_ACTIVE_EDITOR.getLength() };
+          window.PMS_ACTIVE_EDITOR.clipboard.dangerouslyPasteHTML(range.index,
             '<img src="' + imageUrl + '" alt="">');
         }
       })

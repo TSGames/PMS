@@ -206,7 +206,7 @@ final class ConfigController extends Controller
             . $this->flag('speciallinks', 'Suchmaschinen-freundliche Links', $config)
             . $this->flag('safemail', 'E-Mail-Adressen verschlüsseln', $config)
             . $this->flag('allow_compress', 'Seitenausgabe komprimieren', $config, 'Sofern der Browser es zulässt, verkürzt das die Ladezeit.')
-            . $this->flag('editor', 'Grafischen HTML-Editor (TinyMCE) verwenden', $config)
+            . $this->flag('editor', 'Grafischen HTML-Editor (Quill) verwenden', $config)
             . $this->flag('smileys', 'Smiley-Modul aktivieren', $config);
 
         $sections['Modul: Sprachen'] = Form::field(
