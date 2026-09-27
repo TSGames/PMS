@@ -31,4 +31,46 @@ echo json_encode([
         ['src' => $base . '/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
         ['src' => $base . '/icons/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
     ],
+    // Langes Drücken auf das App-Icon: direkt zu den drei Stellen, die man
+    // unterwegs am häufigsten braucht, ohne erst durchs Dashboard zu klicken.
+    'shortcuts' => [
+        [
+            'name' => 'Neuer Inhalt',
+            'url' => $base . '/admin/inhalte?new=yes',
+            'icons' => [['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192']],
+        ],
+        [
+            'name' => 'Ereignisse',
+            'short_name' => 'Ereignisse',
+            'description' => 'Neue Kommentare, Registrierungen und andere Aktivität',
+            'url' => $base . '/admin/ereignisse',
+            'icons' => [['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192']],
+        ],
+        [
+            'name' => 'Website-Status',
+            'url' => $base . '/admin/status',
+            'icons' => [['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192']],
+        ],
+    ],
+    // Macht die App zu einem Ziel im Teilen-Menü des Betriebssystems - ein
+    // Foto aus der Kamera- oder Galerie-App landet so direkt im
+    // Bild-Bestand. Siehe Http\ShareTargetEndpoint.
+    //
+    // Feldname bewusst "images[]" statt "images": Teilt jemand mehrere
+    // Bilder auf einmal, schickt der Browser mehrere Formularfelder mit
+    // demselben Namen - ohne die eckigen Klammern behält PHPs $_FILES
+    // davon nur das letzte, der Rest wird stillschweigend verworfen.
+    'share_target' => [
+        'action' => $base . '/admin/teilen',
+        'method' => 'POST',
+        'enctype' => 'multipart/form-data',
+        'params' => [
+            'files' => [
+                [
+                    'name' => 'images[]',
+                    'accept' => ['image/png', 'image/jpeg', 'image/gif'],
+                ],
+            ],
+        ],
+    ],
 ], JSON_UNESCAPED_SLASHES);

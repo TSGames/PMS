@@ -59,14 +59,34 @@ final class ImageEndpoint
             self::send(['error' => 'Dieses Dateiformat wird nicht unterstützt.'], 400);
         }
 
-        @mkdir(self::UPLOAD_DIR, 0755, true);
-        $target = self::uniqueName($name, $extension);
-
-        if (!@move_uploaded_file((string)$file['tmp_name'], self::UPLOAD_DIR . $target)) {
+        $stored = self::storeFile((string)$file['tmp_name'], $name, $extension);
+        if ($stored === null) {
             self::send(['error' => 'Die Datei konnte nicht gespeichert werden.'], 500);
         }
 
-        self::send(['image' => self::describe($target)]);
+        self::send(['image' => $stored]);
+    }
+
+    /**
+     * Legt eine bereits hochgeladene Datei unter images/uploads ab.
+     *
+     * Kern von upload() - genutzt auch von ShareTargetEndpoint, das Bilder
+     * aus dem Teilen-Menü des Betriebssystems entgegennimmt und dabei
+     * dieselbe Prüfung und Ablage braucht, aber mit JSON nichts anfangen
+     * kann (die Anfrage ist eine echte Seiten-Navigation, kein Ajax-Aufruf).
+     *
+     * @return array{name: string, url: string, width: int, height: int, size: int}|null null, wenn die Datei nicht verschoben werden konnte
+     */
+    public static function storeFile(string $tmpName, string $originalName, string $extension): ?array
+    {
+        @mkdir(self::UPLOAD_DIR, 0755, true);
+        $target = self::uniqueName($originalName, $extension);
+
+        if (!@move_uploaded_file($tmpName, self::UPLOAD_DIR . $target)) {
+            return null;
+        }
+
+        return self::describe($target);
     }
 
     /** Entfernt ein hochgeladenes Bild. */

@@ -73,6 +73,7 @@ final class Kernel
         'crop_image_ajax' => CropEndpoint::class,
         'options_ajax' => OptionsEndpoint::class,
         'image_ajax' => ImageEndpoint::class,
+        'share_target' => ShareTargetEndpoint::class,
     ];
 
     /** Beantwortet diese Aktion eine Schnittstelle statt einer Seite? */

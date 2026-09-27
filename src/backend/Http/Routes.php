@@ -37,6 +37,7 @@ final class Routes
         'crop_image_ajax' => '/admin/api/bild-zuschneiden',
         'options_ajax' => '/admin/api/auswahl',
         'image_ajax' => '/admin/api/bilder',
+        'share_target' => '/admin/teilen',
     ];
 
     /** Pfad des Einstiegsskripts, das die Module anzeigt. */
