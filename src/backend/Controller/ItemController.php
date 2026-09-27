@@ -476,13 +476,28 @@ final class ItemController extends Controller
         // Der grafische Editor wird über die Adresse umgeschaltet, damit der
         // Kopfbereich die passenden Skripte lädt
         $params = $item !== null ? ['edit' => (int)$item->id] : ['new' => 'yes'];
-        $params['editor'] = Editor::isEnabled() ? 0 : 1;
+        $toggleParams = $params;
+        $toggleParams['editor'] = Editor::isEnabled() ? 0 : 1;
 
-        return $html . Components::secondary(
+        $html .= Components::secondary(
             Editor::isEnabled() ? 'Grafischen Editor ausschalten' : 'Grafischen Editor einschalten',
-            $this->url($params),
+            $this->url($toggleParams),
             'edit'
         );
+
+        if (Editor::isEnabled()) {
+            $isTinymce = Editor::engine() === 'tinymce';
+            $engineParams = $params;
+            $engineParams['editorengine'] = $isTinymce ? 'quill' : 'tinymce';
+
+            $html .= Components::secondary(
+                $isTinymce ? 'Editor: TinyMCE (zu Quill wechseln)' : 'Editor: Quill (zu TinyMCE wechseln)',
+                $this->url($engineParams),
+                'refresh'
+            );
+        }
+
+        return $html;
     }
 
     /** Hinweis, wenn die Struktur für einen Inhalt noch fehlt. */

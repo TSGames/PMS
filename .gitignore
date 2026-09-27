@@ -11,3 +11,8 @@
 # Zur Laufzeit erzeugte Pfade des Mock-Systems
 /src/template_files
 /src/images/
+
+# TinyMCE wird über composer bezogen (tinymce/tinymce) und im Image aus
+# vendor/ kopiert; lokal als Symlink von tests/mock/setup.php angelegt.
+# Quill, der zweite wählbare Editor, liegt fertig gebaut in src/js/vendor.
+/src/tinymce

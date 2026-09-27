@@ -141,8 +141,13 @@ document.addEventListener('alpine:init', function () {
                 this.close();
             },
 
-            /** In den grafischen Editor, sonst an die Schreibmarke im Textfeld. */
+            /** In den grafischen Editor (Quill oder TinyMCE), sonst an die Schreibmarke im Textfeld. */
             insertMarkup(markup) {
+                if (typeof window.tinyMCE !== 'undefined' && window.tinyMCE.activeEditor) {
+                    window.tinyMCE.activeEditor.execCommand('mceInsertContent', false, markup);
+                    return;
+                }
+
                 var editor = window.PMS_ACTIVE_EDITOR;
                 if (editor) {
                     var range = editor.getSelection(true) || { index: editor.getLength() };

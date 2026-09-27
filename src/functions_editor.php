@@ -11,12 +11,111 @@
 	}
 
 	/**
-	 * Bindet den grafischen Inhaltseditor ein (Quill, vormals TinyMCE).
+	 * Generate TinyMCE configuration
 	 *
-	 * Quill ersetzt die textarea nicht direkt, sondern legt ein eigenes
-	 * Element daneben und synchronisiert erst beim Absenden zurück -
-	 * siehe admin-content-editor.js. Deshalb reicht hier ein Aufruf von
-	 * pmsInitEditor() statt einer langen Konfiguration wie bei TinyMCE.
+	 * @param match Editor element selector
+	 * @param height Editor height
+	 * @return string TinyMCE configuration
+	 */
+	function get_tinymceinit($match,$height)
+	{
+		// Die Breite kommt aus dem Umfeld: 640 Pixel liessen im Backend
+		// zwei Drittel der Karte leer stehen und sprengten im Frontend
+		// die schmale Spalte. Ziehen laesst sich nur noch die Hoehe -
+		// die Breite bestimmt die Spalte.
+		return 'tinymce.init({
+    selector: "#'.$match.'",
+    width: "100%",
+    height: "'.$height.'",
+    resize: true,
+    language: "de",
+    plugins: "advlist autolink lists link image charmap preview anchor \
+              searchreplace visualblocks code fullscreen insertdatetime media \
+              table help wordcount",
+
+    toolbar: "undo redo | bold italic underline strikethrough | \
+              alignleft aligncenter alignright alignjustify | \
+              styleselect formatselect fontselect fontsizeselect | \
+              bullist numlist outdent indent blockquote | \
+              link image media | forecolor backcolor | \
+              removeformat code fullscreen",
+
+    content_css: "template_files/style.css",
+    body_class: "content_table",
+
+    // Externe Listen für Links/Medien/Templates (falls genutzt)
+    template_external_list_url: "lists/template_list.js",
+    external_link_list_url: "lists/link_list.js",
+    external_image_list_url: "lists/image_list.js",
+    media_external_list_url: "lists/media_list.js",
+
+    // Platzhalter-Werte für Templates
+    template_replace_values: {
+        username: "Some User",
+        staffid: "991234"
+    }
+});';
+	}
+
+	/**
+	 * Initialize TinyMCE editor
+	 *
+	 * @param match Element selector
+	 * @param init Initialize flag
+	 * @param height Editor height
+	 * @return string HTML editor code
+	 */
+	function get_tinymce($match="content",$init=1,$height=300)
+	{
+		$str='
+<!-- TinyMCE -->
+<script type="text/javascript" src="tinymce/tinymce.js"></script>
+<script type="text/javascript">
+';
+		if($init) $str.=get_tinymceinit($match,$height);
+		$str.='
+</script>
+<!-- /TinyMCE -->';
+		return $str;
+	}
+
+	/**
+	 * Bindet Quill ein, den mobilfreundlichen Alternativ-Editor zu TinyMCE.
+	 *
+	 * Anders als TinyMCE ersetzt Quill die textarea nicht direkt, sondern
+	 * legt ein eigenes Element daneben und synchronisiert erst beim
+	 * Absenden zurück - siehe admin-content-editor.js.
+	 *
+	 * @param match Element-ID der textarea
+	 * @param init Initialisieren? (bislang stets true, siehe Aufrufer)
+	 * @param height Höhe des Bearbeitungsbereichs in Pixeln
+	 * @return string HTML zum Einbinden des Editors
+	 */
+	function get_quill($match="content",$init=1,$height=300)
+	{
+		$str='
+<!-- Quill -->
+<link rel="stylesheet" type="text/css" href="css/quill.snow.css">
+<script type="text/javascript" src="js/vendor/quill.js"></script>
+<script type="text/javascript" src="js/admin-content-editor.js"></script>
+';
+		// Die Skripte stehen im Kopfbereich, die textarea aber erst im
+		// Rumpf - ohne das Warten auf DOMContentLoaded liefe die Suche
+		// nach dem Element ins Leere (TinyMCE nimmt einem das ab, Quill
+		// nicht).
+		if($init) $str.='<script type="text/javascript">document.addEventListener("DOMContentLoaded",function(){pmsInitEditor("'.$match.'",'.(int)$height.');});</script>
+';
+		$str.='<!-- /Quill -->';
+		return $str;
+	}
+
+	/**
+	 * Bindet den grafischen Inhaltseditor ein - Quill oder TinyMCE.
+	 *
+	 * Quill ist die Vorgabe, weil es klein ist und sich mit Touch bedienen
+	 * lässt; wer die zusätzlichen Formate von TinyMCE braucht (Tabellen,
+	 * Medien-Einbettung), kann pro Sitzung auf TinyMCE umschalten, siehe
+	 * \Pms\Support\Editor::engine().
 	 *
 	 * @param match Element-ID der textarea
 	 * @param init Initialisieren? (bislang stets true, siehe Aufrufer)
@@ -25,16 +124,8 @@
 	 */
 	function get_editor($match="content",$init=1,$height=300)
 	{
-		$str='
-<!-- Quill -->
-<link rel="stylesheet" type="text/css" href="css/quill.snow.css">
-<script type="text/javascript" src="js/vendor/quill.js"></script>
-<script type="text/javascript" src="js/admin-content-editor.js"></script>
-';
-		if($init) $str.='<script type="text/javascript">pmsInitEditor("'.$match.'",'.(int)$height.');</script>
-';
-		$str.='<!-- /Quill -->';
-		return $str;
+		if(\Pms\Support\Editor::engine()==="tinymce") return get_tinymce($match,$init,$height);
+		return get_quill($match,$init,$height);
 	}
 
 	/**

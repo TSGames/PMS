@@ -46,6 +46,13 @@
     function insertContent(text) {
         var separator = '--- Bestehender Inhalt ---';
 
+        if (typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor) {
+            var existingTiny = tinyMCE.activeEditor.getContent().trim();
+            var htmlTiny = text.replace(/\n/g, '<br>');
+            tinyMCE.activeEditor.setContent(htmlTiny + (existingTiny ? '<br><br>' + separator + '<br><br>' + existingTiny : ''));
+            return;
+        }
+
         if (window.PMS_ACTIVE_EDITOR) {
             var existing = window.PMS_ACTIVE_EDITOR.getText().trim();
             var html = text.replace(/\n/g, '<br>');

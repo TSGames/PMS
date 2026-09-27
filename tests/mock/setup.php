@@ -69,6 +69,21 @@ if (!is_link($link)) {
 }
 step("Symlink src/template_files -> $tplDir");
 
+// TinyMCE kommt aus composer; im Image kopiert ihn das Dockerfile,
+// lokal genügt ein Symlink auf das vendor-Verzeichnis. Quill, der
+// zweite wählbare Editor, braucht das nicht - er liegt fertig gebaut
+// in src/js/vendor.
+$editor = $repo . '/vendor/tinymce/tinymce';
+$editorLink = $src . '/tinymce';
+if (is_dir($editor)) {
+    if (!is_link($editorLink)) {
+        symlink($editor, $editorLink);
+    }
+    step('Symlink src/tinymce -> vendor/tinymce/tinymce');
+} else {
+    step('Hinweis: vendor/tinymce/tinymce fehlt - bitte "composer install" ausführen');
+}
+
 // ---------------------------------------------------------------------------
 // PHP-Konfiguration für den Testserver
 //
