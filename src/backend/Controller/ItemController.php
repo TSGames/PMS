@@ -581,7 +581,7 @@ final class ItemController extends Controller
             'url' => Routes::path('image_ajax'),
         ]);
 
-        return '<div x-data="imageDialog(' . Html::e($state) . ')">'
+        return '<div x-data="imageDialog(' . Html::e($state) . ')" @pms-open-image-dialog.window="show()">'
             . '<button type="button" class="btn-secondary" @click="show()">'
             . Icons::render('image', 'icon icon-sm') . 'Bild in den Text einfügen</button>'
             . '<div class="dialog-backdrop" x-show="open" x-cloak @keydown.escape.window="close()">'

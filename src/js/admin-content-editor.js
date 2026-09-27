@@ -29,15 +29,28 @@
         var quill = new window.Quill(holder, {
             theme: 'snow',
             modules: {
-                toolbar: [
-                    [{ header: [2, 3, false] }],
-                    ['bold', 'italic', 'underline', 'strike'],
-                    [{ color: [] }, { background: [] }],
-                    [{ list: 'ordered' }, { list: 'bullet' }],
-                    [{ align: [] }],
-                    ['blockquote', 'link', 'image'],
-                    ['clean'],
-                ],
+                toolbar: {
+                    container: [
+                        [{ header: [2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ color: [] }, { background: [] }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        [{ align: [] }],
+                        ['blockquote', 'link', 'image'],
+                        ['clean'],
+                    ],
+                    handlers: {
+                        // Quills eigener Bild-Knopf würde die Datei ungefragt
+                        // als Base64 in den Text einbetten - ohne Ablage unter
+                        // images/uploads, ohne Zuschneiden, ohne Wiederverwendung
+                        // an anderer Stelle. Stattdessen unseren Bild-Dialog
+                        // öffnen (admin-image-dialog.js), der Hochladen, Auswahl
+                        // vorhandener Bilder und Zuschneiden schon anbietet.
+                        image: function () {
+                            window.dispatchEvent(new CustomEvent('pms-open-image-dialog'));
+                        },
+                    },
+                },
             },
         });
         quill.root.innerHTML = textarea.value;
