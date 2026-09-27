@@ -44,6 +44,15 @@ class pms_db_class {
             if (!$result) {
                 $result = $this->connection->exec(file_get_contents(__DIR__ . "/.db_layout.sql"));
                 $this->valid = !!$result;
+            } else {
+                // Es gibt keine Migrationsverwaltung - eine bereits laufende
+                // Installation bekommt eine seit ihrer Einrichtung
+                // hinzugekommene Tabelle nur so mit. entrypoint.sh ruft
+                // init() bei jedem Containerstart auf, ein Update greift
+                // also beim naechsten Neustart. IF NOT EXISTS macht das
+                // fuer eine frische Installation zu einem harmlosen No-Op.
+                $this->connection->exec("CREATE TABLE IF NOT EXISTS item_views (id INTEGER PRIMARY KEY AUTOINCREMENT, item INTEGER, time INTEGER)");
+                $this->connection->exec("CREATE INDEX IF NOT EXISTS idx_item_views_item_time ON item_views(item, time)");
             }
             if($withData) {
                 $result = $this->connection->querySingle("SELECT * FROM config WHERE id='1'");

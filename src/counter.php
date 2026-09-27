@@ -21,6 +21,14 @@ if (preg_match('/(mozilla|chrome|safari|firefox|edge|opera)/i', $ua) && !preg_ma
     {
     $typ=2;
     $con=$item;
+    // Dauerhaftes Protokoll fuer "meistgelesen" (Dashboard, Wochenbericht) -
+    // anders als visitors_counter oben, das nur den aktuellen Stand haelt
+    // und regelmaessig aufgeraeumt wird. Redaktionelles Bearbeiten zaehlt
+    // nicht als Lesen.
+    if(empty($admin_center) && empty($item_edit_mode))
+    {
+    $pms_db_connection->query("INSERT INTO ".$pms_db_prefix."item_views (item, time) VALUES ('".(int)$item."', '".time()."')");
+    }
     }
     if($action)
     {

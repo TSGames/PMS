@@ -100,6 +100,17 @@ CREATE TABLE item (
   visible INTEGER
 );
 
+-- Ein Eintrag je Aufruf eines Inhalts (siehe counter.php), damit sich
+-- "meistgelesen in den letzten 7 Tagen" auswerten laesst. visitors_counter
+-- taugt dafuer nicht: dort steht nur der jeweils aktuelle Aufruf je
+-- Sitzung, aeltere Zeilen werden laufend geloescht (siehe dort).
+CREATE TABLE item_views (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  item INTEGER,
+  time INTEGER
+);
+CREATE INDEX idx_item_views_item_time ON item_views(item, time);
+
 CREATE TABLE menu (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,

@@ -24,6 +24,12 @@ final class HomeController extends Controller
     /** Eine Sicherung gilt danach als überfällig. */
     private const BACKUP_MAX_AGE = 30 * 86400;
 
+    /** So viele Inhalte zeigt "Meistgelesen". */
+    private const MOST_READ_ITEMS = 5;
+
+    /** So viele Tage zurück zählt "Meistgelesen". */
+    private const MOST_READ_DAYS = 7;
+
     #[\Override]
     public function action(): string
     {
@@ -42,7 +48,47 @@ final class HomeController extends Controller
             . $this->statistics()
             . '<div class="dashboard-columns">'
             . $this->recentEvents()
+            . $this->mostRead()
             . $this->systemCard()
+            . '</div>';
+    }
+
+    /** Die meistaufgerufenen Inhalte der letzten Tage. */
+    private function mostRead(): string
+    {
+        $since = time() - self::MOST_READ_DAYS * 86400;
+        $rows = Db::select(
+            'SELECT item, COUNT(*) AS views FROM ' . Db::table('item_views')
+            . ' WHERE time >= :since GROUP BY item ORDER BY views DESC LIMIT :limit',
+            ['since' => $since, 'limit' => self::MOST_READ_ITEMS]
+        );
+
+        $body = $rows === []
+            ? '<p class="field-hint">In den letzten ' . self::MOST_READ_DAYS . ' Tagen wurde noch kein Inhalt aufgerufen.</p>'
+            : '<ol class="timeline">';
+
+        foreach ($rows as $row) {
+            $name = from_db('item', (int)$row->item, 'name');
+            if ($name === null) {
+                continue;
+            }
+            $body .= '<li>'
+                . '<div class="timeline-head">'
+                . '<a href="' . Html::e(Html::url('item', ['edit' => (int)$row->item])) . '">'
+                . Html::e((string)$name !== '' ? (string)$name : '(ohne Titel)') . '</a>'
+                . '<span class="timeline-time">' . Html::e((string)(int)$row->views) . '× aufgerufen</span>'
+                . '</div>'
+                . '</li>';
+        }
+
+        if ($rows !== []) {
+            $body .= '</ol>';
+        }
+
+        return '<div class="card">'
+            . '<div class="card-header"><span class="card-title">Meistgelesen</span>'
+            . '<span class="field-hint">letzte ' . self::MOST_READ_DAYS . ' Tage</span></div>'
+            . '<div class="card-body">' . $body . '</div>'
             . '</div>';
     }
 
