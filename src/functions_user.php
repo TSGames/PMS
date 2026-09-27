@@ -31,6 +31,77 @@
 	}
 
 	/**
+	 * Erzeugt den in der Datenbank gespeicherten Passwort-Hash.
+	 *
+	 * password_hash() waehlt den staerksten verfuegbaren Algorithmus
+	 * (aktuell bcrypt) und erzeugt bei jedem Aufruf einen neuen, in den
+	 * Hash eingebetteten Zufalls-Salt - zwei Nutzer mit demselben
+	 * Passwort bekommen unterschiedliche Hashes.
+	 *
+	 * @param password Klartext-Passwort
+	 * @return string Hash zum Speichern in user.password
+	 */
+	function pms_hash_password($password)
+	{
+		return password_hash($password, PASSWORD_DEFAULT);
+	}
+
+	/**
+	 * Erkennt den alten, ungesalzenen Bestand: ein reiner MD5-Hash ist
+	 * immer genau 32 Hex-Zeichen lang, ein password_hash()-Ergebnis
+	 * beginnt dagegen immer mit "$".
+	 *
+	 * @param hash Wert aus user.password
+	 * @return bool
+	 */
+	function pms_password_is_legacy($hash)
+	{
+		return (bool)preg_match('/^[a-f0-9]{32}$/i', (string)$hash);
+	}
+
+	/**
+	 * Prueft ein eingegebenes Passwort gegen den gespeicherten Hash -
+	 * gegen den alten Bestand (siehe pms_password_is_legacy()) genauso
+	 * wie gegen neu gesetzte, gesalzene Hashes. So muss niemand sein
+	 * Passwort zurücksetzen, nur weil der Algorithmus gewechselt hat;
+	 * do_login() ersetzt den alten Hash beim naechsten Login unbemerkt.
+	 *
+	 * @param password Eingegebenes Klartext-Passwort
+	 * @param hash Wert aus user.password
+	 * @return bool
+	 */
+	function pms_verify_password($password, $hash)
+	{
+		if(pms_password_is_legacy($hash))
+			{
+			return hash_equals((string)$hash, md5($password));
+		}
+		return password_verify($password, (string)$hash);
+	}
+
+	/**
+	 * Token des "Zugangsdaten speichern"-Cookies (login_pw).
+	 *
+	 * Frueher stand dort md5($passwort) - derselbe Wert, den auch die
+	 * Datenbank speicherte, direkt vergleichbar. Mit gesalzenen Hashes
+	 * geht das nicht mehr (password_hash() liefert bei gleichem Passwort
+	 * jedesmal einen anderen Wert), deshalb steht im Cookie stattdessen
+	 * ein an den *aktuellen* Passwort-Hash gebundenes Token. Ändert sich
+	 * der Hash (Passwortwechsel), passt kein altes Cookie mehr - genau
+	 * wie vorher. $website_key ist das Site-Geheimnis aus config.php,
+	 * das die Sitzungsprüfung (siehe functions.php) ohnehin schon nutzt.
+	 *
+	 * @param userId ID des Benutzers
+	 * @param passwordHash aktueller Wert aus user.password
+	 * @return string
+	 */
+	function remember_token($userId, $passwordHash)
+	{
+		global $website_key;
+		return hash_hmac('sha256', $userId . '|' . $passwordHash, (string)$website_key);
+	}
+
+	/**
 	 * Create or update a user account with validation
 	 *
 	 * @param id User ID for update, empty for new user
@@ -126,9 +197,9 @@
 			}
 			if($id && $password)
 				{
-				$password=", password = '".md5($password)."'";
+				$password=", password = '".$pms_db_connection->escape(pms_hash_password($password))."'";
 			}
-			$do="INSERT INTO ".$pms_db_prefix."user (name,password,mail,showmail,website,signatur,typ,register,registerip,bday,top,active) VALUES ('$name','".md5($password)."','$mail','$showmail','$website','$signatur','$typ','$register','$registerip','$bday','$top','$active');";
+			$do="INSERT INTO ".$pms_db_prefix."user (name,password,mail,showmail,website,signatur,typ,register,registerip,bday,top,active) VALUES ('$name','".$pms_db_connection->escape(pms_hash_password($password))."','$mail','$showmail','$website','$signatur','$typ','$register','$registerip','$bday','$top','$active');";
 			if($id)
 				{
 				if($typ<1 && from_db("user",$id,"typ")>=1) // reset mails
@@ -224,9 +295,13 @@
 	 * Authenticate user and create session
 	 *
 	 * @param name Username
-	 * @param password Password (plain text)
+	 * @param password Bei do_md5=1 das eingegebene Klartext-Passwort, bei
+	 *                 do_md5=0 der Wert des "login_pw"-Cookies (siehe
+	 *                 remember_token())
 	 * @param min_rights Minimum required user level
-	 * @param do_md5 Whether password is MD5 encoded
+	 * @param do_md5 1 = $password ist ein Klartext-Passwort und wird
+	 *               gegen den gespeicherten Hash geprueft; 0 = $password
+	 *               ist bereits das Merken-Cookie-Token
 	 * @return int|array User data on success, status code on failure
 	 */
 	function do_login($name,$password,$min_rights,$do_md5=1)
@@ -234,12 +309,32 @@
 		global $pms_db_prefix;
 		global $pms_db_connection;
 		$link=$pms_db_connection->query(make_sql("user","name LIKE '".$pms_db_connection->escape($name)."'","id"));
-		if($do_md5)$password=md5($password);
 		if($link && $a=$pms_db_connection->fetchObject($link))
 			{
-			if($password!=$a->password)
+			if($do_md5)
 				{
-				return 2;
+				if(!pms_verify_password($password,$a->password))
+					{
+					return 2;
+				}
+				// Alten, ungesalzenen Hash unbemerkt ersetzen - niemand muss sein
+				// Passwort zuruecksetzen, nur weil der Algorithmus gewechselt hat.
+				if(pms_password_is_legacy($a->password))
+					{
+					$a->password=pms_hash_password($password);
+					$pms_db_connection->query("UPDATE ".$pms_db_prefix."user SET password = '".$pms_db_connection->escape($a->password)."' WHERE id = '".((int)$a->id)."' LIMIT 1;");
+				}
+			}
+			else
+				{
+				// $password ist hier das Merken-Cookie, kein Passwort: ein an den
+				// aktuellen Passwort-Hash gebundenes Token. Der fruehere direkte
+				// Vergleich (Cookie enthielt denselben Hash wie die Datenbank)
+				// geht mit gesalzenen Hashes nicht mehr, siehe remember_token().
+				if(!hash_equals(remember_token($a->id,$a->password),(string)$password))
+					{
+					return 2;
+				}
 			}
 			if($a->active==0)
 				{

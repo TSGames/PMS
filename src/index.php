@@ -70,7 +70,9 @@ if(($login_submitted || (!$_SESSION['pmsglobal'] && $_COOKIE['login_id'] && $_CO
         setcookie("login_id",$log[3],time()+60*60*24*1000,"/",$cookie_domain);
         if($_POST['save_login'])
         {
-            setcookie("login_pw",md5($_POST['password']),time()+60*60*24*1000,"/",$cookie_domain);
+            // Kein Passwort-Hash mehr im Cookie, sondern ein daran gebundenes
+            // Token - siehe remember_token() in functions_user.php.
+            setcookie("login_pw",remember_token($log[3],$log[1]),time()+60*60*24*1000,"/",$cookie_domain);
         }
     }
     else
@@ -909,7 +911,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                     $c=rand(0,9);
                     $pass=$pass.$a.$b.$c;
                 }
-                Db::update("user",(int)$user_sel,array("password" => md5($pass)));
+                Db::update("user",(int)$user_sel,array("password" => pms_hash_password($pass)));
                 $content.=language("PASSWORD_RECOVER_SUCCESS");
                 my_mail(from_db("user",$user_sel,"mail"),str_replace("%1",$config_values->name,language("PASSWORD_RECOVER_MAIL_SUBJECT")),
                 str_replace(array('%1','%2'),array(from_db("user",$user_sel,"name"),$pass),language("PASSWORD_RECOVER_MAIL_BODY")));

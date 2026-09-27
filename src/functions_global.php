@@ -51,7 +51,7 @@ class pms_db_class {
                     $password = substr(bin2hex(random_bytes(20)), 0,  20);
                     error_log("Initial admin password: " . $password);
                     file_put_contents("/var/db/.init_password", $password);
-                    $this->connection->exec(str_replace('$PASSWORD', $this->escape(md5($password)), file_get_contents(__DIR__ . "/.db_data.sql")));
+                    $this->connection->exec(str_replace('$PASSWORD', $this->escape(password_hash($password, PASSWORD_DEFAULT)), file_get_contents(__DIR__ . "/.db_data.sql")));
                 }
             }
             return $this->valid;

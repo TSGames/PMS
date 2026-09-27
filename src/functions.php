@@ -171,16 +171,17 @@ $footer="<div align=\"center\">".str_replace(array("%1","%2"),array($config_valu
 $pms_db_connection->query("DELETE FROM ".$pms_db_prefix."bans WHERE time < ".time()." AND time != 0");
 
 // set cookie domain
-$cookie_domain=$config_values->page;
-if(stristr(substr($cookie_domain,0,7),"://"))
+//
+// Der bisherige Zuschnitt per stristr() nahm nur das Schema weg, nicht
+// aber Port oder Pfad - eine konfigurierte Seiten-Adresse wie
+// "http://localhost:8099" ergab "localhost:8099". Ein Domain-Attribut
+// mit Port ist ungueltig; Browser verwerfen das Cookie dann kommentarlos,
+// wodurch "Zugangsdaten speichern" nie etwas gesetzt hat.
+$cookie_domain=(string)parse_url((string)$config_values->page,PHP_URL_HOST);
+if(str_starts_with($cookie_domain,"www."))
 	{
-		$cookie_domain=substr(stristr($cookie_domain,"://"),3);
-	}
-	if(stristr(substr($cookie_domain,0,4),"www."))
-		{
-		$cookie_domain=substr(stristr($cookie_domain,"www."),4);
-	}
-	//echo $cookie_domain;
+	$cookie_domain=substr($cookie_domain,4);
+}
 	// Gets the template_lists files
 	$anti_spam_count=0;
 	

@@ -65,7 +65,9 @@ final class Auth
 
         setcookie('login_id', (string)$result[3], time() + 60 * 60 * 24 * 1000, '/', $cookieDomain);
         if (Request::checkbox('save_login')) {
-            setcookie('login_pw', md5(Request::text('login_password')), time() + 60 * 60 * 24 * 1000, '/', $cookieDomain);
+            // Kein Passwort-Hash mehr im Cookie, sondern ein daran gebundenes
+            // Token - siehe remember_token() in functions_user.php.
+            setcookie('login_pw', remember_token((int)$result[3], (string)$result[1]), time() + 60 * 60 * 24 * 1000, '/', $cookieDomain);
         }
 
         // Vorgang, der bei der letzten Abmeldung offen blieb, kann fortgesetzt werden
