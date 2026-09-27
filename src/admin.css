@@ -1640,3 +1640,63 @@ body.login-page {
     color: var(--c-muted);
     text-align: center;
 }
+
+/* Installations-Banner (PWA) */
+
+.pwa-install-banner {
+    position: fixed;
+    left: var(--s-4);
+    right: var(--s-4);
+    bottom: calc(var(--s-4) + env(safe-area-inset-bottom, 0px));
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border-radius: var(--r);
+    background: var(--c-surface);
+    color: var(--c-text);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--c-border);
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.pwa-install-text {
+    flex: 1;
+    font-size: 13.5px;
+    line-height: 1.4;
+}
+
+.pwa-install-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    flex-shrink: 0;
+}
+
+.pwa-install-action {
+    font: inherit;
+    font-weight: 600;
+    padding: var(--s-2) var(--s-3);
+    border: none;
+    border-radius: var(--r-sm);
+    background: var(--c-accent);
+    color: var(--c-accent-text);
+    cursor: pointer;
+}
+
+.pwa-install-action:hover {
+    background: var(--c-accent-hover);
+}
+
+.pwa-install-close {
+    font: inherit;
+    font-size: 20px;
+    line-height: 1;
+    border: none;
+    background: transparent;
+    color: var(--c-muted);
+    cursor: pointer;
+    padding: var(--s-1);
+}

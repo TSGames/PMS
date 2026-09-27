@@ -63,6 +63,8 @@ final class Layout
             . 'window.PMS_CROP_URL=' . json_encode(\Pms\Backend\Http\Routes::path('crop_image_ajax')) . ';</script>'
             : '';
 
+        $base = \Pms\Support\Url::base();
+
         return '<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -74,7 +76,15 @@ final class Layout
 <link rel="stylesheet" type="text/css" href="crop_modal.css">
 <link rel="icon" type="image/svg+xml" href="admin-favicon.svg">
 <link rel="icon" type="image/x-icon" href="admin.ico">
+<link rel="manifest" href="manifest.php">
+<meta name="theme-color" content="#1976d2">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PMS Admin">
 <script>
+window.PMS_BASE_PATH=' . json_encode($base) . ';
 // Farbschema vor dem ersten Zeichnen setzen, um Flackern zu vermeiden
 (function(){
     var stored=null;
@@ -90,6 +100,7 @@ final class Layout
 <script type="text/javascript" src="js/admin-tables.js"></script>
 <script type="text/javascript" src="js/admin-image.js"></script>
 <script type="text/javascript" src="js/admin-theme.js"></script>
+<script type="text/javascript" src="js/admin-pwa-install.js"></script>
 <script defer src="js/vendor/alpine.min.js"></script>
 </head>
 ';
