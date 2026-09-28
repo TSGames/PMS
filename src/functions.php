@@ -133,9 +133,13 @@ if($link)
 	$a=$pms_db_connection->fetchObject($link);
 	$gb_item=$a->id;
 }
+// Sitzung an IP und Website gebunden: Eine gestohlene Sitzungs-ID nützt von
+// woanders nichts. Das Geräte-Cookie bleibt dabei stehen und meldet gleich
+// wieder an - sonst flog man auf dem Handy bei jedem Netzwechsel raus und
+// verlor obendrein "Angemeldet bleiben".
 if(($_SESSION['userid'] || $_SESSION['pmsglobal']) && ($_SESSION['loginip']!=$_SERVER["REMOTE_ADDR"] || $_SESSION['website_key']!=$website_key))
 	{
-	delete_sessions();
+	delete_sessions(false);
 	$login=0;
 }
 

@@ -477,7 +477,17 @@ function header_def()
 	 * Clear user session data and login cookie
 	 * @return void
 	 */
-	function delete_sessions()
+	/**
+	 * Beendet die Anmeldung dieser Sitzung.
+	 *
+	 * @param forget_device Auch das "Angemeldet bleiben"-Cookie löschen -
+	 *        richtig beim Abmelden. Nicht beim Verwerfen einer Sitzung, deren
+	 *        IP sich geändert hat: Auf dem Handy passiert das ständig
+	 *        (WLAN/Mobilfunk, wechselnde IPv6-Adressen), und das Cookie ist ein
+	 *        eigener, nicht an die IP gebundener Nachweis - es meldet gleich
+	 *        wieder an, statt das Gerät dauerhaft zu vergessen.
+	 */
+	function delete_sessions($forget_device = true)
 	{
 		global $cookie_domain;
 		unset($_SESSION['userid']);
@@ -486,8 +496,11 @@ function header_def()
 		unset($_SESSION['loginip']);
 		unset($_SESSION['last_login']);
 		unset($_SESSION['update_notice']);
-		@setcookie("login_pw","",time()-3600,"/",$cookie_domain);
-		$_COOKIE["login_pw"]="";
+		if($forget_device)
+			{
+			@setcookie("login_pw","",time()-3600,"/",$cookie_domain);
+			$_COOKIE["login_pw"]="";
+		}
 	}
 
 	/**
