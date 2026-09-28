@@ -50,8 +50,20 @@
     }
 
     function showBanner(text, actionLabel, onAction) {
-        if (document.getElementById('pwa-install-banner')) {
+        // Das Skript steht im <head>; dort gibt es document.body noch nicht
+        if (!document.body) {
+            document.addEventListener('DOMContentLoaded', function () {
+                showBanner(text, actionLabel, onAction);
+            });
             return;
+        }
+        var existing = document.getElementById('pwa-install-banner');
+        if (existing) {
+            // Ein reiner Hinweis weicht dem echten Installieren-Knopf
+            if (!actionLabel || existing.querySelector('.pwa-install-action')) {
+                return;
+            }
+            existing.remove();
         }
         var banner = document.createElement('div');
         banner.id = 'pwa-install-banner';
@@ -72,11 +84,21 @@
         banner.querySelector('.pwa-install-close').addEventListener('click', dismiss);
     }
 
-    // Service Worker: nur fürs Backend zuständig (Scope .../admin/), rührt
-    // die öffentliche Website unter derselben Adresse nicht an.
+    // Service Worker: nur fürs Backend zuständig, rührt die öffentliche
+    // Website unter derselben Adresse nicht an. Scope ".../admin" ohne
+    // abschließenden Schrägstrich: Mit "/admin/" fiel ausgerechnet die
+    // Start-Adresse des Manifests (/admin) nicht darunter.
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
-            navigator.serviceWorker.register(base() + '/sw.js', { scope: base() + '/admin/' }).catch(function () {});
+            var oldScope = window.location.origin + base() + '/admin/';
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                registrations.forEach(function (registration) {
+                    if (registration.scope === oldScope) {
+                        registration.unregister();
+                    }
+                });
+            }).catch(function () {});
+            navigator.serviceWorker.register(base() + '/sw.js', { scope: base() + '/admin' }).catch(function () {});
         });
     }
 
@@ -113,5 +135,26 @@
             null,
             null
         );
+        return;
+    }
+
+    // Chrome auf Android löst "beforeinstallprompt" erst aus, wenn die
+    // Seite schon eine Weile benutzt wurde (mindestens ein Tippen, rund
+    // 30 Sekunden), und nach einmaligem Ablehnen lange gar nicht mehr.
+    // Installierbar ist die App trotzdem jederzeit über das Browser-Menü -
+    // darauf weist dieser Hinweis hin. Kommt das Ereignis später doch,
+    // ersetzt showBanner() ihn durch den Installieren-Knopf.
+    if (/android/i.test(window.navigator.userAgent)) {
+        window.addEventListener('load', function () {
+            window.setTimeout(function () {
+                if (!deferredPrompt) {
+                    showBanner(
+                        'Dieses Backend lässt sich als App installieren: im Browser-Menü (⋮) "App installieren" bzw. "Zum Startbildschirm hinzufügen" wählen.',
+                        null,
+                        null
+                    );
+                }
+            }, 4000);
+        });
     }
 })();

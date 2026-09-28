@@ -46,9 +46,9 @@ final class HomeController extends Controller
         )
             . $this->notices()
             . $this->statistics()
+            . $this->mostRead()
             . '<div class="dashboard-columns">'
             . $this->recentEvents()
-            . $this->mostRead()
             . $this->systemCard()
             . '</div>';
     }
