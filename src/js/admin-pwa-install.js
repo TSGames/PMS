@@ -88,41 +88,66 @@
     // Website unter derselben Adresse nicht an. Scope ".../admin" ohne
     // abschließenden Schrägstrich: Mit "/admin/" fiel ausgerechnet die
     // Start-Adresse des Manifests (/admin) nicht darunter.
+    //
+    // Sofort registrieren statt erst nach "load": Chrome prüft die
+    // Installierbarkeit erst, wenn der Service Worker steht - je früher,
+    // desto früher kann "beforeinstallprompt" kommen.
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-            var oldScope = window.location.origin + base() + '/admin/';
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                registrations.forEach(function (registration) {
-                    if (registration.scope === oldScope) {
-                        registration.unregister();
-                    }
-                });
-            }).catch(function () {});
-            navigator.serviceWorker.register(base() + '/sw.js', { scope: base() + '/admin' }).catch(function () {});
-        });
+        var oldScope = window.location.origin + base() + '/admin/';
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            registrations.forEach(function (registration) {
+                if (registration.scope === oldScope) {
+                    registration.unregister();
+                }
+            });
+        }).catch(function () {});
+        navigator.serviceWorker.register(base() + '/sw.js', { scope: base() + '/admin' }).catch(function () {});
     }
 
     if (isStandalone() || isDismissed()) {
         return;
     }
 
+    var INSTALL_TEXT = 'Dieses Backend lässt sich als App installieren - schneller Zugriff vom Homescreen, eigenes Fenster ohne Adressleiste.';
+    var MENU_TEXT = 'Der Knopf funktioniert erst nach kurzer Nutzung der Seite. Sofort geht es über das Browser-Menü (⋮ oben rechts) → "App installieren".';
+
+    // Den nativen Dialog darf eine Seite nur mit dem Ereignis
+    // "beforeinstallprompt" öffnen, und das gibt Chrome auf Android erst
+    // nach etwas Nutzung frei (ein Tippen, rund 30 Sekunden) - nach einem
+    // Ablehnen lange gar nicht mehr. Der Knopf öffnet deshalb den Dialog,
+    // sobald das Ereignis da ist, und erklärt bis dahin den Menü-Weg.
     var deferredPrompt = null;
+
+    function setBannerText(text) {
+        var element = document.querySelector('#pwa-install-banner .pwa-install-text');
+        if (element) {
+            element.textContent = text;
+        }
+    }
+
+    function install() {
+        if (!deferredPrompt) {
+            setBannerText(MENU_TEXT);
+            return;
+        }
+        var prompt = deferredPrompt;
+        deferredPrompt = null;
+        prompt.prompt();
+        prompt.userChoice.then(function (choice) {
+            if (choice.outcome === 'accepted') {
+                dismiss();
+            } else {
+                // Einmal abgelehnt, liefert Chrome das Ereignis so bald nicht wieder
+                setBannerText(MENU_TEXT);
+            }
+        }).catch(function () {});
+    }
 
     window.addEventListener('beforeinstallprompt', function (event) {
         event.preventDefault();
         deferredPrompt = event;
-        showBanner(
-            'Dieses Backend lässt sich als App installieren - schneller Zugriff vom Homescreen, eigenes Fenster ohne Adressleiste.',
-            'Installieren',
-            function () {
-                var banner = document.getElementById('pwa-install-banner');
-                if (banner) banner.remove();
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.finally(function () {
-                    deferredPrompt = null;
-                });
-            }
-        );
+        showBanner(INSTALL_TEXT, 'Installieren', install);
+        setBannerText(INSTALL_TEXT);
     });
 
     window.addEventListener('appinstalled', dismiss);
@@ -138,23 +163,11 @@
         return;
     }
 
-    // Chrome auf Android löst "beforeinstallprompt" erst aus, wenn die
-    // Seite schon eine Weile benutzt wurde (mindestens ein Tippen, rund
-    // 30 Sekunden), und nach einmaligem Ablehnen lange gar nicht mehr.
-    // Installierbar ist die App trotzdem jederzeit über das Browser-Menü -
-    // darauf weist dieser Hinweis hin. Kommt das Ereignis später doch,
-    // ersetzt showBanner() ihn durch den Installieren-Knopf.
+    // Auf Android das Banner sofort zeigen, nicht erst wenn Chrome das
+    // Ereignis liefert - installierbar ist die App über das Menü ja schon.
+    // Desktop-Browser ohne Ereignis (z.B. Firefox) können gar nicht
+    // installieren; dort bleibt es beim Banner auf das Ereignis hin.
     if (/android/i.test(window.navigator.userAgent)) {
-        window.addEventListener('load', function () {
-            window.setTimeout(function () {
-                if (!deferredPrompt) {
-                    showBanner(
-                        'Dieses Backend lässt sich als App installieren: im Browser-Menü (⋮) "App installieren" bzw. "Zum Startbildschirm hinzufügen" wählen.',
-                        null,
-                        null
-                    );
-                }
-            }, 4000);
-        });
+        showBanner(INSTALL_TEXT, 'Installieren', install);
     }
 })();
