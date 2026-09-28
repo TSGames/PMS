@@ -38,6 +38,7 @@ final class Kernel
         'backup' => \Pms\Backend\Controller\BackupController::class,
         'activity' => \Pms\Backend\Controller\ActivityController::class,
         'share_landing' => \Pms\Backend\Controller\ShareLandingController::class,
+        'weekly_report' => \Pms\Backend\Controller\WeeklyReportController::class,
     ];
 
     /**
@@ -75,6 +76,7 @@ final class Kernel
         'options_ajax' => OptionsEndpoint::class,
         'image_ajax' => ImageEndpoint::class,
         'share_target' => ShareTargetEndpoint::class,
+        'push_ajax' => PushEndpoint::class,
     ];
 
     /** Beantwortet diese Aktion eine Schnittstelle statt einer Seite? */

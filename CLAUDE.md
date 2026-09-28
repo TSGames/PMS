@@ -22,6 +22,7 @@ npm run vendor          # builds src/js/vendor/{editor,quill}.js + copies CSS
 
 # Local mock system (SQLite DB, template, PHP dev server)
 php tests/mock/setup.php               # (re)creates DB + mock data; --keep-db to preserve DB
+php src/cron.php --force               # send the weekly report now (needs the mock DB)
 tests/mock/server.sh start|stop|status|logs   # http://127.0.0.1:8099/admin
 
 # End-to-end tests (Playwright, drives the mock server)
@@ -53,6 +54,17 @@ Full setup/architecture detail for tests lives in `tests/README.md` — read it 
 ### No CDN, ever
 
 Everything the browser loads ships with the project — the backend must work with zero internet access. JS dependencies are pinned in the root `package.json`, built by esbuild from `build/*.js` into `src/js/vendor/*.js` (+ matching CSS under `src/css/`), and the **built output is committed to git** (so Docker builds don't need npm). TinyMCE is the one exception: it comes via Composer (`tinymce/tinymce`) and is copied into the webroot by the Dockerfile / symlinked by `tests/mock/setup.php` for local dev. When adding a JS dependency, add a `build/<name>.js` entry file, a `vendor:<name>` npm script, wire it into `npm run vendor`, and commit the built files.
+
+### Schema changes reach running installs only through `init()`
+
+There is no migration system. `entrypoint.sh` runs `init.php` → `pms_db_class::init()` on every container start; it creates the full schema from `.db_layout.sql` only for a brand-new DB. For an **existing** DB, a table added later must also be created with `CREATE TABLE IF NOT EXISTS` in the `else` branch of `init()` (see `item_views`, `push_subscriptions`, `weekly_reports`) — adding it to `.db_layout.sql` alone never reaches deployed sites.
+
+### PWA, push and scheduled tasks
+
+- Backend is an installable PWA: `manifest.php` (dynamic, respects subdirectory installs), `sw.js` (scope `/admin` — without trailing slash, otherwise the manifest's `start_url` isn't covered), `js/admin-pwa-install.js` (install banner). App icons live in `src/app-icons/`, **never `/icons/`**: Debian's Apache in `php:*-apache` aliases `/icons/` to its own directory, so files there 404 in production while working fine on the PHP dev server.
+- Web Push (weekly report) uses `minishlink/web-push`: `Backend\Push\PushService` (VAPID keys generated once into `/var/db/vapid.json` — regenerating invalidates every subscription), `Http\PushEndpoint`, `js/admin-push.js`, push handlers in `sw.js`.
+- The container has no cron: `entrypoint.sh` loops `php cron.php` every 15 minutes; `cron.php` decides itself whether something is due (`Report\WeeklyReport::isDue()`: Mondays from 08:00 Europe/Berlin, once per week). `php src/cron.php --force` sends last week's report immediately. On the CLI `SCRIPT_NAME` is a filesystem path, so don't build URLs with `Routes::path()` there.
+- `item_views` logs every frontend content view (filled in `counter.php`); `visitors_counter` is only "who's online now" and gets pruned — don't use it for history.
 
 ### Routing
 

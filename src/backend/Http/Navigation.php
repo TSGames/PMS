@@ -39,6 +39,7 @@ final class Navigation
             ['action' => 'backup', 'label' => 'Backup-Manager', 'icon' => 'archive', 'info' => 'Erstellen und Löschen von Datenbank & System-Backups'],
             ['action' => 'activity', 'label' => 'Website-Status', 'icon' => 'pulse', 'info' => 'Anzeige aktueller Website-Aktivitäten'],
             ['action' => 'page', 'label' => 'Website anzeigen', 'icon' => 'globe', 'info' => 'Die Website anzeigen', 'href' => 'index.php', 'target' => '_blank'],
+            ['action' => 'weekly_report', 'label' => 'Wochenbericht', 'icon' => 'bell', 'info' => 'Zahlen der Vorwoche und Push-Benachrichtigungen'],
         ];
     }
 
@@ -55,7 +56,7 @@ final class Navigation
         'Inhalt' => ['item', 'var', 'poll'],
         'Struktur' => ['menu', 'cat', 'subcat'],
         'Benutzer' => ['user', 'bans'],
-        'System' => ['config', 'backup', 'events', 'activity'],
+        'System' => ['config', 'backup', 'events', 'activity', 'weekly_report'],
         'Website' => ['page'],
     ];
 

@@ -111,6 +111,29 @@ CREATE TABLE item_views (
 );
 CREATE INDEX idx_item_views_item_time ON item_views(item, time);
 
+-- Geräte, die Push-Nachrichten (Wochenbericht) empfangen wollen; eine
+-- Zeile je Browser-Abonnement, siehe Backend\Push\PushService.
+CREATE TABLE push_subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user INTEGER,
+  endpoint TEXT UNIQUE,
+  p256dh TEXT,
+  auth TEXT,
+  created INTEGER
+);
+
+-- Verschickte Wochenberichte. data enthält die Zahlen als JSON;
+-- visitors_total hält den Besucherzähler zum Versandzeitpunkt fest, weil
+-- es sonst keine Besucher-Historie gibt, aus der sich eine Woche ergäbe.
+CREATE TABLE weekly_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  period_start INTEGER,
+  period_end INTEGER,
+  created INTEGER,
+  visitors_total INTEGER,
+  data TEXT
+);
+
 CREATE TABLE menu (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,

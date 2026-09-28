@@ -3,7 +3,8 @@
     "require": {
         "slim/slim": "^4.0",
         "slim/psr7": "^1.0",
-        "tinymce/tinymce": "^7.9.3"
+        "tinymce/tinymce": "^7.9.3",
+        "minishlink/web-push": "^9.0"
     },
     "require-dev": {
         "vimeo/psalm": "^6.0",

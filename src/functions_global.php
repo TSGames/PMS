@@ -53,6 +53,8 @@ class pms_db_class {
                 // fuer eine frische Installation zu einem harmlosen No-Op.
                 $this->connection->exec("CREATE TABLE IF NOT EXISTS item_views (id INTEGER PRIMARY KEY AUTOINCREMENT, item INTEGER, time INTEGER)");
                 $this->connection->exec("CREATE INDEX IF NOT EXISTS idx_item_views_item_time ON item_views(item, time)");
+                $this->connection->exec("CREATE TABLE IF NOT EXISTS push_subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, user INTEGER, endpoint TEXT UNIQUE, p256dh TEXT, auth TEXT, created INTEGER)");
+                $this->connection->exec("CREATE TABLE IF NOT EXISTS weekly_reports (id INTEGER PRIMARY KEY AUTOINCREMENT, period_start INTEGER, period_end INTEGER, created INTEGER, visitors_total INTEGER, data TEXT)");
             }
             if($withData) {
                 $result = $this->connection->querySingle("SELECT * FROM config WHERE id='1'");

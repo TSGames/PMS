@@ -421,6 +421,15 @@ const SCREENS = [
     dynamic: true,
     wide: true,
   },
+  {
+    id: 'weekly-report',
+    group: 'Monitoring',
+    title: 'Wochenbericht',
+    role: 'admin',
+    url: 'admin/wochenbericht',
+    heading: 'Wochenbericht',
+    dynamic: true,
+  },
 
   // ---------------------------------------------------------------- Module
   {

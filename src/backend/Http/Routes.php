@@ -39,6 +39,8 @@ final class Routes
         'image_ajax' => '/admin/api/bilder',
         'share_target' => '/admin/teilen',
         'share_landing' => '/admin/geteiltes-bild',
+        'weekly_report' => '/admin/wochenbericht',
+        'push_ajax' => '/admin/api/push',
     ];
 
     /** Pfad des Einstiegsskripts, das die Module anzeigt. */

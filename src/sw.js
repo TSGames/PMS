@@ -61,3 +61,40 @@ self.addEventListener('fetch', (event) => {
         })
     );
 });
+
+// Push-Nachrichten (Wochenbericht, siehe Backend\Push\PushService). Die
+// Nachricht bringt Titel, Text und die zu öffnende Adresse als JSON mit.
+self.addEventListener('push', (event) => {
+    let message = {};
+    try {
+        message = event.data ? event.data.json() : {};
+    } catch (e) {
+        message = { body: event.data ? event.data.text() : '' };
+    }
+
+    event.waitUntil(self.registration.showNotification(message.title || 'PMS Administration', {
+        body: message.body || '',
+        icon: 'app-icons/icon-192.png',
+        badge: 'app-icons/icon-192.png',
+        tag: 'pms-weekly-report',
+        data: { url: message.url || self.registration.scope },
+    }));
+});
+
+// Tippen auf die Nachricht: ein schon offenes Fenster der App nach vorn
+// holen, sonst eines öffnen.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = new URL(event.notification.data && event.notification.data.url
+        ? event.notification.data.url
+        : self.registration.scope, self.location.href).href;
+
+    event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+        for (const client of windows) {
+            if (client.url.startsWith(self.registration.scope) && 'focus' in client) {
+                return client.navigate(url).then((navigated) => (navigated || client).focus());
+            }
+        }
+        return self.clients.openWindow(url);
+    }));
+});

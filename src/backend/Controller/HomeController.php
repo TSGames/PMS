@@ -87,7 +87,8 @@ final class HomeController extends Controller
 
         return '<div class="card">'
             . '<div class="card-header"><span class="card-title">Meistgelesen</span>'
-            . '<span class="field-hint">letzte ' . self::MOST_READ_DAYS . ' Tage</span></div>'
+            . '<span class="field-hint">letzte ' . self::MOST_READ_DAYS . ' Tage · '
+            . '<a href="' . Html::e(Html::url('weekly_report')) . '">Wochenbericht</a></span></div>'
             . '<div class="card-body">' . $body . '</div>'
             . '</div>';
     }
