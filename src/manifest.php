@@ -26,10 +26,12 @@ echo json_encode([
     'background_color' => '#0d47a1',
     'theme_color' => '#1976d2',
     'lang' => 'de',
+    // Nicht "/icons/": Debians Apache (php:*-apache) leitet diesen Pfad per
+    // alias.conf auf seine eigenen Symbole um - unsere kämen als 404 an.
     'icons' => [
-        ['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
-        ['src' => $base . '/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
-        ['src' => $base . '/icons/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+        ['src' => $base . '/app-icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+        ['src' => $base . '/app-icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+        ['src' => $base . '/app-icons/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
     ],
     // Langes Drücken auf das App-Icon: direkt zu den drei Stellen, die man
     // unterwegs am häufigsten braucht, ohne erst durchs Dashboard zu klicken.
@@ -37,19 +39,19 @@ echo json_encode([
         [
             'name' => 'Neuer Inhalt',
             'url' => $base . '/admin/inhalte?new=yes',
-            'icons' => [['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192']],
+            'icons' => [['src' => $base . '/app-icons/icon-192.png', 'sizes' => '192x192']],
         ],
         [
             'name' => 'Ereignisse',
             'short_name' => 'Ereignisse',
             'description' => 'Neue Kommentare, Registrierungen und andere Aktivität',
             'url' => $base . '/admin/ereignisse',
-            'icons' => [['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192']],
+            'icons' => [['src' => $base . '/app-icons/icon-192.png', 'sizes' => '192x192']],
         ],
         [
             'name' => 'Website-Status',
             'url' => $base . '/admin/status',
-            'icons' => [['src' => $base . '/icons/icon-192.png', 'sizes' => '192x192']],
+            'icons' => [['src' => $base . '/app-icons/icon-192.png', 'sizes' => '192x192']],
         ],
     ],
     // Macht die App zu einem Ziel im Teilen-Menü des Betriebssystems - ein

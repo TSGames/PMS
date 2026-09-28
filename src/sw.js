@@ -10,14 +10,14 @@
  * das Installieren erst gar nicht an - mehr braucht es dafür nicht.
  */
 
-const CACHE = 'pms-admin-shell-v1';
+const CACHE = 'pms-admin-shell-v2';
 
 const SHELL_ASSETS = [
     'admin.css',
     'crop_modal.css',
     'admin-favicon.svg',
-    'icons/icon-192.png',
-    'icons/icon-512.png',
+    'app-icons/icon-192.png',
+    'app-icons/icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
