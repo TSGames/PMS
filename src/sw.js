@@ -10,7 +10,7 @@
  * das Installieren erst gar nicht an - mehr braucht es dafür nicht.
  */
 
-const CACHE = 'pms-admin-shell-v2';
+const CACHE = 'pms-admin-shell-v3';
 
 const SHELL_ASSETS = [
     'admin.css',
@@ -75,7 +75,9 @@ self.addEventListener('push', (event) => {
     event.waitUntil(self.registration.showNotification(message.title || 'PMS Administration', {
         body: message.body || '',
         icon: 'app-icons/icon-192.png',
-        badge: 'app-icons/icon-192.png',
+        // Android nimmt vom Badge nur den Alphakanal - ein deckendes Bild
+        // wird zum einfarbigen Viereck, deshalb eigene Silhouette
+        badge: 'app-icons/badge-96.png',
         tag: 'pms-weekly-report',
         data: { url: message.url || self.registration.scope },
     }));
