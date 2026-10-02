@@ -41,12 +41,24 @@
     }
 
     function isIos() {
-        return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+        // iPadOS meldet sich als Mac - erkennbar nur am Touchscreen
+        return /iphone|ipad|ipod/i.test(window.navigator.userAgent)
+            || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
     }
 
-    function isSafari() {
+    /** Anleitung je nach Browser: Das Teilen-Symbol sitzt jeweils woanders. */
+    function iosInstructions() {
         var ua = window.navigator.userAgent;
-        return /safari/i.test(ua) && !/crios|fxios|edgios/i.test(ua);
+        var steps;
+        if (/crios|edgios/i.test(ua)) {
+            steps = 'Teilen-Symbol (Quadrat mit Pfeil) in der Adressleiste antippen, dann "Zum Home-Bildschirm".';
+        } else if (/fxios/i.test(ua)) {
+            steps = 'Menü (☰) → Teilen antippen, dann "Zum Home-Bildschirm".';
+        } else {
+            steps = 'Teilen-Symbol (Quadrat mit Pfeil) antippen - in neueren iOS-Versionen über "…" neben der Adresse - '
+                + 'dann "Zum Home-Bildschirm" und "Als Web-App öffnen" eingeschaltet lassen.';
+        }
+        return 'Dieses Backend lässt sich als App auf den Home-Bildschirm legen: ' + steps;
     }
 
     function showBanner(text, actionLabel, onAction) {
@@ -152,14 +164,12 @@
 
     window.addEventListener('appinstalled', dismiss);
 
-    // Safari (iOS) löst "beforeinstallprompt" nie aus - eigener Hinweis mit
-    // Anleitung fürs Teilen-Menü, das "Zum Home-Bildschirm" enthält.
-    if (isIos() && isSafari()) {
-        showBanner(
-            'Dieses Backend lässt sich zum Home-Bildschirm hinzufügen: Teilen-Symbol antippen, dann "Zum Home-Bildschirm".',
-            null,
-            null
-        );
+    // iOS kennt "beforeinstallprompt" in keinem Browser - eigener Hinweis
+    // mit Anleitung fürs Teilen-Menü. Seit iOS 16.4 können das auch Chrome,
+    // Edge und Firefox, nicht mehr nur Safari; früher sahen Nutzer dieser
+    // Browser gar nichts.
+    if (isIos()) {
+        showBanner(iosInstructions(), null, null);
         return;
     }
 

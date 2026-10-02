@@ -10,7 +10,7 @@
  * das Installieren erst gar nicht an - mehr braucht es dafür nicht.
  */
 
-const CACHE = 'pms-admin-shell-v3';
+const CACHE = 'pms-admin-shell-v4';
 
 const SHELL_ASSETS = [
     'admin.css',
