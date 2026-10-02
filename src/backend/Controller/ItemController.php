@@ -40,6 +40,16 @@ final class ItemController extends Controller
 
     private const UPLOAD_DIR = 'images/uploads/';
 
+    /**
+     * Die gesendeten Formularwerte, wenn das Speichern scheiterte - der
+     * Editor zeigt dann diese statt der gespeicherten (oder leeren) Werte,
+     * damit kein Text verloren geht.
+     *
+     * @var array{name: string, description: string, content: string, link: string, sort: int, user: int, time: ?int,
+     *     available: bool, visible: bool, showuser: bool, rate: bool, comments: bool}|null
+     */
+    private ?array $posted = null;
+
     #[\Override]
     public function action(): string
     {
@@ -195,6 +205,21 @@ final class ItemController extends Controller
         $showuser = $isEdit ? (bool)$item->showuser : true;
         $rate = $isEdit ? (bool)$item->rate : true;
         $comments = $isEdit ? (bool)$item->comments : true;
+
+        if ($this->posted !== null) {
+            $name = $this->posted['name'];
+            $description = $this->posted['description'];
+            $content = $this->posted['content'];
+            $link = $this->posted['link'];
+            $sort = $this->posted['sort'];
+            $author = $this->posted['user'];
+            $created = $this->posted['time'] ?? $created;
+            $available = $this->posted['available'];
+            $visible = $this->posted['visible'];
+            $showuser = $this->posted['showuser'];
+            $rate = $this->posted['rate'];
+            $comments = $this->posted['comments'];
+        }
 
         $type = $values['typ'];
         $special = $values['typ2'];
@@ -706,7 +731,7 @@ final class ItemController extends Controller
         }
 
         if (Errors::has()) {
-            return $this->editor($this->valuesFromRequest());
+            return $this->editorWithPosted();
         }
 
         $data = [
@@ -757,8 +782,13 @@ final class ItemController extends Controller
         }
 
         if (!$saved) {
-            Flash::error('Fehler beim Speichern des Inhalts!');
-            return $this->editor($this->valuesFromRequest());
+            $reason = Db::lastError();
+            Flash::error('Fehler beim Speichern des Inhalts! '
+                . ($reason !== '' ? 'Die Datenbank meldet: <code>' . Html::e($reason) . '</code>. ' : '')
+                . 'Ihre Eingaben sind unten noch vorhanden'
+                . ($this->hasUpload() ? ' - nur das Bild muss erneut ausgewählt werden' : '') . '.');
+            error_log('PMS Inhalt speichern fehlgeschlagen (id=' . $id . '): ' . $reason);
+            return $this->editorWithPosted();
         }
 
         $this->storeImage($id);
@@ -780,7 +810,34 @@ final class ItemController extends Controller
         return $this->editor($values);
     }
 
-    /** Vom Benutzer gesetztes Erstellungsdatum, sonst null. */
+    /** Der Editor mit den gesendeten statt den gespeicherten Werten. */
+    private function editorWithPosted(): string
+    {
+        $this->posted = [
+            'name' => Request::string('name'),
+            'description' => Request::text('description'),
+            'content' => Request::text('content'),
+            'link' => Request::string('link'),
+            'sort' => Request::int('sort', 1000),
+            'user' => Request::int('user', Auth::userId()),
+            'time' => $this->requestedCreationTime(),
+            'available' => Request::checkbox('available') === 1,
+            'visible' => Request::checkbox('visible') === 1,
+            'showuser' => Request::checkbox('showuser') === 1,
+            'rate' => Request::checkbox('rate') === 1,
+            'comments' => Request::checkbox('comments') === 1,
+        ];
+        return $this->editor($this->valuesFromRequest());
+    }
+
+    /** Wurde mit dem Formular eine Bilddatei hochgeladen? */
+    private function hasUpload(): bool
+    {
+        /** @var mixed $file */
+        $file = $_FILES['image'] ?? null;
+        return is_array($file) && (int)($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+    }
+
     /** Gehört die Unterkategorie zur gewählten Kategorie? */
     private function placementIsValid(int $cat, int $subcat): bool
     {
@@ -794,6 +851,7 @@ final class ItemController extends Controller
         ) !== null;
     }
 
+    /** Vom Benutzer gesetztes Erstellungsdatum, sonst null. */
     private function requestedCreationTime(): ?int
     {
         if (Request::checkbox('create_at_use')) {

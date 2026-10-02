@@ -16,6 +16,19 @@ use SQLite3Stmt;
  */
 final class Db
 {
+    /** Fehlermeldung der zuletzt fehlgeschlagenen Anweisung. */
+    private static string $lastError = '';
+
+    /**
+     * Meldung der Datenbank zur zuletzt fehlgeschlagenen Anweisung, etwa
+     * "database is locked" - damit eine Fehlermeldung im Backend den
+     * Grund nennen kann, statt ihn nur im Server-Log zu hinterlassen.
+     */
+    public static function lastError(): string
+    {
+        return self::$lastError;
+    }
+
     /** Vollständiger Tabellenname inklusive Präfix. */
     public static function table(string $table): string
     {
@@ -133,7 +146,8 @@ final class Db
     {
         $statement = self::prepare($sql);
         if (!$statement instanceof SQLite3Stmt) {
-            error_log('SQL konnte nicht vorbereitet werden: ' . $sql);
+            self::$lastError = self::connection()->error();
+            error_log('SQL konnte nicht vorbereitet werden: ' . $sql . ' (' . self::$lastError . ')');
             return false;
         }
 
@@ -143,7 +157,8 @@ final class Db
 
         $result = $statement->execute();
         if ($result === false) {
-            error_log('SQL fehlgeschlagen: ' . $sql . ' (' . self::connection()->error() . ')');
+            self::$lastError = self::connection()->error();
+            error_log('SQL fehlgeschlagen: ' . $sql . ' (' . self::$lastError . ')');
         }
         return $result;
     }
