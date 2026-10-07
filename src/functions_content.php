@@ -46,6 +46,31 @@
 	}
 
 	/**
+	 * Turn the text between [php] and [/php] into runnable code
+	 *
+	 * Saved from the plain text field the code is stored as typed. The
+	 * graphical editors (Quill, TinyMCE) wrap every line in <p>...</p> and
+	 * escape the characters of the code (&&, <, >, quotes only partly), which
+	 * makes eval() fail with "unexpected token <". Such content is converted
+	 * back: one paragraph per line, all remaining markup removed, entities
+	 * decoded. Plain code is left alone - it may contain real tags in its
+	 * strings (echo '<h3>'), which must not be stripped.
+	 *
+	 * @param string $code Raw text between the tags
+	 * @return string PHP code
+	 */
+	function php_block_code($code)
+	{
+		if(!preg_match('~^\s*(</p>\s*)?<p[\s>]~i',$code))
+			{
+			return remove_html($code);
+		}
+		$code=str_replace("\xC2\xA0"," ",$code);
+		$code=str_ireplace(array('</p>','<br>','<br/>','<br />'),"\n",$code);
+		return html_entity_decode(strip_tags($code),ENT_QUOTES|ENT_HTML5,'UTF-8');
+	}
+
+	/**
 	 * Replace dynamic placeholders with content
 	 *
 	 * @param str Content string
@@ -77,7 +102,7 @@
 				if($j_zaehler==1)
 					{
 					try {
-						eval('ob_start();' .remove_html($str3[0]).'$str.=ob_get_clean();');
+						eval('ob_start();' .php_block_code($str3[0]).'$str.=ob_get_clean();');
 					}catch(ParseError|Exception $e) {
 						$str.=print_r($e, true);
 					}
