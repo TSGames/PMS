@@ -1,5 +1,8 @@
 #!/bin/bash
-set -e 
+set -e
+
+# Log the PHP version first, so the container log shows what is running
+echo "PHP $(php -r 'echo PHP_VERSION;') ($(php -r 'echo PHP_OS, " ", PHP_INT_SIZE * 8, "-bit";'))"
 
 if [ -z "$(ls -A /var/template 2>/dev/null)" ]; then
     echo "Initing base template..."
