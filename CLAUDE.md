@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-PMS is a German-language PHP content management system (categories → subcategories → content items, users, comments, polls, menus, a template engine). It ships as a Docker image (`php:8.4-apache`). The codebase is mid-refactor: `src/backend/` (the admin area) has been rewritten with modern patterns; the frontend (`index.php` and the `functions_*.php` files it shares with the backend) is legacy procedural code not yet touched by that refactor. Know which world you're in before changing something — the rules below differ sharply between them.
+PMS is a German-language PHP content management system (categories → subcategories → content items, users, comments, polls, menus, a template engine). It ships as a Docker image (`php:8.5-apache`). The codebase is mid-refactor: `src/backend/` (the admin area) has been rewritten with modern patterns; the frontend (`index.php` and the `functions_*.php` files it shares with the backend) is legacy procedural code not yet touched by that refactor. Know which world you're in before changing something — the rules below differ sharply between them.
 
 ## Commands
 

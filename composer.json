@@ -7,7 +7,7 @@
         "minishlink/web-push": "^9.0"
     },
     "require-dev": {
-        "vimeo/psalm": "^6.0",
+        "vimeo/psalm": "^7.0@rc",
         "phpunit/phpunit": "^12.5.8"
     },
     "autoload": {

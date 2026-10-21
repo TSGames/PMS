@@ -10,6 +10,8 @@
     allConstantsGlobal="true"
     allFunctionsGlobal="true"
     findUnusedCode="false"
+    runTaintAnalysis="false"
+    errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
         <directory name="src" />
@@ -26,5 +28,9 @@
         <UndefinedConstant errorLevel="suppress" />
         <UndefinedMethod errorLevel="suppress" />
         <MissingFile errorLevel="suppress" />
+        <!-- Only aid the taint analysis, which is off (see runTaintAnalysis) -->
+        <MissingPureAnnotation errorLevel="suppress" />
+        <MissingImmutableAnnotation errorLevel="suppress" />
+        <MissingAbstractPureAnnotation errorLevel="suppress" />
     </issueHandlers>
 </psalm>

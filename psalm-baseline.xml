@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="7.0.0-rc6@6974595aadb5c76f3f4292afbf64d3b82eb3d373">
+  <file src="src/counter.php">
+    <InvalidArgument>
+      <code><![CDATA[$item_edit_mode]]></code>
+    </InvalidArgument>
+  </file>
+  <file src="src/functions_content.php">
+    <InvalidReturnType>
+      <code><![CDATA[string]]></code>
+    </InvalidReturnType>
+  </file>
+  <file src="src/index.php">
+    <InvalidArgument>
+      <code><![CDATA[array("cat"=>$cat,"subcat"=>$subcat,"item"=>$item,"id"=>$id)]]></code>
+      <code><![CDATA[array(from_db("user",$id,"name"),$config_values->page."/index.php?action=password_recover&user=".$id."&id=".$key)]]></code>
+      <code><![CDATA[array(from_db("user",$user_sel,"name"),$pass)]]></code>
+      <code><![CDATA[array(from_db("user",from_db("item",$item,"user"),"name"),make_date($time,1))]]></code>
+    </InvalidArgument>
+    <InvalidPropertyFetch>
+      <code><![CDATA[$a->comment]]></code>
+      <code><![CDATA[$a->comment]]></code>
+      <code><![CDATA[$a->date]]></code>
+      <code><![CDATA[$a->id]]></code>
+      <code><![CDATA[$a->id]]></code>
+      <code><![CDATA[$a->id]]></code>
+      <code><![CDATA[$a->id]]></code>
+      <code><![CDATA[$a->ip]]></code>
+      <code><![CDATA[$a->mail]]></code>
+      <code><![CDATA[$a->name]]></code>
+      <code><![CDATA[$a->name]]></code>
+      <code><![CDATA[$a->points]]></code>
+      <code><![CDATA[$a->title]]></code>
+      <code><![CDATA[$a->title]]></code>
+      <code><![CDATA[$a->user]]></code>
+      <code><![CDATA[$a->user]]></code>
+    </InvalidPropertyFetch>
+    <ParadoxicalCondition>
+      <code><![CDATA[$action=="guestbook"]]></code>
+    </ParadoxicalCondition>
+  </file>
+</files>

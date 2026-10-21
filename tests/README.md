@@ -26,7 +26,7 @@ tests/
 
 ## Voraussetzungen
 
-* PHP 8.4 mit `sqlite3` und `gd`
+* PHP 8.5 mit `sqlite3` und `gd`
 * Node.js 20+
 * Schreibrechte für `/var/db` und `/var/template` (beide Pfade sind im
   Anwendungscode fest verdrahtet; ggf. `sudo` verwenden)
