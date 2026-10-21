@@ -11,7 +11,6 @@
     allFunctionsGlobal="true"
     findUnusedCode="false"
     runTaintAnalysis="false"
-    errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
         <directory name="src" />

@@ -63,7 +63,7 @@
 	{
 		if(!preg_match('~^\s*(</p>\s*)?<p[\s>]~i',$code))
 			{
-			return remove_html($code);
+			return (string)remove_html($code);
 		}
 		$code=str_replace("\xC2\xA0"," ",$code);
 		$code=str_ireplace(array('</p>','<br>','<br/>','<br />'),"\n",$code);
