@@ -1,6 +1,7 @@
 {
     "name": "tsgames/pms",
     "require": {
+        "php": ">=8.5.12",
         "slim/slim": "^4.0",
         "slim/psr7": "^1.0",
         "tinymce/tinymce": "^7.9.3",
