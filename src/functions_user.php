@@ -230,7 +230,16 @@
 			$mail=$pms_db_connection->escape($mail);
 			$website=$pms_db_connection->escape($website);
 			$signatur=$pms_db_connection->escape($signatur);
-			$dbay=$pms_db_connection->escape($bday);
+			// Numeric columns: "top" and "showmail" came raw from the profile
+			// form into the UPDATE below, so any registered user could inject
+			// SQL there (BEFUNDE B32). The old line escaped $bday into a
+			// misspelled variable and had no effect.
+			$id=$id ? (int)$id : $id;
+			$typ=(int)$typ;
+			$bday=(int)$bday;
+			$top=(int)$top;
+			$active=(int)$active;
+			$showmail=(int)$showmail;
 			
 			if($id && $image_delete)
 				{

@@ -234,3 +234,33 @@ test('B30: Profilfelder und Gastnamen werden als Text ausgegeben, nicht als HTML
     expect(html, adresse).not.toContain('" onmouseover="alert');
   }
 });
+
+test('B32: Zahlenfelder des Profils nehmen kein SQL an', async ({ page }) => {
+  await login(page, USERS.gast);
+  await page.goto('index.php?action=user_panel');
+  const token = await page.locator('input[name="pms_token"]').first().inputValue();
+
+  // Ein Hochkomma in "top" oder "showmail" brach früher aus dem UPDATE aus
+  await page.request.post('index.php?action=user_panel', {
+    form: {
+      user_config: '1',
+      pms_token: token,
+      password: '',
+      passwordr: '',
+      mail: 'gast@example.org',
+      website: '',
+      signatur: '',
+      bday: '',
+      top: "1' x",
+      showmail: "1' x",
+    },
+  });
+
+  const row = execFileSync('php', ['-r', `
+    $d = new SQLite3(getenv("PMS_MOCK_DB") ?: "/var/db/default.sqlite");
+    $r = $d->querySingle("SELECT typ, top, showmail FROM user WHERE id = 4", true);
+    echo $r["typ"] . "|" . $r["top"] . "|" . $r["showmail"];
+  `], { encoding: 'utf8' });
+  // Gespeichert wird die Zahl davor, der Rest fällt weg; der Typ bleibt
+  expect(row).toBe('0|1|1');
+});

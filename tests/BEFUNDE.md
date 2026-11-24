@@ -253,6 +253,16 @@ in den Webroot. Eine Änderung dort wäre ungeprüft im Image gelandet. Der
 Bau nimmt jetzt den Commit der Version 2.6 und bricht ab, wenn die Stelle
 fehlt, an der die Anmeldung umgestellt wird.
 
+### B32 – Das eigene Profil erlaubte SQL-Injection (kritisch)
+`make_user()` setzte die Felder `top` und `showmail` aus dem
+Profil-Formular ungeprüft in ein `UPDATE` der Benutzertabelle. Jeder
+angemeldete Benutzer - bei offener Registrierung also jeder Besucher -
+konnte dort eigenes SQL einschleusen; in derselben Abfrage steht auch der
+Benutzertyp. Die Zeile, die das Geburtsdatum maskieren sollte, schrieb in
+eine falsch benannte Variable (`$dbay`) und bewirkte nichts. Alle
+Zahlenfelder (`id`, `typ`, `bday`, `top`, `active`, `showmail`) werden
+jetzt auf Ganzzahlen gezwungen.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und
