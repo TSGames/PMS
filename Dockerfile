@@ -45,7 +45,13 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/git
+# Pinned to release 2.6 by commit, not by tag or branch: the file is patched
+# below and runs with full access to the webroot, so an upstream change must
+# not reach the image unreviewed. The grep fails the build if the patch no
+# longer applies.
 RUN git clone https://github.com/prasathmani/tinyfilemanager && cd tinyfilemanager && \
+    git checkout -q 232fc78f2e3d1d36171fe7c766283aa2d1424f0d && \
+    grep -q '^\$use_auth = true;' tinyfilemanager.php && \
     sed -i "s/\$use_auth = true;/\$use_auth = false;/" tinyfilemanager.php && \
     sed -i '1a\
 session_start(); if(!($_SESSION["usertyp"] == 3)) die("login required");' tinyfilemanager.php && \

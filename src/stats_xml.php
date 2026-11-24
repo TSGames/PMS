@@ -3,7 +3,11 @@ define("PMS_FRONTEND", 1);
 require __DIR__ . '/bootstrap.php';
 require "static.php"; // connect db
 require "functions.php";
-if($config_values->visitors_password==$_GET["pw"])
+// No password configured means no access: the old "==" let a request
+// without ?pw through when the setting was empty (null == ""), and compared
+// loosely otherwise (BEFUNDE B31).
+$stats_password=(string)$config_values->visitors_password;
+if($stats_password!=="" && hash_equals($stats_password,(string)($_GET["pw"] ?? "")))
 {
 $a=array("COUNTER_ONLINE","COUNTER_TODAY","COUNTER_YESTERDAY","COUNTER_OVERALL","COUNTER_24");
 $b=array(count_db_exp("visitors_counter","WHERE time>='".(time()-60*$config_values->visitors_lifetime)."'"),$config_values->visitors_today,$config_values->visitors_yesterday,$config_values->visitors+$config_values->visitors_increment,count(get_24_stats(true)));

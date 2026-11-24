@@ -240,6 +240,19 @@ aus, ebenso mehrere Stellen den Benutzernamen (Verfasser, Geburtstage,
 Seitentitel des Profils). Alle Stellen maskieren jetzt; neue Namen dürfen
 `<`, `>` und den Gravis nicht mehr enthalten.
 
+### B31 – Die Besucherzahlen waren ohne Passwort abrufbar
+`stats_xml.php` verglich das eingestellte Statistik-Passwort mit `==`. War
+keines eingestellt, galt ein Aufruf ohne `?pw` als richtig (`null == ""`)
+und lieferte die Zahlen an jeden. Ohne eingestelltes Passwort bleibt der
+Zugriff jetzt zu; verglichen wird mit `hash_equals()`.
+
+### Dateimanager auf eine feste Version gelegt
+Das Dockerfile holte `tinyfilemanager` bei jedem Bau vom aktuellen Stand
+des fremden Repositorys, schaltete dessen Anmeldung ab und legte die Datei
+in den Webroot. Eine Änderung dort wäre ungeprüft im Image gelandet. Der
+Bau nimmt jetzt den Commit der Version 2.6 und bricht ab, wenn die Stelle
+fehlt, an der die Anmeldung umgestellt wird.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und
