@@ -418,6 +418,12 @@
 				{
 				return "";
 			}
+			// Profile fields are visitor input and end up in the content
+			// area that make_dynamic() evaluates (BEFUNDE B25)
+			foreach(array('name','website','signatur') as $field)
+				{
+				$a->$field=\Pms\Frontend\Http\Input::text((string)$a->$field);
+			}
 			if($rang)
 				{
 				$rang=str_replace("%1",$rang,language("TOP_USER_RANK"))." ";

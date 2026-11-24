@@ -130,3 +130,64 @@ test('Die Anmeldung über das Formular funktioniert weiterhin', async ({ page })
   await expect(page.locator('body')).toContainText(/Logout|Abmelden/);
   await expectNoPhpError(page);
 });
+
+// B25: index.php wertet den gesamten Inhaltsbereich mit make_dynamic() aus,
+// das [php]-Blöcke per eval() ausführt. Besuchereingaben landeten dort
+// ungefiltert - ein Suchbegriff genügte, um ohne Anmeldung Code auszuführen.
+const PAYLOAD = "[php]echo 'PW'.'NED';[/php]";
+
+/** Setzt die Signatur eines Benutzers direkt in der Datenbank. */
+function setSignature(id, text) {
+  execFileSync('php', ['-r', `
+    $db = new SQLite3(getenv("PMS_MOCK_DB") ?: "/var/db/default.sqlite");
+    $s = $db->prepare("UPDATE user SET signatur = :s WHERE id = :id");
+    $s->bindValue(":s", $argv[1]);
+    $s->bindValue(":id", (int)$argv[2]);
+    $s->execute();
+  `, text, String(id)], { encoding: 'utf8' });
+}
+
+test('B25: Ein [php]-Block im Suchbegriff wird nicht ausgeführt', async ({ request }) => {
+  const adressen = [
+    `index.php?search_query=${encodeURIComponent(PAYLOAD)}`,
+    `index.php?action=search&query=${encodeURIComponent(PAYLOAD)}`,
+    `content/${encodeURIComponent(PAYLOAD)}.html`,
+  ];
+  for (const adresse of adressen) {
+    const html = await (await request.get(adresse)).text();
+    expect(html, adresse).not.toContain('PWNED');
+  }
+});
+
+test('B25: Der Suchbegriff erscheint unverändert', async ({ page }) => {
+  await page.goto('index.php?action=search&query=%5Btest%5D');
+  await expect(page.locator('.item_heading').first()).toContainText('[test]');
+  await expect(page.locator('input[name="search_query"]')).toHaveValue('[test]');
+});
+
+test('B25: Ein [php]-Block in einer gespeicherten Signatur wird nicht ausgeführt', async ({ request }) => {
+  setSignature(4, PAYLOAD);
+  const html = await (await request.get('index.php?action=user&id=4')).text();
+  expect(html).not.toContain('PWNED');
+  expect(html).toContain('&#91;php]');
+});
+
+test('B25: Ein Redakteur kann weiterhin [php]-Blöcke speichern', async ({ page }) => {
+  await login(page, USERS.redakteur);
+  await page.goto('index.php?item=1&edit=true');
+  const token = await page.locator('input[name="pms_token"]').first().inputValue();
+
+  await page.request.post('index.php?item=1', {
+    form: {
+      item_edit: '1',
+      item_id: '1',
+      pms_token: token,
+      edit_name: 'Mit Code',
+      edit_description: '',
+      edit_content: PAYLOAD,
+    },
+  });
+
+  await page.goto('index.php?item=1');
+  await expect(page.locator('body')).toContainText('PWNED');
+});

@@ -3,6 +3,14 @@ define("PMS_FRONTEND",1);
 require(__DIR__.'/bootstrap.php');
 require('functions.php');
 
+// Visitor input must not form [php] markers: the content area is run
+// through make_dynamic(), which evaluates them (BEFUNDE B25). Only editors
+// write such blocks on purpose.
+if(!(($_SESSION['pmsglobal'] ?? 0)==1 && from_db("user",(int)($_SESSION['userid'] ?? 0),"typ")>1))
+{
+    \Pms\Frontend\Http\Input::neutralizeRequest();
+}
+
 use Pms\Data\Db;
 use Pms\Frontend\Http\Forms;
 use Pms\Frontend\Http\Kernel;

@@ -189,8 +189,10 @@
 		// nicht nur im Text, sondern auch im value-Attribut des
 		// Bearbeitungsformulars. Im Text macht das keinen Unterschied, der
 		// Browser stellt &quot; als " dar.
-		$search=array('<','>','"','&lt;br&gt;');
-		$replace=array('&lt;','&gt;','&quot;','<br>');
+		// "[" too: visitor text must never form a [php] marker, which
+		// make_dynamic() would evaluate (BEFUNDE B25)
+		$search=array('<','>','"','&lt;br&gt;','[');
+		$replace=array('&lt;','&gt;','&quot;','<br>','&#91;');
 		return str_replace($search,$replace,(string)$str);
 	}
 

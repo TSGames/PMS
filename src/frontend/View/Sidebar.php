@@ -31,6 +31,9 @@ final class Sidebar
     /** Das Suchfeld. */
     public static function search(string $query = ''): string
     {
+        // The sidebar is filled in after make_dynamic(), so the real "[" is
+        // safe here; Input::text() turned it into "&#91;" (BEFUNDE B25)
+        $query = str_replace('&#91;', '[', $query);
         $body = form('', 'get')
             . '<div class="search_row">'
             . '<label class="visually_hidden" for="search_query">' . Html::e(language('SEARCH_BUTTON')) . '</label>'

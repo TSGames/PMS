@@ -180,6 +180,22 @@ Mail-Link der Website auf eine leere Seite. `functions_mail.php` war schon
 korrigiert, `mail.php` nicht. Die Datei nimmt jetzt nur noch druckbare
 ASCII-Zeichen an und antwortet sonst mit 400.
 
+### B25 – Ein Suchbegriff führte ohne Anmeldung PHP-Code aus (kritisch)
+`index.php` schickt den gesamten Inhaltsbereich durch `make_dynamic()`, das
+`[php]…[/php]` per `eval()` ausführt - gedacht für Inhalte, die Redakteure
+schreiben. Besuchereingaben landeten aber im selben Bereich: Der Aufruf
+`index.php?search_query=[php]…[/php]` führte beliebigen Code mit den
+Rechten des Webservers aus, ohne jede Anmeldung. Dasselbe galt für
+gespeicherte Profilfelder (Signatur, Website, Name) auf der Profilseite.
+
+`Frontend\Http\Input` ersetzt jetzt jedes `[` in GET, POST, Cookies und
+`$_REQUEST` durch `&#91;`, bevor `index.php` irgendetwas verarbeitet -
+ausgenommen Passwortfelder und angemeldete Redakteure (Typ > 1), die
+`[php]` beim Bearbeiten auf der Seite absichtlich verwenden. Der Browser
+zeigt weiterhin `[`. Zusätzlich maskieren `clear_comment()` und
+`user_out()` das Zeichen bei der Ausgabe, damit auch früher gespeicherte
+Einträge nichts mehr ausführen.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und
