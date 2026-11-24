@@ -258,7 +258,9 @@ $poll_vote=Forms::submitted('poll_vote');
 if($poll_vote || Forms::submitted('poll_results'))
 {
     load_hidden();
-    $poll_id=$_POST['poll_id'];
+    // Cast to int: $poll_id is a row id but reached the UPDATE below raw,
+    // so index.php?poll_vote=... allowed SQL injection (BEFUNDE B26)
+    $poll_id=(int)$_POST['poll_id'];
     $cname='poll'.$poll_id;
     if(!$_SESSION[$cname] && !$_COOKIE[$cname] && $poll_vote)
     {

@@ -45,7 +45,7 @@ if ($subcat) {
 
 $av = $admin ? "" : " AND available = 1 AND visible = 1";
 
-$link = mysql_query("SELECT a.id, a.name, a.description, a.time, b.name AS user FROM ".$pms_db_prefix."item as a LEFT JOIN ".$pms_db_prefix."user as b ON (b.id=a.user) WHERE ".$w.$av." ORDER BY a.time DESC, a.id DESC LIMIT 20");
+$link = $pms_db_connection->query("SELECT a.id, a.name, a.description, a.time, b.name AS user FROM ".$pms_db_prefix."item as a LEFT JOIN ".$pms_db_prefix."user as b ON (b.id=a.user) WHERE ".$w.$av." ORDER BY a.time DESC, a.id DESC LIMIT 20");
 
 if ($subcat) {
     $title = from_db("subcat", $subcat, "name") . ' - ';
@@ -71,7 +71,7 @@ echo '<?xml version="1.0" encoding="utf-8"?>
 <link>' . rss_entities($l) . '</link>
 <description>' . from_db("subcat", $subcat, "description") . '</description>';
 
-while ($link && $a = mysql_fetch_object($link)) {
+while ($link && $a = pms_fetch_object($link)) {
     foreach ($a as $k => $v) $a->$k = rss_entities($v, $k == "name" || $k == "description");
     $l = $config_values->speciallinks ? $config_values->page . '/content/' . link_name($a->name) . '-' . $a->id . '.html' : $config_values->page . '/?item=' . $a->id;
     echo '

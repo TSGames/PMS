@@ -196,6 +196,20 @@ zeigt weiterhin `[`. Zusätzlich maskieren `clear_comment()` und
 `user_out()` das Zeichen bei der Ausgabe, damit auch früher gespeicherte
 Einträge nichts mehr ausführen.
 
+### B26 – Die Abstimmung erlaubte SQL-Injection (kritisch)
+Beim Abstimmen landete `poll_id` aus dem Formular ungeprüft in einer
+`UPDATE`-Abfrage (`... WHERE id = '$poll_id'`). Ein Besucher konnte damit
+ohne Anmeldung eigenes SQL einschleusen. `poll_id` ist eine Datensatz-ID
+und wird jetzt mit `(int)` gelesen. Die Antwortnummer war bereits auf eine
+Ganzzahl gezwungen und bildet nur den Spaltennamen `answers<n>`.
+
+### B27 – Der RSS-Feed brach mit einem fatalen Fehler ab
+`rss.php` rief `mysql_query()` und `mysql_fetch_object()` - Funktionen der
+alten `mysql`-Erweiterung, die es unter PHP 8 nicht mehr gibt und die
+nirgends ersetzt wurden. Jeder Aufruf eines Feeds endete deshalb in
+`Call to undefined function mysql_query()`. Die Aufrufe gehen jetzt über
+`$pms_db_connection->query()` und `pms_fetch_object()` wie im übrigen Code.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und

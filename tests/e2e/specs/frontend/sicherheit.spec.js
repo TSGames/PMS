@@ -191,3 +191,24 @@ test('B25: Ein Redakteur kann weiterhin [php]-Blöcke speichern', async ({ page 
   await page.goto('index.php?item=1');
   await expect(page.locator('body')).toContainText('PWNED');
 });
+
+test('B26: Ein [php]-freier poll_id-Wert kann keine SQL-Injection auslösen', async ({ page }) => {
+  // poll_id landete roh in einer UPDATE-Abfrage. Eine gültige Abstimmung
+  // muss weiter funktionieren, der Angriff darf keine Wirkung haben.
+  await page.goto('index.php');
+  const token = await page.locator('input[name="pms_token"]').first().inputValue();
+
+  const antwort = await page.request.post('index.php', {
+    form: {
+      poll_vote: 'Abstimmen',
+      poll_id: "1 OR 1=1",
+      answer: '2',
+      pms_token: token,
+    },
+  });
+  const html = await antwort.text();
+  expect(html).not.toContain('SQL');
+  expect(html).not.toContain('syntax error');
+  // Die Website antwortet weiterhin normal
+  expect(html).toContain('</html>');
+});
