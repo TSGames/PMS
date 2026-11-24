@@ -304,7 +304,7 @@ if($action=="user" && $id)
     $id=from_db("user",$id,"id");
     if($id)
     {
-        $name=from_db("user",$id,"name");
+        $name=clear_comment(from_db("user",$id,"name"));
         $current_pos_name=str_replace("%1",$name,language("USER_VIEW_TITLE"));
         $content=user_out("",$id,1,0,1,1);
     }
@@ -1103,7 +1103,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                 if(from_db("item",$item,"typ")==2) // Download
                 $add=language("ITEM_ADDED_BY");
                 else $add=language("ITEM_WRITTEN_BY");
-                $content.=str_replace(array("%1","%2"),array(from_db("user",from_db("item",$item,"user"),"name"),make_date($time,1)),$add);
+                $content.=str_replace(array("%1","%2"),array(clear_comment(from_db("user",from_db("item",$item,"user"),"name")),make_date($time,1)),$add);
                 
                 $content.=$refreshed."
                 </div></td></tr>";
@@ -1280,10 +1280,10 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
                             {
                                 $a=$pms_db_connection->fetchObject($link);
                             }
-                            $name=$a->name;
+                            $name=clear_comment($a->name);
                             if($a->user)
                             {
-                                $name=from_db("user",$a->user,"name");
+                                $name=clear_comment(from_db("user",$a->user,"name"));
                             }
                             $comment_str=$comment_str."
                             <input type=\"hidden\" name=\"id\" value=\"".$id."\">
@@ -1531,7 +1531,8 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         $item_temp=$a->item;
         $subcat_temp=from_db("item",$item_temp,"subcat");
         $subcat_temp=from_db("subcat",$subcat_temp,"cat");
-        $name=$a->name;
+        // Guest names are visitor input - printed raw until B30
+        $name=clear_comment($a->name);
         if($a->user) $name=make_link(clear_comment(from_db("user",$a->user,"name")),"action=user&id=".$a->user,0,0,0,"latest_comments_from");
         $latest_comments="<div class=\"latest_comments_from\">Von ".$name.":</div><div class=\"latest_comments_comment\">".
         small_comment(stripslashes(clear_comment(def($a->comment))))."</div>
@@ -1609,7 +1610,7 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
             else
             $birthday.=", ";
             
-            $birthday.="\"".make_link($bday->name,"action=user&id=".$bday->id,"","","")."\" (".make_age($bday->bday).")";
+            $birthday.="\"".make_link(clear_comment($bday->name),"action=user&id=".$bday->id,"","","")."\" (".make_age($bday->bday).")";
         }
     }
     if(!$first_bday)

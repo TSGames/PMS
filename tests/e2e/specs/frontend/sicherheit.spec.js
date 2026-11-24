@@ -212,3 +212,25 @@ test('B26: Ein [php]-freier poll_id-Wert kann keine SQL-Injection auslösen', as
   // Die Website antwortet weiterhin normal
   expect(html).toContain('</html>');
 });
+
+test('B30: Profilfelder und Gastnamen werden als Text ausgegeben, nicht als HTML', async ({ request }) => {
+  execFileSync('php', ['-r', `
+    $d = new SQLite3(getenv("PMS_MOCK_DB") ?: "/var/db/default.sqlite");
+    $s = $d->prepare("UPDATE user SET name = :n, website = :w, signatur = :s WHERE id = 4");
+    $s->bindValue(":n", "<img src=x onerror=alert\`1\`>");
+    $s->bindValue(":w", "x\\" onmouseover=\\"alert(2)");
+    $s->bindValue(":s", "<svg onload=alert(3)>");
+    $s->execute();
+    $s = $d->prepare("INSERT INTO comments (item,title,comment,name,user,date,mail,ip) VALUES (2,'t','c',:n,0,:d,'','')");
+    $s->bindValue(":n", "<svg onload=alert(4)>");
+    $s->bindValue(":d", time());
+    $s->execute();
+  `]);
+
+  for (const adresse of ['index.php?action=user&id=4', 'index.php?item=2&comments=all', 'index.php']) {
+    const html = await (await request.get(adresse)).text();
+    expect(html, adresse).not.toContain('<img src=x onerror');
+    expect(html, adresse).not.toContain('<svg onload');
+    expect(html, adresse).not.toContain('" onmouseover="alert');
+  }
+});

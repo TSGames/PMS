@@ -22,7 +22,7 @@
 	 */
 	function name_condition($n)
 	{
-		$invalid=array('[',']','(',')',"'",'"','{','}');
+		$invalid=array('[',']','(',')',"'",'"','{','}','<','>','`');
 		foreach($invalid as $i)
 			{
 			if(strpos($n,$i)!==FALSE) return 0;
@@ -464,7 +464,9 @@
 			// area that make_dynamic() evaluates (BEFUNDE B25)
 			foreach(array('name','website','signatur') as $field)
 				{
-				$a->$field=\Pms\Frontend\Http\Input::text((string)$a->$field);
+				// HTML-escape as well: the fields were printed raw, so a
+				// registered user could plant script in a profile (B30)
+				$a->$field=\Pms\Frontend\Http\Input::text(htmlspecialchars((string)$a->$field,ENT_QUOTES,'UTF-8',false));
 			}
 			if($rang)
 				{

@@ -633,7 +633,7 @@
 								}
 								else
 									{
-									$a[0]=make_link(from_db("user",$a[0],"name"),"action=user&id=".$a[0],"","","");
+									$a[0]=make_link(clear_comment(from_db("user",$a[0],"name")),"action=user&id=".$a[0],"","","");
 								}
 								$str[$j]=implode($space,$a);
 							}

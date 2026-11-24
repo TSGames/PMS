@@ -230,6 +230,16 @@ Bestaetigungsmail freischalten (Umgehung der E-Mail-Pruefung). Der
 Schluessel ist jetzt ein HMAC ueber Zeitstempel und Passwort-Hash
 (`activation_token()`), mit `hash_equals()` geprueft.
 
+### B30 – Profilfelder und Gastnamen wurden als HTML ausgegeben
+`user_out()` gab Name, Website und Signatur eines Benutzers ungefiltert aus;
+die Website landete zudem ungeschützt in einem `href`. Wer sich
+registrierte, konnte so Skripte in sein Profil legen, die bei jedem
+Betrachter liefen - auch bei einem angemeldeten Administrator. Der Block
+"Neueste Kommentare" gab außerdem den frei wählbaren Namen eines Gastes roh
+aus, ebenso mehrere Stellen den Benutzernamen (Verfasser, Geburtstage,
+Seitentitel des Profils). Alle Stellen maskieren jetzt; neue Namen dürfen
+`<`, `>` und den Gravis nicht mehr enthalten.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und
