@@ -430,17 +430,6 @@ const SCREENS = [
     heading: 'Wochenbericht',
     dynamic: true,
   },
-
-  // ---------------------------------------------------------------- Module
-  {
-    id: 'modul-update',
-    group: 'Module',
-    title: 'Modul: Update',
-    role: 'admin',
-    url: 'admin/modul/update',
-    heading: 'Updates Suchen',
-    dynamic: true,
-  },
 ];
 
 module.exports = { SCREENS };

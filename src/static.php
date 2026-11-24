@@ -12,8 +12,4 @@ function heading($str)
 return "<center><h2>".$str."</h2></center>
 ";
 }
-function get_latest_version()
-{
-    return null;
-}
 ?>

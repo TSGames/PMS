@@ -113,12 +113,6 @@ des Admin-Backends liegt im Commit, der das Testsystem eingeführt hat.
 | Backup-Manager | `admin/sicherungen` | [PNG](desktop/backup.png) | [PNG](desktop-dark/backup.png) | – |
 | Website-Status | `admin/status` | [PNG](desktop/activity.png) | [PNG](desktop-dark/activity.png) | [PNG](mobile/activity.png) |
 
-## Module
-
-| Seite | Adresse | Desktop | Dunkel | Mobil |
-| --- | --- | --- | --- | --- |
-| Modul: Update | `admin/modul/update` | [PNG](desktop/modul-update.png) | [PNG](desktop-dark/modul-update.png) | – |
-
 ## Frontend
 
 Das Frontend (`index.php`) ist nicht Teil des Refactorings. Die Aufnahmen

@@ -1,5 +1,5 @@
 /**
- * Ereignisse, Backup-Manager, Website-Status und das Update-Modul.
+ * Ereignisse, Backup-Manager und Website-Status.
  */
 
 const { test, expect } = require('@playwright/test');
@@ -42,8 +42,8 @@ test('Website-Status benennt die zuletzt besuchte Backend-Seite', async ({ page 
   await expect(row.locator('a[href*="/admin/"]').last()).toHaveText(/Benutzerverwaltung|Website-Status/);
 });
 
-test('Update-Modul ist erreichbar', async ({ page }) => {
-  await page.goto('admin/modul/update');
-  await expect(page.locator('body')).toContainText('Updates Suchen');
-  await expectNoPhpError(page);
+test('Es gibt kein Update-Modul mehr', async ({ page }) => {
+  await page.goto('admin');
+  const labels = await page.locator('.sidebar-nav .nav-label').allTextContents();
+  expect(labels.map((l) => l.trim())).not.toContain('Update');
 });

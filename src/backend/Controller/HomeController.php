@@ -115,7 +115,7 @@ final class HomeController extends Controller
         }
 
         if (Auth::isSuperAdmin()) {
-            $html .= $this->updateNotice() . $this->backupNotice();
+            $html .= $this->backupNotice();
         }
 
         if (!empty($GLOBALS['pms_db_use_reference'])) {
@@ -213,20 +213,6 @@ final class HomeController extends Controller
             . '<span>Beim letzten Vorgang wurden Sie abgemeldet, die Änderung ist noch nicht übernommen. '
             . '<a href="' . Html::e(Html::url('load_last')) . '">Jetzt ausführen</a> - '
             . 'wenn Sie diese Seite verlassen, geht sie verloren.</span></div>';
-    }
-
-    private function updateNotice(): string
-    {
-        $version = (string)($GLOBALS['pms_version'] ?? '');
-        $latest = get_latest_version();
-
-        if (!$latest || $latest <= $version) {
-            return '';
-        }
-
-        return '<div class="notice notice-warn">' . Icons::render('refresh')
-            . '<span>Version ' . Html::e((string)$latest) . ' ist verfügbar (Sie nutzen ' . Html::e($version) . '). '
-            . '<a href="' . Html::e(Html::asset('admin/modul/update')) . '">Update starten</a>.</span></div>';
     }
 
     private function backupNotice(): string

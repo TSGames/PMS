@@ -21,9 +21,6 @@ $modul_name = [];
 
 ob_start();
 
-if (@include 'update.php') {
-    $modul_name[] = ['action' => 'update', 'label' => 'Update'];
-}
 if (@include 'modules/upload.php') {
     $modul_name[] = ['action' => 'picture_upload', 'label' => 'Bilder-Upload'];
 }

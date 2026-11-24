@@ -9,7 +9,7 @@
  *   4. Slim beantwortet die Anfrage
  *
  * Die Schritte 2 und 3 stehen hier und nicht in einer Klasse, weil der
- * Altbestand (counter.php, update.php, modules/*) mit globalen Variablen
+ * Altbestand (counter.php, modules/*) mit globalen Variablen
  * arbeitet und diese im globalen Gültigkeitsbereich erwartet.
  */
 

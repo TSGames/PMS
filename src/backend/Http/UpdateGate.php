@@ -93,8 +93,8 @@ final class UpdateGate
         return Html::heading('Updates notwendig')
             . '<p>Dieses Web-System ist ein Referenz-System eines anderen Systems.<br>'
             . 'Es wurde jedoch festgestellt, dass das primäre System eine andere Datenbank-Version benutzt.</p>'
-            . '<p>Klicken Sie bitte auf den Button unten, um ein Update auszuführen.</p>'
-            . self::actionBlock('System aktualisieren', 'update.php?action=do');
+            . '<p>Bringen Sie dieses System bitte auf dieselbe Version wie das primäre System '
+            . '(aktuelles Container-Image einspielen).</p>';
     }
 
     /** Hinweis, dass eine vorliegende update.sql installiert werden muss. */

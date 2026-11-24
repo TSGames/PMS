@@ -161,6 +161,25 @@ Abfrage kein Token unterbringen. Der Versand wird jetzt am Feldnamen
 erkannt; die beiden Schalter der Umfrage haben dafür eigene Namen
 (`poll_vote`, `poll_results`) statt eines gemeinsamen mit zwei Werten.
 
+### B23 – Ein Aufruf mit `?action=do` kopierte das Dateisystem in den Webroot (kritisch)
+`update.php` stammte aus der Zeit eines Update-Servers, den es nicht mehr
+gibt (`get_latest_version()` lieferte nur noch `null`). Bei `?action=do`
+rief die Datei `copy_update("", $update_ftp)` auf - `$update_ftp` war nie
+definiert, `opendir()` fiel auf `/` zurück, und das gesamte Dateisystem
+wurde mit Rechten 0777 in den Webroot kopiert: die Datenbank unter
+`/var/db` öffentlich abrufbar, der Webroot rekursiv in sich selbst, bis die
+Platte voll war. Auslösen genügte ein Superadmin, der einen Verweis wie
+`/admin?action=do` aufrief - `backend/modules.php` band die Datei bei jeder
+Backend-Seite ein, ohne Token. `update.php`, das Update-Modul und der
+Hinweis auf neue Versionen auf der Startseite sind entfernt.
+
+### B24 – Geschützte Mail-Links endeten in einem fatalen Fehler
+`mail.php` rechnete mit `date(Y)` ohne Anführungszeichen - unter PHP 8 ein
+fataler Fehler. Mit eingeschalteter Option "safemail" führte damit jeder
+Mail-Link der Website auf eine leere Seite. `functions_mail.php` war schon
+korrigiert, `mail.php` nicht. Die Datei nimmt jetzt nur noch druckbare
+ASCII-Zeichen an und antwortet sonst mit 400.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und

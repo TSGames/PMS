@@ -79,3 +79,30 @@ test('B8 (behoben): Menü-Formular erzeugt keine SQL-Syntaxfehler', async ({ pag
   await page.goto('admin/menue?new=yes');
   expect(fs.readFileSync(log, 'utf8')).not.toContain('syntax error');
 });
+
+test('B23 (behoben): ?action=do kopiert kein Dateisystem mehr in den Webroot', async ({ page, request }) => {
+  const webroot = path.resolve(__dirname, '../../../src');
+  // Früher startete update.php hier copy_update("", null) - opendir() fiel
+  // auf "/" zurück und kopierte das gesamte Dateisystem in den Webroot
+  await page.goto('admin?action=do');
+  expect(fs.existsSync(path.join(webroot, 'update.log'))).toBe(false);
+  expect(fs.existsSync(path.join(webroot, 'etc'))).toBe(false);
+
+  const direct = await request.get('update.php?action=do');
+  expect(direct.status()).toBe(404);
+});
+
+test('B24 (behoben): Geschützte Mail-Links leiten auf mailto: weiter', async ({ request }) => {
+  // Gleiche Verschiebung wie make_mail() in functions_mail.php
+  const now = new Date();
+  const offset = Math.abs(((now.getFullYear() % 6) - (now.getMonth() + 1) * 2) * 2);
+  const address = 'info@example.org';
+  const encoded = [...address].map((c) => c.charCodeAt(0) + offset).join('_');
+
+  const response = await request.get(`mail.php?mail=${encoded}`, { maxRedirects: 0 });
+  expect(response.status()).toBe(302);
+  expect(response.headers()['location']).toBe(`mailto:${address}`);
+
+  const invalid = await request.get('mail.php?mail=1_2_3', { maxRedirects: 0 });
+  expect(invalid.status()).toBe(400);
+});

@@ -57,10 +57,9 @@ test('Navigation enthält alle Hauptbereiche, nach Gruppen geordnet', async ({ p
     'Backup-Manager',
     'Ereignisse',
     'Website-Status',
+    'Wochenbericht',
     // Website
     'Website anzeigen',
-    // Module
-    'Update',
   ]);
 });
 
