@@ -102,6 +102,48 @@
 	}
 
 	/**
+	 * Token for the password-recovery link.
+	 *
+	 * The old link used md5($name) as its key. A username is public (it
+	 * appears on content, comments and profiles), so anyone could forge the
+	 * confirmation URL and force a password reset on any account, admins
+	 * included (BEFUNDE B28). The token is now derived from the site secret
+	 * $website_key - like remember_token() - and bound to the current
+	 * password hash, so it cannot be computed from public data and stops
+	 * working once the password changes.
+	 *
+	 * @param userId ID des Benutzers
+	 * @param passwordHash aktueller Wert aus user.password
+	 * @return string
+	 */
+	function password_recover_token($userId, $passwordHash)
+	{
+		global $website_key;
+		return hash_hmac('sha256', 'recover|' . $userId . '|' . $passwordHash, (string)$website_key);
+	}
+
+	/**
+	 * Token for the account-activation link.
+	 *
+	 * The old link used user.register (a time() timestamp) as its key. The
+	 * person who registered knows that time to within seconds, so they could
+	 * brute-force it and activate their own account without receiving the
+	 * confirmation mail, bypassing e-mail verification (BEFUNDE B29). The
+	 * token is now an HMAC over that timestamp and the password hash, keyed
+	 * with the site secret, so it cannot be guessed.
+	 *
+	 * @param userId ID des Benutzers
+	 * @param register Wert aus user.register
+	 * @param passwordHash Wert aus user.password
+	 * @return string
+	 */
+	function activation_token($userId, $register, $passwordHash)
+	{
+		global $website_key;
+		return hash_hmac('sha256', 'activate|' . $userId . '|' . $register . '|' . $passwordHash, (string)$website_key);
+	}
+
+	/**
 	 * Create or update a user account with validation
 	 *
 	 * @param id User ID for update, empty for new user
@@ -249,7 +291,7 @@
 							$id=$d->id;
 						}
 					}
-					$key=from_db("user",$id,"register");
+					$key=activation_token($id,from_db("user",$id,"register"),from_db("user",$id,"password"));
 					$c=$config_values->page;
 					$subject=str_replace("%1",$config_values->name,language("REGISTER_MAIL_SUBJECT"));
 					$body=str_replace(array("%1","%2","%3"),array($name,$c,$c."/index.php?action=register_finish&id=".$id."&key=".$key),language("REGISTER_MAIL_BODY"));

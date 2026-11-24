@@ -210,6 +210,26 @@ nirgends ersetzt wurden. Jeder Aufruf eines Feeds endete deshalb in
 `Call to undefined function mysql_query()`. Die Aufrufe gehen jetzt über
 `$pms_db_connection->query()` und `pms_fetch_object()` wie im übrigen Code.
 
+### B28 – Passwort-Zuruecksetzen war fuer jedes Konto ausloesbar (kritisch)
+Der Bestaetigungslink zum Zuruecksetzen nutzte `md5(Benutzername)` als
+Schluessel (`?action=password_recover&user=<id>&id=<md5>`). Benutzernamen
+sind oeffentlich (Inhalte, Kommentare, Profile), der Schluessel also frei
+berechenbar - ein Gast konnte fuer jedes Konto, auch das eines Admins, ein
+neues Zufallspasswort setzen lassen. Der Vergleich lief zudem ueber `==`
+(Type-Juggling). Der Schluessel ist jetzt ein HMAC ueber die ID und den
+aktuellen Passwort-Hash, mit dem Site-Geheimnis `$website_key` signiert
+(`password_recover_token()`), und wird mit `hash_equals()` geprueft. Er ist
+aus oeffentlichen Daten nicht ableitbar und verliert nach dem Wechsel seine
+Gueltigkeit.
+
+### B29 – Konto-Freischaltung ohne Bestaetigungsmail (behoben)
+Der Freischaltlink benutzte `user.register` - einen `time()`-Zeitstempel -
+als Schluessel, mit `==` verglichen. Wer sich registrierte, kannte diesen
+Zeitpunkt auf Sekunden genau und konnte das eigene Konto ohne die
+Bestaetigungsmail freischalten (Umgehung der E-Mail-Pruefung). Der
+Schluessel ist jetzt ein HMAC ueber Zeitstempel und Passwort-Hash
+(`activation_token()`), mit `hash_equals()` geprueft.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und

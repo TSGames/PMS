@@ -138,7 +138,7 @@ if(@array_key_exists("recover_pass",$_POST))
         $id=$a->id;
         $name=from_db("user",$id,"name");
         $password_recover=language("PASSWORD_RECOVER_MAIL_SEND");
-        $key=md5($name);
+        $key=password_recover_token($id,from_db("user",$id,"password"));
         my_mail(from_db("user",$id,"mail"),str_replace("%1",$config_values->name,language("PASSWORD_RECOVER_REQUEST_MAIL_SUBJECT")),
         str_replace(array("%1","%2"),array(from_db("user",$id,"name"),$config_values->page."/index.php?action=password_recover&user=".$id."&id=".$key),language("PASSWORD_RECOVER_REQUEST_MAIL_BODY")));
     }
@@ -909,9 +909,9 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         if($user_sel && $user_code)
         {
             $name=from_db("user",$user_sel,"name");
-            $key=md5($name);
+            $key=password_recover_token($user_sel,from_db("user",$user_sel,"password"));
             $content.="<div class=\"password_recover\">";
-            if($key==$user_code)
+            if($name!=="" && hash_equals($key,(string)$user_code))
             {
                 unset($pass);
                 for($i=0;$i<2;$i++)
@@ -957,8 +957,8 @@ if(/*$_SERVER['QUERY_STRING']=="" && */!$action && !$cat && !$subcat && !$item &
         $id=$_GET['id'];
         $content="<table class=\"content_table\"><tr><td class=\"finish_registration\"><div class=\"finish_registration item_heading\">".language("REGISTER_FINISH_HEADING")."</div><br><br>";
         $name=from_db("user",$id,"name");
-        $key=from_db("user",$id,"register");
-        if($key==$_GET['key'])
+        $key=activation_token($id,from_db("user",$id,"register"),from_db("user",$id,"password"));
+        if($name!=="" && hash_equals($key,(string)$_GET['key']))
         {
             $content.=language("REGISTER_FINISH_SUCCESS");
             Db::update("user",(int)$id,array("active" => 1));
