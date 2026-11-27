@@ -11,12 +11,42 @@
     'use strict';
 
     /**
+     * Prüft, ob ein Textfeld Skript-Blöcke enthält, und setzt in dem Fall
+     * einen Hinweis davor. Auch der TinyMCE-Start fragt hier nach.
+     *
+     * @param {HTMLTextAreaElement} textarea
+     * @returns {boolean} true, wenn der grafische Editor aus bleiben muss
+     */
+    window.pmsEditorBlocked = function (textarea) {
+        if (!textarea || !/\[(php|code)\]/i.test(textarea.value)) {
+            return false;
+        }
+        if (!textarea.previousElementSibling || !textarea.previousElementSibling.classList.contains('editor-blocked')) {
+            var note = document.createElement('div');
+            note.className = 'notice notice-warn editor-blocked';
+            note.textContent = 'Dieser Inhalt enthält [php]- oder [code]-Blöcke. '
+                + 'Der grafische Editor würde sie beim Speichern zerstören und bleibt deshalb aus.';
+            textarea.parentNode.insertBefore(note, textarea);
+        }
+        return true;
+    };
+
+    /**
      * @param {string} match  ID der textarea
      * @param {number} height Höhe des Bearbeitungsbereichs in Pixeln
      */
     window.pmsInitEditor = function (match, height) {
         var textarea = document.getElementById(match);
         if (!textarea || typeof window.Quill === 'undefined') {
+            return;
+        }
+
+        // Inhalte mit [php]- oder [code]-Blöcken bleiben im reinen Textfeld.
+        // Der grafische Editor liest den Text als HTML ein: Aus "$i<count($a)"
+        // wird dabei ein unbekanntes Element, und alles dahinter - der Rest
+        // des Blocks und der Rest der Seite - geht beim Speichern verloren
+        // (BEFUNDE B33).
+        if (window.pmsEditorBlocked(textarea)) {
             return;
         }
 

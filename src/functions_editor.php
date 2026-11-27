@@ -70,9 +70,16 @@
 		$str='
 <!-- TinyMCE -->
 <script type="text/javascript" src="tinymce/tinymce.js"></script>
+<script type="text/javascript" src="js/admin-content-editor.js"></script>
 <script type="text/javascript">
 ';
-		if($init) $str.=get_tinymceinit($match,$height);
+		// Erst starten, wenn das Textfeld da ist, und nur ohne [php]-/[code]-
+		// Bloecke: Der Editor liest den Text als HTML ein und zerstoert solche
+		// Bloecke beim Speichern (pmsEditorBlocked, BEFUNDE B33).
+		if($init) $str.='(function(){function start(){'
+			.'if(window.pmsEditorBlocked&&window.pmsEditorBlocked(document.getElementById("'.$match.'"))){return;}'
+			.get_tinymceinit($match,$height)
+			.'}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",start);}else{start();}})();';
 		$str.='
 </script>
 <!-- /TinyMCE -->';

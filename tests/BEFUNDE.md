@@ -263,6 +263,16 @@ eine falsch benannte Variable (`$dbay`) und bewirkte nichts. Alle
 Zahlenfelder (`id`, `typ`, `bday`, `top`, `active`, `showmail`) werden
 jetzt auf Ganzzahlen gezwungen.
 
+### B33 – Der grafische Editor zerstörte Inhalte mit [php]-Blöcken
+Beide Editoren lesen den gespeicherten Text als HTML ein. Steht in einem
+`[php]`-Block etwas wie `$i<count($a)`, hält der Browser `<count(...` für
+ein Element; beim Speichern fehlte dann alles dahinter - der Rest des
+Blocks und der Rest der Seite. Seit Quill die Voreinstellung ist, genügte
+es, eine solche Seite im Backend zu öffnen und zu speichern. Auf einer
+laufenden Website verschwanden so Probenplan und Neuigkeiten von der
+Startseite. Enthält ein Inhalt `[php]` oder `[code]`, bleibt der grafische
+Editor jetzt aus, und über dem Textfeld steht ein Hinweis.
+
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf
 Megabyte, bei jeder Bearbeitung eine Anfrage an einen Dritt-Server, und
