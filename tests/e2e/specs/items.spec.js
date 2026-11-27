@@ -96,23 +96,35 @@ test('TinyMCE wird geladen, wenn der Editor eingeschaltet ist', async ({ page })
 });
 
 for (const engine of ['quill', 'tinymce']) {
-  test(`B33: Ein Inhalt mit [php]-Block bleibt im Textfeld (${engine})`, async ({ page }) => {
-    // Inhalt 13 enthält [php]-Blöcke. Der grafische Editor las sie als HTML
-    // ein und schnitt beim Speichern alles hinter einem "<" im Code weg.
+  test(`B33: Ein Inhalt mit [php]-Block übersteht das Bearbeiten (Sitzung: ${engine})`, async ({ page }) => {
+    // Inhalt 13 enthält [php]-Blöcke. Quill las sie als HTML ein und schnitt
+    // beim Speichern alles hinter einem "<" im Code weg. Solche Inhalte
+    // bekommen deshalb immer TinyMCE, das die Blöcke unverändert durchreicht.
     await page.goto(`admin/inhalte?edit=13&editor=1&editorengine=${engine}`);
-    await expect(page.locator('.editor-blocked')).toBeVisible();
-    await expect(page.locator('textarea#content')).toBeVisible();
-    await expect(page.locator('.ql-editor, .tox-tinymce')).toHaveCount(0);
+    await expect(page.locator('.tox-tinymce')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.ql-editor')).toHaveCount(0);
 
-    const vorher = await page.locator('textarea#content').inputValue();
+    await page.evaluate(() => window.tinymce.activeEditor.insertContent('<p>Nachtrag</p>'));
     await submit(page, '#item_button1');
-    await page.goto('admin/inhalte?edit=13');
-    expect(await page.locator('textarea#content').inputValue()).toBe(vorher);
 
     await page.goto('index.php?item=13');
     await expect(page.locator('body')).toContainText(/Der Verein hat \d+ Mitglieder/);
+    await expect(page.locator('body')).toContainText(/Inhalte insgesamt: \d+/);
+    await expect(page.locator('body')).toContainText('Nachtrag');
+    await expect(page.locator('body')).not.toContainText('ParseError');
   });
 }
+
+test('B33: Ein Inhalt ohne Skript-Blöcke behält Quill', async ({ page }) => {
+  await page.goto('admin/inhalte?edit=2&editor=1&editorengine=quill');
+  await expect(page.locator('.ql-editor')).toBeVisible();
+});
+
+test('B33: Bearbeiten auf der Seite nimmt für [php]-Inhalte TinyMCE', async ({ page }) => {
+  await page.goto('index.php?item=13&edit=true');
+  await expect(page.locator('.tox-tinymce')).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.ql-editor')).toHaveCount(0);
+});
 
 test('Der grafische Editor lässt sich im Kopf umschalten', async ({ page }) => {
   await page.goto('admin/inhalte?edit=2&editor=1');

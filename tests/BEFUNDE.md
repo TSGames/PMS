@@ -270,8 +270,11 @@ ein Element; beim Speichern fehlte dann alles dahinter - der Rest des
 Blocks und der Rest der Seite. Seit Quill die Voreinstellung ist, genügte
 es, eine solche Seite im Backend zu öffnen und zu speichern. Auf einer
 laufenden Website verschwanden so Probenplan und Neuigkeiten von der
-Startseite. Enthält ein Inhalt `[php]` oder `[code]`, bleibt der grafische
-Editor jetzt aus, und über dem Textfeld steht ein Hinweis.
+Startseite. Enthält ein Inhalt `[php]` oder `[code]`, startet jetzt immer
+TinyMCE, im Backend wie beim Bearbeiten auf der Seite: Dessen Einstellung
+`protect` reicht die Blöcke unverändert durch. Im Bild sind sie nicht zu
+sehen, in der Quelltext-Ansicht stehen sie. Quill selbst startet auf einem
+solchen Text nicht mehr und lässt das Textfeld stehen.
 
 ### B6 – Die Variablen-Seite lud den Editor von einem CDN
 Die Seite band den Monaco-Editor von `cdn.jsdelivr.net` ein - rund fünf

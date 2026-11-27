@@ -40,6 +40,12 @@
               link image media | forecolor backcolor | \
               removeformat code fullscreen",
 
+    // [php]- und [code]-Bloecke unveraendert durchreichen: Ohne das liest
+    // der Editor "$i<count($a)" als HTML-Element und verliert beim
+    // Speichern alles dahinter (BEFUNDE B33). Im Bild sind die Bloecke
+    // nicht zu sehen, in der Quelltext-Ansicht stehen sie unveraendert.
+    protect: [/\\[php\\][\\s\\S]*?\\[\\/php\\]/g, /\\[code\\][\\s\\S]*?\\[\\/code\\]/g],
+
     content_css: "template_files/style.css",
     body_class: "content_table",
 
@@ -77,7 +83,6 @@
 		// Bloecke: Der Editor liest den Text als HTML ein und zerstoert solche
 		// Bloecke beim Speichern (pmsEditorBlocked, BEFUNDE B33).
 		if($init) $str.='(function(){function start(){'
-			.'if(window.pmsEditorBlocked&&window.pmsEditorBlocked(document.getElementById("'.$match.'"))){return;}'
 			.get_tinymceinit($match,$height)
 			.'}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",start);}else{start();}})();';
 		$str.='

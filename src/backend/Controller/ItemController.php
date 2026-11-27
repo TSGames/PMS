@@ -195,6 +195,8 @@ final class ItemController extends Controller
         $name = $isEdit ? (string)$item->name : $values['name'];
         $description = $isEdit ? (string)$item->description : '';
         $content = $isEdit ? (string)$item->content : '';
+        // Mit [php]-Blöcken nur TinyMCE: Quill würde sie beim Speichern zerstören
+        Editor::requireTinymceFor($content);
         $sort = $isEdit ? (int)$item->sort : ($values['sort'] > 0 ? $values['sort'] : 1000);
         $link = $isEdit ? (string)$item->link : '';
         $author = $isEdit ? (int)$item->user : Auth::userId();
@@ -531,7 +533,8 @@ final class ItemController extends Controller
             'edit'
         );
 
-        if (Editor::isEnabled()) {
+        // Erzwingt der Inhalt TinyMCE, gibt es nichts umzuschalten
+        if (Editor::isEnabled() && !Editor::tinymceRequired()) {
             $isTinymce = Editor::engine() === 'tinymce';
             $engineParams = $params;
             $engineParams['editorengine'] = $isTinymce ? 'quill' : 'tinymce';
